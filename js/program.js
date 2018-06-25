@@ -13,8 +13,11 @@ function main() {
             this.showControl()
 
             this.slider()
+
+            this.btnBind()
         }
 
+        //画布属性
         drawImg(imgPath, x, y) { //在画布上绘制元素
             let index = $('#canvas').children().length
             let html = ''
@@ -26,21 +29,6 @@ function main() {
             this.canvas.append(html)
 
             this.fixPosition(this, $(`#div${index}`).children()[0])
-            // <img src=${imgPath} class='canvasChild ui-widget-content' style='position: absolute; top: ${y}px; left: ${x}px'>
-
-            // 拖拽图片
-            // $('.canvasDiv').draggable({
-            //     containment: "#canvas",
-            //     snap: true
-            // })
-
-            //伸缩图片
-            // $(".canvasChild").resizable({
-            //     // ghost: true,
-            //     aspectRatio: true,
-            //     // maxWidth: this.width,
-            //     containment: "#canvas"
-            // })
 
             //拖曳
             $(`#div${index}`).Tdrag({
@@ -109,11 +97,6 @@ function main() {
                     checkFlag = false
                 }
             })
-            // this.canvas.on('mousedown', '.flexBtn', function(ev) {
-            //     ev.stopPropagation()
-
-            //     console.log('adf')
-            // })
 
         }
 
@@ -336,22 +319,34 @@ function main() {
         }
 
 
-        //时间线功能
+        //时间轴属性
         slider() { //滑块初始化
             $("#circles-slider")
                 .slider({
                     min: 0,
                     max: 100,
-                    range: true,
+                    range: false,
                 })
 
                 .slider("pips", {
                     first: "pip",
-                    last: "pip",
-                    // rest: "label"
+                    last: "pip"
                 })
 
-            $('.ui-slider-handle').eq(0).hide()
+            let html =`
+                <div class="ui-slider-range ui-corner-all ui-widget-header" style="left: 0%; width: 0%;"></div>
+            `
+            //添加时间线已选择时间颜色
+            $('#circles-slider').append(html)
+
+            $('#circles-slider').on('mousedown', '.ui-slider-handle', function () { //时间线已选择颜色长度绑定按钮left值
+                $(document).on('mousemove', function () {
+                    let left = $('.ui-slider-handle').css('left')
+                    $('.ui-slider-range').width(left)
+                })
+            })
+
+            
 
             this.alignment()
         }
@@ -379,11 +374,13 @@ function main() {
                 })
             })
 
+            $('.ui-slider-handle').mousedown()
 
         }
 
-        sliderBlock(img) { //绑定元素绘制 并生成时间轴滑块
+        sliderBlock(img) { //绑定元素绘制 并生成轨道
             let filename
+            let that = this
             let path = img[0].src
             if (path.indexOf("/") > 0) //如果包含有"/"号 从最后一个"/"号+1的位置开始截取字符串
             {
@@ -392,31 +389,77 @@ function main() {
                 filename = path;
             }
 
-            this.newTrack()
-
-
             let html = `
                 <div class="silderBlock">
                     ${filename}
                 </div>
             `
 
-            $('.track .trackContent').append(html)
+            let lastTrack = $('.trackBox .track:last .trackContent')
+            let index = lastTrack.attr('id').substr(5)
+
+            function recursion(index) {     //递归查询空轨道
+                
+                index = Number(index)
+                if (index == 1) {
+                    if ($(`#track${index}`).children().length == 0) {
+                        $(`#track${index}`).append(html)
+                        return
+                    } else {
+                        that.newTrack()
+                        $(`#track${index+1}`).append(html)
+                        return
+                    }
+                }
+
+                if ($(`#track${index}`).children().length == 0) {
+                    if ($(`#track${index-1}`).children().length == 0) {
+                        recursion(index - 1)
+                    } else {
+                        $(`#track${index}`).append(html)
+                        return
+                    }
+                } else {
+                    that.newTrack()
+                    $(`#track${index+1}`).append(html)
+                    return
+                }
+            }
+
+            recursion(index)
+
+
         }
 
         newTrack() { //新建轨道
-            let index = $('.trackBox').children().length
+            let index = ($('.track').length) + 1
             let html = `
                 <div class="track clearfix">
                     <div class="trackController col-sm-2">
                         <span>轨道${index}</span>
-                        <span id="track${index}" class="glyphicon glyphicon glyphicon-align-justify" aria-hidden="true"></span>
+                        <span class="glyphicon glyphicon glyphicon-align-justify" aria-hidden="true"></span>
                     </div>
-                    <div class="trackContent col-sm-10"></div>
+                    <div id="track${index}" class="trackContent col-sm-10"></div>
                 </div>
             `
+            if ($('.trackSeize').length != 0) {
+                $('.trackSeize').eq(0).remove()
+            }
 
-            $('.trackBox').append(html)
+            $('.track:last').after(html)
+        }
+
+        moveTrack() {   //移动元素到其他轨道
+
+        }
+
+
+
+        btnBind() { //按钮绑定事件
+            let that = this
+            $('#addTrack').on('click', function () {
+                that.newTrack()
+            })
         }
     }
 

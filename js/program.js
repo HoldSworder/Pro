@@ -39,11 +39,15 @@ function main() {
 
             $('.ui-resizable-handle').on('mousedown', function () {
                 $.disable_cloose()
+
+                let upE = function () {
+                    $.disable_open()
+
+                    $(document).off('mouseup', upE)
+                }
+                $(document).on('mouseup', upE)
             })
 
-            $(document).on('mouseup', function () {
-                $.disable_open()
-            })
 
 
         }
@@ -102,7 +106,7 @@ function main() {
 
         }
 
-        drag() { //拖动属性
+        drag() { //拖动绘制属性
             let top
             let left
             let flag = false
@@ -131,7 +135,7 @@ function main() {
                 that = $(this)
                 flag = true
 
-                $(document).on('mouseup', function (e) {
+                let upE = function (e) {
                     e.preventDefault()
 
                     if (flag) {
@@ -152,16 +156,16 @@ function main() {
                             thats.drawImg(that.attr('src'), nowX - canX - imgX / 2, nowY - canY - imgY / 2)
                             thats.sliderEle(that)
 
-                            $(document).off('mouseup')
-                            $(document).off('mousemove')
+                            $(document).off('mouseup', upE)
+                            $(document).off('mousemove', moveE)
 
                         }
 
                         flag = false
                     }
-                })
+                }
 
-                $(document).on('mousemove', function (e) {
+                let moveE = function (e) {
                     e.preventDefault()
 
                     if (flag) {
@@ -176,7 +180,11 @@ function main() {
                             'left': `${nowX - thisW/2}px`
                         })
                     }
-                })
+                }
+
+                $(document).on('mouseup', upE)
+
+                $(document).on('mousemove', moveE)
 
             })
 
@@ -206,7 +214,7 @@ function main() {
                 var iparentwidth = oparent.offsetWidth;
                 // var iparentheight = oparent.offsetHeight;
 
-                document.onmousemove = function (e) {
+                let moveE = function (e) {
 
                     e = e || event;
                     var iL = e.clientX - disX;
@@ -248,9 +256,10 @@ function main() {
                     };
                     return false;
                 };
-                document.onmouseup = function () {
-                    document.onmousemove = null;
-                    document.onmouseup = null;
+
+                let upE = function () {
+                    $(document).off('mousemove', moveE)
+                    $(document).off('mouseup', upE)
                     // let left = $(oparent).offset().left
                     // let width = $(oparent).width()
                     // if ((left + width) > that.width) {
@@ -258,6 +267,10 @@ function main() {
                     // }
                     that.fixPosition(that, oparent)
                 };
+
+                $(document).on('mousemove', moveE)
+                $(document).on('mouseup', upE)
+
             }
 
             $(oparent).children('img').css({
@@ -288,6 +301,7 @@ function main() {
         showControl() { //显示缩放按钮并绑定缩放属性
             let that = this
             this.canvas.on('click', '.canvasDiv', function (e) {
+                let thats = this
                 let index = $('#canvas').children().length
                 e.stopPropagation()
 
@@ -300,20 +314,21 @@ function main() {
                     `
                     $(this).append(html)
                     // that = $(this)
+
+                    let resizeRB = document.querySelector(`#resizeRB${index}`)
+                    let resizeRT = document.querySelector(`#resizeRT${index}`)
+                    let resizeLT = document.querySelector(`#resizeLT${index}`)
+                    let resizeLB = document.querySelector(`#resizeLB${index}`)
+
+                    let img = $(this).children('img').get(0)
+
+                    //四角放大
+                    that.resize(img, resizeRB, false, false, true, true);
+                    that.resize(img, resizeRT, false, true, true, true);
+                    that.resize(img, resizeLT, true, true, true, true);
+                    that.resize(img, resizeLB, true, false, true, true);
                 }
 
-                let resizeRB = document.querySelector(`#resizeRB${index}`)
-                let resizeRT = document.querySelector(`#resizeRT${index}`)
-                let resizeLT = document.querySelector(`#resizeLT${index}`)
-                let resizeLB = document.querySelector(`#resizeLB${index}`)
-
-                let img = $(this).children('img').get(0)
-
-                //四角变大
-                that.resize(img, resizeRB, false, false, true, true);
-                that.resize(img, resizeRT, false, true, true, true);
-                that.resize(img, resizeLT, true, true, true, true);
-                that.resize(img, resizeLB, true, false, true, true);
 
             })
         }
@@ -492,7 +507,7 @@ function main() {
                     'z-index': 9999
                 })
 
-                $(document).on('mousemove', function (e) {
+                let moveE = function (e) {
 
                     let nowX = e.clientX
                     let nowY = e.clientY
@@ -501,9 +516,11 @@ function main() {
                         'top': `${nowY - divH/2}px`,
                         'left': `${nowX - divW/2}px`
                     })
-                })
+                }
 
-                $(document).on('mouseup', function (e) {
+
+
+                let upE = function (e) {
                     for (const item of $('.track')) {
                         if (that.checkHover(e, $(item))) {
                             let html = $(item).find('.trackContent').html()
@@ -535,9 +552,12 @@ function main() {
                         }
                     }
 
-                    $(document).off('mousemove')
-                    $(document).off('mouseup')
-                })
+                    $(document).off('mousemove', moveE)
+                    $(document).off('mouseup', upE)
+                }
+
+                $(document).on('mouseup', upE)
+                $(document).on('mousemove', moveE)
 
 
             })
@@ -564,7 +584,7 @@ function main() {
                     'z-index': 9999
                 })
 
-                $(document).on('mousemove', function (e) {
+                let moveE = function (e) {
 
                     let nowX = e.clientX
                     let nowY = e.clientY
@@ -573,9 +593,11 @@ function main() {
                         'top': `${nowY - divH/2}px`,
                         'left': `${nowX - divW/6}px`
                     })
-                })
+                }
 
-                $(document).on('mouseup', function (e) {
+
+
+                let upE = function (e) {
                     for (const item of $('.track')) {
                         if (that.checkHover(e, $(item))) {
                             let html = $(item).find('.trackContent').html()
@@ -607,9 +629,12 @@ function main() {
                         }
                     }
 
-                    $(document).off('mousemove')
-                    $(document).off('mouseup')
-                })
+                    $(document).off('mousemove', moveE)
+                    $(document).off('mouseup', upE)
+                }
+
+                $(document).on('mouseup', upE)
+                $(document).on('mousemove', moveE)
 
 
             })

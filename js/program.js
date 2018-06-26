@@ -13,6 +13,8 @@ function main() {
             this.showControl()
 
             this.slider()
+            this.moveEle()
+            this.moveTrack()
 
             this.btnBind()
         }
@@ -106,13 +108,12 @@ function main() {
             let flag = false
             let cloner
             let that
-            let hover = false
             let thats = this
             $('#scene').on('mousedown', 'img', function (e) {
                 e.preventDefault()
                 let clone = $(this).clone()
                 $(this).after(clone)
-                // $('#scene').append(clone)
+
                 clone.hide()
 
                 cloner = clone
@@ -130,57 +131,56 @@ function main() {
                 that = $(this)
                 flag = true
 
-            })
+                $(document).on('mouseup', function (e) {
+                    e.preventDefault()
 
-            $(document).on('mouseup', function (e) {
-                e.preventDefault()
+                    if (flag) {
+                        that.remove()
+                        cloner.show()
 
-                if (flag) {
-                    that.remove()
-                    cloner.show()
+                        if (thats.checkHover(e, $('#canvas'))) {
 
-                    if (hover) {
+                            let nowX = e.clientX
+                            let nowY = e.clientY
+
+                            let canX = $('#canvas').offset().left
+                            let canY = $('#canvas').offset().top
+
+                            let imgX = that.width()
+                            let imgY = that.height()
+
+                            thats.drawImg(that.attr('src'), nowX - canX - imgX / 2, nowY - canY - imgY / 2)
+                            thats.sliderEle(that)
+
+                            $(document).off('mouseup')
+                            $(document).off('mousemove')
+
+                        }
+
+                        flag = false
+                    }
+                })
+
+                $(document).on('mousemove', function (e) {
+                    e.preventDefault()
+
+                    if (flag) {
+                        let thisW = that.width()
+                        let thisH = that.height()
+
                         let nowX = e.clientX
                         let nowY = e.clientY
 
-                        let canX = $('#canvas').offset().left
-                        let canY = $('#canvas').offset().top
-
-                        let imgX = that.width()
-                        let imgY = that.height()
-
-                        thats.drawImg(that.attr('src'), nowX - canX - imgX / 2, nowY - canY - imgY / 2)
-                        thats.sliderBlock(that)
+                        that.css({
+                            'top': `${nowY - thisH/2}px`,
+                            'left': `${nowX - thisW/2}px`
+                        })
                     }
+                })
 
-                    flag = false
-                }
             })
 
-            $(document).on('mousemove', function (e) {
-                e.preventDefault()
 
-                if (flag) {
-                    let thisW = that.width()
-                    let thisH = that.height()
-
-                    let nowX = e.clientX
-                    let nowY = e.clientY
-
-                    that.css({
-                        'top': `${nowY - thisH/2}px`,
-                        'left': `${nowX - thisW/2}px`
-                    })
-                }
-            })
-
-            $('#canvas').on('mouseover', function () {
-                hover = true
-            })
-
-            $('#canvas').on('mouseout', function () {
-                hover = true
-            })
         }
 
         resize(oparent, handle, isleft, istop, lookx, looky) { //缩放函数
@@ -318,6 +318,29 @@ function main() {
             })
         }
 
+        checkHover(e, div) { //判断是否在元素中
+            // debugger
+            div = div[0]
+
+            let window = div.getBoundingClientRect()
+            var x = e.clientX;
+            var y = e.clientY;
+            var divx1 = window.left
+            var divy1 = window.top
+            var divx2 = window.left + window.width
+            var divy2 = window.top + window.height
+            // var divx1 = div.offsetLeft;
+            // var divy1 = div.offsetTop;
+            // var divx2 = div.offsetLeft + div.offsetWidth;
+            // var divy2 = div.offsetTop + div.offsetHeight;
+            if (x < divx1 || x > divx2 || y < divy1 || y > divy2) {
+                return false
+            } else {
+                return true
+            };
+        }
+
+
 
         //时间轴属性
         slider() { //滑块初始化
@@ -333,7 +356,7 @@ function main() {
                     last: "pip"
                 })
 
-            let html =`
+            let html = `
                 <div class="ui-slider-range ui-corner-all ui-widget-header" style="left: 0%; width: 0%;"></div>
             `
             //添加时间线已选择时间颜色
@@ -346,7 +369,7 @@ function main() {
                 })
             })
 
-            
+
 
             this.alignment()
         }
@@ -362,7 +385,8 @@ function main() {
             let boxTop = $('#circles-slider').height() + parseFloat($('#circles-slider').css('marginBottom'))
 
             $('#nowTimeLine').css({
-                'height': boxHeight,
+                // 'height': boxHeight,
+                'height': '130px',
                 'top': boxTop
             })
 
@@ -378,7 +402,7 @@ function main() {
 
         }
 
-        sliderBlock(img) { //绑定元素绘制 并生成轨道
+        sliderEle(img) { //绑定元素绘制 并生成轨道
             let filename
             let that = this
             let path = img[0].src
@@ -398,8 +422,8 @@ function main() {
             let lastTrack = $('.trackBox .track:last .trackContent')
             let index = lastTrack.attr('id').substr(5)
 
-            function recursion(index) {     //递归查询空轨道
-                
+            function recursion(index) { //递归查询空轨道
+
                 index = Number(index)
                 if (index == 1) {
                     if ($(`#track${index}`).children().length == 0) {
@@ -449,8 +473,146 @@ function main() {
             $('.track:last').after(html)
         }
 
-        moveTrack() {   //移动元素到其他轨道
+        moveEle() { //移动元素到其他轨道
+            let that = this
+            $('.trackBox').on('mousedown', '.silderBlock', function (e) {
+                e.preventDefault()
+                let thats = this
 
+                let top = $(this).offset().top
+                let left = $(this).offset().left
+                let divW = $(this).width()
+                let divH = $(this).height()
+
+                $(this).css({
+                    'position': 'fixed',
+                    'top': `${top}px`,
+                    'left': `${left}px`,
+                    'width': `${divW}px`,
+                    'z-index': 9999
+                })
+
+                $(document).on('mousemove', function (e) {
+
+                    let nowX = e.clientX
+                    let nowY = e.clientY
+
+                    $(thats).css({
+                        'top': `${nowY - divH/2}px`,
+                        'left': `${nowX - divW/2}px`
+                    })
+                })
+
+                $(document).on('mouseup', function (e) {
+                    for (const item of $('.track')) {
+                        if (that.checkHover(e, $(item))) {
+                            let html = $(item).find('.trackContent').html()
+                            let checkHtml = $(thats).parent().html()
+                            let checkRemove = $(item).find('.trackContent').children()
+
+                            checkRemove.remove()
+
+                            $(thats).parent().append(html)
+                            $(item).find('.trackContent').append(checkHtml)
+
+                            $(thats).remove()
+
+                            $(item).find('.trackContent').children().css({
+                                'position': 'absolute',
+                                'top': `0px`,
+                                'left': `0px`,
+                                'width': `${divW}px`,
+                                'z-index': 98
+                            })
+                        } else {
+                            $(thats).css({
+                                'position': 'absolute',
+                                'top': `0px`,
+                                'left': `0px`,
+                                'width': `${divW}px`,
+                                'z-index': 98
+                            })
+                        }
+                    }
+
+                    $(document).off('mousemove')
+                    $(document).off('mouseup')
+                })
+
+
+            })
+        }
+
+        moveTrack() { //移动轨道
+            let that = this
+            $('.trackBox').on('mousedown', '.glyphicon', function (e) {
+                e.preventDefault()
+                let thats = $(this).parent().parent()
+                let copy
+                console.log(thats)
+
+                let top = $(thats).offset().top
+                let left = $(thats).offset().left
+                let divW = $(thats).width()
+                let divH = $(thats).height()
+
+                $(thats).css({
+                    'position': 'fixed',
+                    'top': `${top}px`,
+                    'left': `${left}px`,
+                    'width': `${divW}px`,
+                    'z-index': 9999
+                })
+
+                $(document).on('mousemove', function (e) {
+
+                    let nowX = e.clientX
+                    let nowY = e.clientY
+
+                    $(thats).css({
+                        'top': `${nowY - divH/2}px`,
+                        'left': `${nowX - divW/6}px`
+                    })
+                })
+
+                $(document).on('mouseup', function (e) {
+                    for (const item of $('.track')) {
+                        if (that.checkHover(e, $(item))) {
+                            let html = $(item).find('.trackContent').html()
+                            let checkHtml = $(thats).parent().html()
+                            let checkRemove = $(item).find('.trackContent').children()
+
+                            checkRemove.remove()
+
+                            $(thats).parent().append(html)
+                            $(item).find('.trackContent').append(checkHtml)
+
+                            $(thats).remove()
+
+                            $(item).find('.trackContent').children().css({
+                                'position': 'absolute',
+                                'top': `0px`,
+                                'left': `0px`,
+                                'width': `${divW}px`,
+                                'z-index': 98
+                            })
+                        } else {
+                            $(thats).css({
+                                'position': 'absolute',
+                                'top': `0px`,
+                                'left': `0px`,
+                                'width': `${divW}px`,
+                                'z-index': 98
+                            })
+                        }
+                    }
+
+                    $(document).off('mousemove')
+                    $(document).off('mouseup')
+                })
+
+
+            })
         }
 
 

@@ -492,6 +492,7 @@ function main() {
             let that = this
             $('.trackBox').on('mousedown', '.silderBlock', function (e) {
                 e.preventDefault()
+                e.stopPropagation()
                 let thats = this
 
                 let top = $(this).offset().top
@@ -521,26 +522,42 @@ function main() {
 
 
                 let upE = function (e) {
+                    e.stopPropagation()
+                    e.preventDefault()
+                    // debugger
                     for (const item of $('.track')) {
-                        if (that.checkHover(e, $(item))) {
-                            let html = $(item).find('.trackContent').html()
-                            let checkHtml = $(thats).parent().html()
-                            let checkRemove = $(item).find('.trackContent').children()
+                        let copyId = $(thats).parent().attr('id')
+                        let itemId = $(item).children().eq(1).attr('id')
 
-                            checkRemove.remove()
+                        if (that.checkHover(e, $(item)) && (copyId != itemId)) {
+                            let itemChildren = $(item).children().eq(1).children()
+                            
+                            if(itemChildren.length != 0) {  //判断轨道内是否有元素
+                                let leftAll = 0
+                                for (const item of itemChildren) {
+                                    leftAll += parseFloat($(item).css('width'))
+                                }
 
-                            $(thats).parent().append(html)
-                            $(item).find('.trackContent').append(checkHtml)
+                                $(item).children().eq(1).append($(thats))
 
-                            $(thats).remove()
+                                $(thats).css({
+                                    'position': 'absolute',
+                                    'top': '0px',
+                                    'left': `${leftAll}px`,
+                                    'width': '5%'
+                                })
+                                
+                            }else {
+                                $(item).children().eq(1).append($(thats))
 
-                            $(item).find('.trackContent').children().css({
-                                'position': 'absolute',
-                                'top': `0px`,
-                                'left': `0px`,
-                                'width': `${divW}px`,
-                                'z-index': 98
-                            })
+                                $(thats).css({
+                                    'position': 'absolute',
+                                    'top': '0px',
+                                    'left': `0px`,
+                                })
+                                
+                            }
+                            break
                         } else {
                             $(thats).css({
                                 'position': 'absolute',
@@ -549,6 +566,7 @@ function main() {
                                 'width': `${divW}px`,
                                 'z-index': 98
                             })
+                            
                         }
                     }
 
@@ -567,21 +585,23 @@ function main() {
             let that = this
             $('.trackBox').on('mousedown', '.glyphicon', function (e) {
                 e.preventDefault()
+                e.stopPropagation()
                 let thats = $(this).parent().parent()
-                let copy
-                console.log(thats)
+                let copy = $(this).parent().parent().clone()
+                thats.after(copy)
 
-                let top = $(thats).offset().top
-                let left = $(thats).offset().left
-                let divW = $(thats).width()
-                let divH = $(thats).height()
+                let top = $(copy).offset().top
+                let left = $(copy).offset().left
+                let divW = $(copy).width()
+                let divH = $(copy).height()
 
-                $(thats).css({
+                $(copy).css({
                     'position': 'fixed',
                     'top': `${top}px`,
                     'left': `${left}px`,
                     'width': `${divW}px`,
-                    'z-index': 9999
+                    'z-index': 9999,
+                    'box-shadow': '5px 5px 5px #888888'
                 })
 
                 let moveE = function (e) {
@@ -589,7 +609,7 @@ function main() {
                     let nowX = e.clientX
                     let nowY = e.clientY
 
-                    $(thats).css({
+                    $(copy).css({
                         'top': `${nowY - divH/2}px`,
                         'left': `${nowX - divW/6}px`
                     })
@@ -598,35 +618,30 @@ function main() {
 
 
                 let upE = function (e) {
+                    e.stopPropagation()
+                    e.preventDefault()
                     for (const item of $('.track')) {
-                        if (that.checkHover(e, $(item))) {
-                            let html = $(item).find('.trackContent').html()
-                            let checkHtml = $(thats).parent().html()
-                            let checkRemove = $(item).find('.trackContent').children()
+                        // debugger
+                        let copyId = thats.children().eq(1).attr('id')
+                        let itemId = $(item).children().eq(1).attr('id')
 
-                            checkRemove.remove()
+                        if (that.checkHover(e, $(item)) && (copyId != itemId)) {    //轨道拉到其他轨道上释放 将插入其下方
 
-                            $(thats).parent().append(html)
-                            $(item).find('.trackContent').append(checkHtml)
-
-                            $(thats).remove()
-
-                            $(item).find('.trackContent').children().css({
-                                'position': 'absolute',
-                                'top': `0px`,
-                                'left': `0px`,
-                                'width': `${divW}px`,
-                                'z-index': 98
-                            })
-                        } else {
+                            $(item).after($(thats))
                             $(thats).css({
-                                'position': 'absolute',
-                                'top': `0px`,
-                                'left': `0px`,
-                                'width': `${divW}px`,
-                                'z-index': 98
+                                'position': 'initial',
                             })
+                            $(copy).remove()
+                        } else if (that.checkHover(e, $('.sliderContainer'))) {   //将轨道拉到时间线置顶
+                            $('.trackBox').children().eq(0).before($(thats))
+                            $(thats).css({
+                                'position': 'initial',
+                            })
+                            $(copy).remove()
+                        } else {
+                            $(copy).remove()
                         }
+
                     }
 
                     $(document).off('mousemove', moveE)

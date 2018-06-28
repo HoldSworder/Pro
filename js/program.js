@@ -15,6 +15,7 @@ function main() {
             this.slider()
             this.moveEle()
             this.moveTrack()
+            this.flexEle()
 
             this.btnBind()
         }
@@ -356,7 +357,6 @@ function main() {
         }
 
 
-
         //时间轴属性
         slider() { //滑块初始化
             $("#circles-slider")
@@ -528,45 +528,72 @@ function main() {
                     for (const item of $('.track')) {
                         let copyId = $(thats).parent().attr('id')
                         let itemId = $(item).children().eq(1).attr('id')
+                        let itemChildren = $(item).children().eq(1).children()
 
                         if (that.checkHover(e, $(item)) && (copyId != itemId)) {
-                            let itemChildren = $(item).children().eq(1).children()
-                            
-                            if(itemChildren.length != 0) {  //判断轨道内是否有元素
+
+                            if (itemChildren.length != 0) { //判断轨道内是否有元素
                                 let leftAll = 0
-                                for (const item of itemChildren) {
-                                    leftAll += parseFloat($(item).css('width'))
+                                for (const i of itemChildren) {
+                                    if (i != thats) {
+                                        leftAll += parseFloat($(i).css('width'))
+                                    }
                                 }
 
                                 $(item).children().eq(1).append($(thats))
 
                                 $(thats).css({
-                                    'position': 'absolute',
+                                    'position': 'initial',
                                     'top': '0px',
                                     'left': `${leftAll}px`,
-                                    'width': '5%'
+                                    'width': '5%',
+                                    'z-index': '0'
                                 })
-                                
-                            }else {
+
+                            } else {
+
+
                                 $(item).children().eq(1).append($(thats))
 
                                 $(thats).css({
-                                    'position': 'absolute',
+                                    'position': 'initial',
                                     'top': '0px',
                                     'left': `0px`,
+                                    'z-index': '0'
                                 })
-                                
+
                             }
                             break
+                        } else if (that.checkHover(e, $(item))) {
+
+                            let leftAll = 0
+                            for (const i of itemChildren) {
+                                if (i != thats) {
+                                    leftAll += parseFloat($(i).css('width'))
+                                }
+
+                                if (that.checkHover(e, $(i)) && i !== thats) {
+                                    
+                                }
+                             }
+
+                            $(thats).css({
+                                'position': 'initial',
+                                'top': `0px`,
+                                'left': `${leftAll}px`,
+                                'width': `${divW}px`,
+                                'z-index': 0
+                            })
+
+
                         } else {
                             $(thats).css({
-                                'position': 'absolute',
+                                'position': 'initial',
                                 'top': `0px`,
                                 'left': `0px`,
                                 'width': `${divW}px`,
-                                'z-index': 98
+                                'z-index': 0
                             })
-                            
                         }
                     }
 
@@ -625,14 +652,14 @@ function main() {
                         let copyId = thats.children().eq(1).attr('id')
                         let itemId = $(item).children().eq(1).attr('id')
 
-                        if (that.checkHover(e, $(item)) && (copyId != itemId)) {    //轨道拉到其他轨道上释放 将插入其下方
+                        if (that.checkHover(e, $(item)) && (copyId != itemId)) { //轨道拉到其他轨道上释放 将插入其下方
 
                             $(item).after($(thats))
                             $(thats).css({
                                 'position': 'initial',
                             })
                             $(copy).remove()
-                        } else if (that.checkHover(e, $('.sliderContainer'))) {   //将轨道拉到时间线置顶
+                        } else if (that.checkHover(e, $('.sliderContainer'))) { //将轨道拉到时间线置顶
                             $('.trackBox').children().eq(0).before($(thats))
                             $(thats).css({
                                 'position': 'initial',
@@ -652,6 +679,20 @@ function main() {
                 $(document).on('mousemove', moveE)
 
 
+            })
+        }
+
+        flexEle() { //元素伸缩属性
+            $('.trackBox').on('click', '.silderBlock', function () {
+
+                // $('.checkEle').removeClass('checkEle')
+                // $(this).addClass('checkEle')
+
+                // let html = `
+                //     <div class='eleWidth'></div>
+                // `
+                // $(this).append(html)
+                // console.log(this)
             })
         }
 

@@ -429,7 +429,7 @@ function main() {
             }
 
             let html = `
-                <div class="silderBlock">
+                <div class="silderBlock" data-l='0'>
                     ${filename}
                 </div>
             `
@@ -525,38 +525,46 @@ function main() {
                     e.stopPropagation()
                     e.preventDefault()
                     // debugger
-                    for (const item of $('.track')) {
+                    for (const item of $('.track')) { //循环所有轨道 找到元素将移动的轨道
                         let copyId = $(thats).parent().attr('id')
                         let itemId = $(item).children().eq(1).attr('id')
                         let itemChildren = $(item).children().eq(1).children()
 
-                        if (that.checkHover(e, $(item)) && (copyId != itemId)) {
+                        let eX = e.clientX  //鼠标点击距离左边界距离
+                        let thisX = parseFloat($(thats).offset().left)    //元素距离左边界距离
+                        let trackX = $(thats).parent().offset().left    //轨道距离左边界距离
+
+                        if (that.checkHover(e, $(item).find('.trackContent')) && (copyId != itemId)) {
 
                             if (itemChildren.length != 0) { //判断轨道内是否有元素
                                 let leftAll = 0
-                                for (const i of itemChildren) {
-                                    if (i != thats) {
-                                        leftAll += parseFloat($(i).css('width'))
+                                for (const i of itemChildren) { //有元素 获取最后一个元素的x定位
+                                    let thisX = parseFloat($(i).css('left')) + $(i).width()
+                                    if (thisX > leftAll) {
+                                        leftAll = thisX
                                     }
                                 }
+
+                                $(thats).attr('data-l', leftAll)
 
                                 $(item).children().eq(1).append($(thats))
 
                                 $(thats).css({
-                                    'position': 'initial',
+                                    'position': 'absolute',
                                     'top': '0px',
                                     'left': `${leftAll}px`,
                                     'width': '5%',
                                     'z-index': '0'
                                 })
 
-                            } else {
+                            } else { //没元素 成为第一个元素
 
 
                                 $(item).children().eq(1).append($(thats))
 
+                                $(thats).attr('data-l', '0')
                                 $(thats).css({
-                                    'position': 'initial',
+                                    'position': 'absolute',
                                     'top': '0px',
                                     'left': `0px`,
                                     'z-index': '0'
@@ -564,36 +572,52 @@ function main() {
 
                             }
                             break
-                        } else if (that.checkHover(e, $(item))) {
+                        } else if (that.checkHover(e, $(item)) && (copyId == itemId)) { //轨道内移动
+                            // debugger
+                            
+                            
+                            let flag = false
 
-                            let leftAll = 0
-                            for (const i of itemChildren) {
-                                if (i != thats) {
-                                    leftAll += parseFloat($(i).css('width'))
-                                }
+                            let trackEle = $(thats).prevAll()
 
-                                if (that.checkHover(e, $(i)) && i !== thats) {
+                            for (const it of trackEle) {
+                                // debugger
+                                if (that.checkHover(e, $(it))) {
+                                    $(thats).css({
+                                        'position': 'absolute',
+                                        'top': `0px`,
+                                        'left': `${$(thats).attr('data-l')}px`,
+                                        'width': `${divW}px`,
+                                        'z-index': 0
+                                    })
                                     
+                                    flag = true
                                 }
-                             }
+                            }
 
+                            if(!flag) {
+                                
+                                $(thats).attr('data-l', eX - trackX - $(thats).width()/2)
+                                $(thats).css({
+                                    'position': 'absolute',
+                                    'top': `0px`,
+                                    'left': `${eX - trackX - $(thats).width()/2}px`,
+                                    'width': `${divW}px`,
+                                    'z-index': 0
+                                })
+                            }
+
+                            break
+                        } else { //移出轨道还原位置
                             $(thats).css({
-                                'position': 'initial',
+                                'position': 'absolute',
                                 'top': `0px`,
-                                'left': `${leftAll}px`,
+                                'left': `${$(thats).attr('data-l')}px`,
                                 'width': `${divW}px`,
                                 'z-index': 0
                             })
 
 
-                        } else {
-                            $(thats).css({
-                                'position': 'initial',
-                                'top': `0px`,
-                                'left': `0px`,
-                                'width': `${divW}px`,
-                                'z-index': 0
-                            })
                         }
                     }
 
@@ -685,14 +709,16 @@ function main() {
         flexEle() { //元素伸缩属性
             $('.trackBox').on('click', '.silderBlock', function () {
 
-                // $('.checkEle').removeClass('checkEle')
-                // $(this).addClass('checkEle')
+                $('.checkEle').removeClass('checkEle')
+                $(this).addClass('checkEle')
 
-                // let html = `
-                //     <div class='eleWidth'></div>
-                // `
-                // $(this).append(html)
-                // console.log(this)
+                if($(this).children().length == 0) {
+                    let html = `
+                        <div class='eleWidth'></div>
+                    `
+                    $(this).append(html)
+                }
+                console.log(this)
             })
         }
 

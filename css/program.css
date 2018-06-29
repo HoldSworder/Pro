@@ -51,7 +51,7 @@
     position: fixed;
     bottom: 0;
     width: 80%;
-    margin-bottom: 10px
+    margin: 0 0 10px 10px;
 }
 
 .ui-widget-content .ui-slider-handle.ui-state-default {
@@ -95,7 +95,7 @@
     box-shadow: 0px 0px 3px #888888;
     background-color: white;
     height: 30px;
-    position: initial;
+    position: absolute;
     display: inline-block;
     width: 5%;
     text-align: center;

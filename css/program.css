@@ -113,11 +113,18 @@
     color: white;
 }
 
+.eleWidthR {
+    right: 0;
+}
+
+.eleWidthL {
+    left: 0;
+}
+
 .eleWidth {
-    width: 1px;
+    width: 5px;
     height: 100%;
     position: absolute;
-    right: 0;
     top: 0;
     cursor: w-resize;
 }

@@ -92,7 +92,7 @@ function main() {
                     let nowY = ev.clientY
 
                     let widthN = that.find('img').width()
-                    console.log((nowX - startX) / 20)
+
                     that.find('img').width(widthN + (nowX - startX) / 20)
                 }
             })
@@ -225,12 +225,11 @@ function main() {
                     var iw = isleft ? iparentwidth - iL : handle.offsetWidth + iL;
                     // var ih = istop ? iparentheight - iT : handle.offsetHeight + iT;
                     if (isleft) {
-                        // console.log(oparent.parentElement)
-                        // console.log(iL)
+
                         oparent.parentElement.style.left = iparentleft + iL + 'px';
                     };
                     if (istop) {
-                        // console.log(iparenttop + iT)
+
                         oparent.parentElement.style.top = iparenttop + iT + 'px';
                     };
                     if (iw < dragMinWidth) {
@@ -529,10 +528,11 @@ function main() {
                         let copyId = $(thats).parent().attr('id')
                         let itemId = $(item).children().eq(1).attr('id')
                         let itemChildren = $(item).children().eq(1).children()
+                        let trackW = $(item).find('.trackContent').width() //轨道长度
 
-                        let eX = e.clientX  //鼠标点击距离左边界距离
-                        let thisX = parseFloat($(thats).offset().left)    //元素距离左边界距离
-                        let trackX = $(thats).parent().offset().left    //轨道距离左边界距离
+                        let eX = e.clientX //鼠标点击距离左边界距离
+                        let thisX = parseFloat($(thats).offset().left) //元素距离左边界距离
+                        let trackX = $(thats).parent().offset().left //轨道距离左边界距离
 
                         if (that.checkHover(e, $(item).find('.trackContent')) && (copyId != itemId)) {
 
@@ -572,10 +572,12 @@ function main() {
 
                             }
                             break
-                        } else if (that.checkHover(e, $(item)) && (copyId == itemId)) { //轨道内移动
+                        } else if (that.checkHover(e, $(item).find('.trackContent')) &&
+                            (copyId == itemId) &&
+                            eX - trackX > ($(thats).width()) / 2 &&
+                            trackW - (eX - trackX) > ($(thats).width()) / 2) { //轨道内移动
                             // debugger
-                            
-                            
+
                             let flag = false
 
                             let trackEle = $(thats).prevAll()
@@ -590,14 +592,14 @@ function main() {
                                         'width': `${divW}px`,
                                         'z-index': 0
                                     })
-                                    
+
                                     flag = true
                                 }
                             }
 
-                            if(!flag) {
-                                
-                                $(thats).attr('data-l', eX - trackX - $(thats).width()/2)
+                            if (!flag) {
+
+                                $(thats).attr('data-l', eX - trackX - $(thats).width() / 2)
                                 $(thats).css({
                                     'position': 'absolute',
                                     'top': `0px`,
@@ -707,18 +709,95 @@ function main() {
         }
 
         flexEle() { //元素伸缩属性
+            let that = this
             $('.trackBox').on('click', '.silderBlock', function () {
+                let parent = this
+                let trackL = $(this).parent().offset().left
+                let trackW = $(this).parent().width()
+                let divW = $(this).width()
+                let divH = $(this).height()
 
                 $('.checkEle').removeClass('checkEle')
                 $(this).addClass('checkEle')
 
-                if($(this).children().length == 0) {
+                $('.eleWidth').remove()
+
+                if ($(this).children().length == 0) {
                     let html = `
-                        <div class='eleWidth'></div>
+                        <div class='eleWidthR eleWidth'></div>
+                        <div class='eleWidthL eleWidth'></div>
                     `
                     $(this).append(html)
                 }
-                console.log(this)
+
+
+                $(this).on('mousedown', '.eleWidth', function (e) {
+                    e.preventDefault()
+                    e.stopPropagation()
+
+                    let startX = e.clientX
+                    let eleW = this
+
+                    let width = $(parent).width()
+                    let left = $(eleW).offset().left
+
+                    let moveE = function (e) {
+                        // debugger
+                        e.preventDefault()
+                        e.stopPropagation()
+
+                        let nowX = e.clientX
+                        let flag = true
+
+                        console.log($(parent).prevAll().length)
+                        if($(parent).prevAll().length != 0) {
+                            for (const item of $(parent).prevAll()) {
+                                
+                                if(!that.checkHover(e, $(item))) {
+                                    flag = false
+                                }
+                            }
+                        }
+                        
+                        if(flag) {
+                            if($(eleW).hasClass('eleWidthR')) {
+                                if(nowX > trackL && nowX < trackL + trackW) {
+                                    $(parent).css({
+                                        'width': `${width + (nowX - left)}`
+                                    })
+                                }
+                            }else {
+                                if(nowX > trackL && nowX < trackL + trackW) {
+                                    let followX = parseFloat($(parent).attr('data-l')) - parseFloat(left - nowX)
+                                    $(parent).css({
+                                        'width': `${width + (left - nowX)}`,
+                                        'left': `${followX}px`
+                                    })
+                                }
+                            }
+                        }
+
+                    }
+
+                    let upE = function (e) {
+                        e.preventDefault()
+                        e.stopPropagation()
+
+                        let nowX = e.clientX
+
+                        $(parent).css({
+                            'width': `${$(parent).width()}`
+                        })
+
+                        $(document).off('mousemove', moveE)
+                        $(document).off('mouseup', upE)
+                    }
+
+
+                    $(document).on('mouseup', upE)
+                    $(document).on('mousemove', moveE)
+
+                })
             })
         }
 

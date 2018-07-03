@@ -355,6 +355,31 @@ function main() {
             };
         }
 
+        checkHoverDiv(div1, div2) {
+            // debugger
+            div1 = div1[0]
+            div2 = div2[0]
+
+            let window1 = div1.getBoundingClientRect()
+            let window2 = div2.getBoundingClientRect()
+
+            let div1L = window1.left
+            let div2L = window2.left
+
+            let div1R = window1.left + window1.width
+            let div2R = window2.left + window2.width
+
+            if ((div1L < div2L && div1R > div2L) ||
+                (div2L < div1L && div2R > div1L) ||
+                (div1L < div2L && div1R > div2R) ||
+                (div1L > div2L && div1R < div2R)) {
+                return true
+            } else {
+                return false
+            }
+
+        }
+
 
         //时间轴属性
         slider() { //滑块初始化
@@ -499,6 +524,9 @@ function main() {
                 let divW = $(this).width()
                 let divH = $(this).height()
 
+                let downX = e.clientX //鼠标落下X
+                let eItemX = downX - left //鼠标距离元素左边界距离
+
                 $(this).css({
                     'position': 'fixed',
                     'top': `${top}px`,
@@ -514,7 +542,7 @@ function main() {
 
                     $(thats).css({
                         'top': `${nowY - divH/2}px`,
-                        'left': `${nowX - divW/2}px`
+                        'left': `${nowX - eItemX}px`
                     })
                 }
 
@@ -575,16 +603,15 @@ function main() {
                         } else if (that.checkHover(e, $(item).find('.trackContent')) &&
                             (copyId == itemId) &&
                             eX - trackX > ($(thats).width()) / 2 &&
-                            trackW - (eX - trackX) > ($(thats).width()) / 2) { //轨道内移动
-                            // debugger
+                            trackW - (eX - trackX) > $(thats).width() / 2) { //轨道内移动
 
                             let flag = false
 
-                            let trackEle = $(thats).prevAll()
+                            let trackEle = $(thats).parent().children()
 
                             for (const it of trackEle) {
                                 // debugger
-                                if (that.checkHover(e, $(it))) {
+                                if (that.checkHoverDiv($(thats), $(it))) {
                                     $(thats).css({
                                         'position': 'absolute',
                                         'top': `0px`,
@@ -599,11 +626,11 @@ function main() {
 
                             if (!flag) {
 
-                                $(thats).attr('data-l', eX - trackX - $(thats).width() / 2)
+                                $(thats).attr('data-l', eX - trackX - eItemX)
                                 $(thats).css({
                                     'position': 'absolute',
                                     'top': `0px`,
-                                    'left': `${eX - trackX - $(thats).width()/2}px`,
+                                    'left': `${$(thats).attr('data-l')}px`,
                                     'width': `${divW}px`,
                                     'z-index': 0
                                 })
@@ -742,40 +769,39 @@ function main() {
                     let left = $(eleW).offset().left
 
                     let moveE = function (e) {
-                        // debugger
+
                         e.preventDefault()
                         e.stopPropagation()
 
                         let nowX = e.clientX
                         let flag = true
 
-                        console.log($(parent).prevAll().length)
-                        if($(parent).prevAll().length != 0) {
-                            for (const item of $(parent).prevAll()) {
-                                
-                                if(!that.checkHover(e, $(item))) {
-                                    flag = false
-                                }
+                        let trackE = $(parent).parent().find('.silderBlock')
+
+
+                        for (const item of trackE) {
+                            if (that.checkHover(e, $(item)) && item != parent) {
+                                $(document).off('mousemove', moveE)
+                                return
                             }
                         }
-                        
-                        if(flag) {
-                            if($(eleW).hasClass('eleWidthR')) {
-                                if(nowX > trackL && nowX < trackL + trackW) {
-                                    $(parent).css({
-                                        'width': `${width + (nowX - left)}`
-                                    })
-                                }
-                            }else {
-                                if(nowX > trackL && nowX < trackL + trackW) {
-                                    let followX = parseFloat($(parent).attr('data-l')) - parseFloat(left - nowX)
-                                    $(parent).css({
-                                        'width': `${width + (left - nowX)}`,
-                                        'left': `${followX}px`
-                                    })
-                                }
+
+                        if ($(eleW).hasClass('eleWidthR')) {
+                            if (nowX > trackL && nowX < trackL + trackW) {
+                                $(parent).css({
+                                    'width': `${width + (nowX - left)}`
+                                })
+                            }
+                        } else {
+                            if (nowX > trackL && nowX < trackL + trackW) {
+                                let followX = parseFloat($(parent).attr('data-l')) - parseFloat(left - nowX)
+                                $(parent).css({
+                                    'width': `${width + (left - nowX)}`,
+                                    'left': `${followX}px`
+                                })
                             }
                         }
+
 
                     }
 

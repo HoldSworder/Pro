@@ -17,6 +17,8 @@ function main() {
             this.moveTrack()
             this.flexEle()
 
+            this.abbrTrack()
+
             this.btnBind()
         }
 
@@ -827,6 +829,57 @@ function main() {
             })
         }
 
+
+        //缩略时间轴
+        abbrTrack() { //初始化滑块
+            $("#abbr-slider")
+                .slider({
+                    min: 0,
+                    max: 100,
+                    range: false,
+                })
+
+                .slider("pips", {
+                    first: "pip",
+                    last: "pip",
+                    rest: false
+                })
+
+            this.abbrBind()
+        }
+
+        abbrBind() {
+            $('#abbr-slider').find('.ui-slider-handle').css('left', '10%')
+            
+            var observer = new MutationObserver(function (mutations, observer) {
+                mutations.forEach(function (mutation) {
+                    let change = parseFloat(mutation.target.style.left) / 10
+
+                    let timeLineW = $('#circles-slider').width()
+                    let range = $('#circles-slider').find('.ui-slider-range')
+                    let handle = $('#circles-slider').find('.ui-slider-handle')
+                    let newPerW = ((range.width() / timeLineW) / change) * timeLineW
+                    let newPer = (range.width() / timeLineW) / change
+
+                    console.log(newPer)
+                    console.log(newPerW)
+                    
+                    range.css('width', newPer)
+                    handle.css('left', newPerW)
+                    $('#nowTimeLine').css('left', newPerW)
+                })
+            })
+            var config = {
+                attributes: true,
+                attributeOldValue: true,
+                attributeFilter: [
+                    'style'
+                ]
+            }
+            var el = $('#abbr-slider').find('.ui-slider-handle')[0]
+            observer.observe(el, config)
+           
+        }
 
 
         btnBind() { //按钮绑定事件

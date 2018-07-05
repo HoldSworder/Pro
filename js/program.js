@@ -403,43 +403,43 @@ function main() {
             //添加时间线已选择时间颜色
             $('#circles-slider').append(html)
 
-            $('#circles-slider').on('mousedown', '.ui-slider-handle', function () { //时间线已选择颜色长度绑定按钮left值
-                $(document).on('mousemove', function () {
-                    let left = $('.ui-slider-handle').css('left')
-                    $('.ui-slider-range').width(left)
-                })
-            })
-
-
-
             this.alignment()
         }
 
-        alignment() { //滑块校准线
+        alignment() { //滑块校准线、range、时间
+            let that = this
             let html = `
                 <div id="nowTimeLine" style="float:left; width: 1px; left: 0; height: 100px; background: #000; z-index: 99; top: 0; position: absolute"></div> 
             `
 
             $('#circles-slider').append(html)
 
-            let boxHeight = $('.trackBox').height()
+            let boxHeight = $('.sliderContainer').height() - 16 + $('.trackBox').height()
             let boxTop = $('#circles-slider').height() + parseFloat($('#circles-slider').css('marginBottom'))
 
             $('#nowTimeLine').css({
-                // 'height': boxHeight,
-                'height': '130px',
+                'height': boxHeight,
                 'top': boxTop
             })
 
-            $('#circles-slider').on('mousedown', '.ui-slider-handle', function () {
-                $(document).on('mousemove', function () {
-                    let width = $('.ui-slider-range').width()
-                    $('#nowTimeLine').css('left', width)
+            let el = $('.ui-slider-handle')[0]
+            function obs(mutation) {
+                let change = parseFloat(mutation.target.style.left)
+                $('.ui-slider-handle').mousedown()
 
-                })
-            })
+                $('#nowTimeLine').css('left', `${change}%`) //时间线
+                $('.ui-slider-range').width(`${change}%`)   //时间条
 
-            $('.ui-slider-handle').mousedown()
+                let totalTime = $('#nowTime').attr('data-t') * 60   //时间显示
+                let nowTime = Math.floor(totalTime * (change / 100))
+
+                let mo = String(Math.floor(nowTime / 60)).length == 1 ? `0${Math.floor(nowTime / 60)}` : Math.floor(nowTime / 60)
+                let yu = String(nowTime % 60).length == 1 ? `0${nowTime % 60}` : nowTime % 60
+
+                $('#nowTime').text(`${mo}:${yu}`)
+            }
+
+            that.observer(el, obs)
 
         }
 
@@ -850,23 +850,45 @@ function main() {
 
         abbrBind() {
             $('#abbr-slider').find('.ui-slider-handle').css('left', '10%')
-            
+
+            var el = $('#abbr-slider').find('.ui-slider-handle')[0]
+            function obs(mutation) {    //监听缩略时间轴变化
+                let change = parseFloat(mutation.target.style.left) / 10
+
+                $('#nowTime').attr('data-t', 60 * change)
+                
+                $('.ui-slider-handle').mousedown()
+                
+                let times = $('#nowTime').attr('data-t')
+                let timeNow = $('#nowTime').text()
+                let timeArr = $('#nowTime').text().split(':')
+                let timeS = timeArr[0] * 60 + timeArr[1]
+                let timePer = timeS / (times * 60)
+                console.log(timePer)
+                
+                $('#circles-slider .ui-slider-handle').css('left', `${timePer}%`)
+                $('#nowTime').text(timeNow)
+            }
+
+            this.observer(el, obs)
+
+        }
+
+
+
+
+
+        btnBind() { //按钮绑定事件
+            let that = this
+            $('#addTrack').on('click', function () {
+                that.newTrack()
+            })
+        }
+
+        observer(el, func) {    //监听属性变化观察者
             var observer = new MutationObserver(function (mutations, observer) {
                 mutations.forEach(function (mutation) {
-                    let change = parseFloat(mutation.target.style.left) / 10
-
-                    let timeLineW = $('#circles-slider').width()
-                    let range = $('#circles-slider').find('.ui-slider-range')
-                    let handle = $('#circles-slider').find('.ui-slider-handle')
-                    let newPerW = ((range.width() / timeLineW) / change) * timeLineW
-                    let newPer = (range.width() / timeLineW) / change
-
-                    console.log(newPer)
-                    console.log(newPerW)
-                    
-                    range.css('width', newPer)
-                    handle.css('left', newPerW)
-                    $('#nowTimeLine').css('left', newPerW)
+                    func(mutation)
                 })
             })
             var config = {
@@ -876,17 +898,8 @@ function main() {
                     'style'
                 ]
             }
-            var el = $('#abbr-slider').find('.ui-slider-handle')[0]
+
             observer.observe(el, config)
-           
-        }
-
-
-        btnBind() { //按钮绑定事件
-            let that = this
-            $('#addTrack').on('click', function () {
-                that.newTrack()
-            })
         }
     }
 

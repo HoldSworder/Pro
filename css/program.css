@@ -129,3 +129,7 @@
     top: 0;
     cursor: w-resize;
 }
+
+#circles-slider {
+    padding: 0;
+}

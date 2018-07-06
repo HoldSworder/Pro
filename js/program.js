@@ -9,6 +9,8 @@ function main() {
         }
 
         init() { //入口
+            $('#ruler').ruler()
+
             this.drag()
             this.showControl()
 
@@ -357,7 +359,7 @@ function main() {
             };
         }
 
-        checkHoverDiv(div1, div2) {
+        checkHoverDiv(div1, div2) { //判断两个元素是否在x轴重合
             // debugger
             div1 = div1[0]
             div2 = div2[0]
@@ -435,6 +437,8 @@ function main() {
 
                 let mo = String(Math.floor(nowTime / 60)).length == 1 ? `0${Math.floor(nowTime / 60)}` : Math.floor(nowTime / 60)
                 let yu = String(nowTime % 60).length == 1 ? `0${nowTime % 60}` : nowTime % 60
+
+                $('.ui-slider-handle').attr('data-t', nowTime)
 
                 $('#nowTime').text(`${mo}:${yu}`)
             }
@@ -848,11 +852,13 @@ function main() {
             this.abbrBind()
         }
 
-        abbrBind() {
+        abbrBind() {    //绑定时间轴
+            
             $('#abbr-slider').find('.ui-slider-handle').css('left', '10%')
 
             var el = $('#abbr-slider').find('.ui-slider-handle')[0]
             function obs(mutation) {    //监听缩略时间轴变化
+                
                 let change = parseFloat(mutation.target.style.left) / 10
 
                 $('#nowTime').attr('data-t', 60 * change)
@@ -864,10 +870,9 @@ function main() {
                 let timeArr = $('#nowTime').text().split(':')
                 let timeS = timeArr[0] * 60 + timeArr[1]
                 let timePer = timeS / (times * 60)
-                console.log(timePer)
                 
-                $('#circles-slider .ui-slider-handle').css('left', `${timePer}%`)
-                $('#nowTime').text(timeNow)
+                $('#circles-slider .ui-slider-handle').css('left', `${timePer <= 100 ? timePer : 100}%`)
+               
             }
 
             this.observer(el, obs)

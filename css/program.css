@@ -80,7 +80,7 @@
 }
 
 .timeLine {
-    width: 80%;
+    width: 65%;
 }
 
 .sliderContainer {
@@ -132,4 +132,9 @@
 
 #circles-slider {
     padding: 0;
+}
+
+.row-right {
+    position: fixed;
+    right: 0;
 }

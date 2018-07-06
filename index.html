@@ -91,18 +91,24 @@
                                 <!-- TAB页 -->
                                 <ul id="myTab" class="nav nav-tabs">
                                     <li id="scene-l" class="active">
-                                        <a href="#scene" data-toggle="tab">场景</a>
+                                        <a href="#scene" data-toggle="tab">素材</a>
                                     </li>
                                     <li id="template-l">
-                                        <a href="#template" data-toggle="tab">模板</a>
+                                        <a href="#template" data-toggle="tab">场景</a>
                                     </li>
                                     <li id="material-l">
-                                        <a href="#material" data-toggle="tab">素材</a>
+                                        <a href="#material" data-toggle="tab">模版</a>
                                     </li>
                                 </ul>
 
                                 <div id="myTabContent" class="tab-content" style="padding-top:20px;">
                                     <div class="tab-pane active" id="scene">
+                                        <select id="itemIndex">
+                                            <option value="0">图片</option>
+                                            <option value="0">图片</option>
+                                            <option value="0">图片</option>
+                                            <option value="0">图片</option>
+                                        </select>
                                         <img src="./img/1.jpg" style="width: 100px; height: 100px;">
                                         <img src="./img/2.jpg" style="width: 100px; height: 100px;">
                                         <img src="./img/3.jpg" style="width: 100px; height: 100px;">
@@ -135,10 +141,7 @@
 <script src="./plugins/Tdrag/Tdrag.min.js"></script>
 <script src="./js/program.js"></script>
 <script>
-    $(document).ready(function () {
-        $('#ruler').ruler();
-        // $('#ruler').ruler('refresh');
-    });
+
 </script>
 
 </html>

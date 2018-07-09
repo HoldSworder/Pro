@@ -1,3 +1,7 @@
+body {
+    background: #e8edf1;
+}
+
 #canvas {
     background-image: url(../img/display_min.jpg);
     background-repeat: repeat;
@@ -137,4 +141,59 @@
 .row-right {
     position: fixed;
     right: 0;
+    border: 1px solid #cbcfd2;
+    padding: 0;
+    border-top: none
+}
+
+
+
+#itemIndex {
+    margin-bottom: 10px;
+}
+
+.material {
+    width: 100px;
+    height: 100px;
+    margin: 5px 0;
+}
+
+#itemList {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    padding: 0 15px;
+}
+
+#materialList {
+    background: #f4f5f5;
+}
+
+.defaultAdd {
+    border: 1px dashed #666;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.defaultAdd img{
+    width: 50px;
+    height: 50px;
+}
+
+.breadcrumb {
+    margin: 0;
+    background: white;
+    padding: 12px 15px;
+}
+
+.breadcrumb a{
+    text-decoration: none;
+    cursor: pointer; 
+}
+
+.timeLineBox {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
 }

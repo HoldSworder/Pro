@@ -21,6 +21,8 @@ function main() {
 
             this.abbrTrack()
 
+            this.repertory()
+
             this.btnBind()
         }
 
@@ -118,7 +120,7 @@ function main() {
             let cloner
             let that
             let thats = this
-            $('#scene').on('mousedown', 'img', function (e) {
+            $('#itemList').on('mousedown', 'img', function (e) {
                 e.preventDefault()
                 let clone = $(this).clone()
                 $(this).after(clone)
@@ -425,14 +427,15 @@ function main() {
             })
 
             let el = $('.ui-slider-handle')[0]
+
             function obs(mutation) {
                 let change = parseFloat(mutation.target.style.left)
                 $('.ui-slider-handle').mousedown()
 
                 $('#nowTimeLine').css('left', `${change}%`) //时间线
-                $('.ui-slider-range').width(`${change}%`)   //时间条
+                $('.ui-slider-range').width(`${change}%`) //时间条
 
-                let totalTime = $('#nowTime').attr('data-t') * 60   //时间显示
+                let totalTime = $('#nowTime').attr('data-t') * 60 //时间显示
                 let nowTime = Math.floor(totalTime * (change / 100))
 
                 let mo = String(Math.floor(nowTime / 60)).length == 1 ? `0${Math.floor(nowTime / 60)}` : Math.floor(nowTime / 60)
@@ -608,8 +611,8 @@ function main() {
                             break
                         } else if (that.checkHover(e, $(item).find('.trackContent')) &&
                             (copyId == itemId) &&
-                            eX - trackX > ($(thats).width()) / 2 &&
-                            trackW - (eX - trackX) > $(thats).width() / 2) { //轨道内移动
+                            eX - trackX > eItemX &&
+                            trackW - (eX - trackX) > $(thats).width() - eItemX) { //轨道内移动
 
                             let flag = false
 
@@ -852,34 +855,44 @@ function main() {
             this.abbrBind()
         }
 
-        abbrBind() {    //绑定时间轴
-            
+        abbrBind() { //绑定时间轴
+
             $('#abbr-slider').find('.ui-slider-handle').css('left', '10%')
 
             var el = $('#abbr-slider').find('.ui-slider-handle')[0]
-            function obs(mutation) {    //监听缩略时间轴变化
-                
-                let change = parseFloat(mutation.target.style.left) / 10
+
+            function obs(mutation) { //监听缩略时间轴变化
+
+                let change = parseFloat(mutation.target.style.left) / (100 / 24)
 
                 $('#nowTime').attr('data-t', 60 * change)
-                
+
                 $('.ui-slider-handle').mousedown()
-                
+
                 let times = $('#nowTime').attr('data-t')
                 let timeNow = $('#nowTime').text()
                 let timeArr = $('#nowTime').text().split(':')
                 let timeS = timeArr[0] * 60 + timeArr[1]
                 let timePer = timeS / (times * 60)
-                
+
                 $('#circles-slider .ui-slider-handle').css('left', `${timePer <= 100 ? timePer : 100}%`)
-               
+
             }
 
             this.observer(el, obs)
 
         }
 
+        abbrCss() { //时间轴样式
 
+        }
+
+
+        //素材仓库
+        repertory() {
+            let bodyH = window.screen.availHeight
+            $('#materialList').css('height', bodyH - $('#myTab').height() - $('#myTabContent .breadcrumb').height())
+        }
 
 
 
@@ -890,7 +903,7 @@ function main() {
             })
         }
 
-        observer(el, func) {    //监听属性变化观察者
+        observer(el, func) { //监听属性变化观察者
             var observer = new MutationObserver(function (mutations, observer) {
                 mutations.forEach(function (mutation) {
                     func(mutation)

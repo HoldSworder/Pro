@@ -6,24 +6,21 @@ function main() {
             this.width = canvas.width()
             this.height = canvas.height()
             this.imgWidth = 128
+            this.typeIndex = ['图片', '视频', '音频', '文本', 'rtsp', '表格', '时钟', '天气', '网页']
         }
 
         init() { //入口
             $('#ruler').ruler()
 
-            this.drag()
-            this.showControl()
+            this.drag() //画布
 
-            this.slider()
-            this.moveEle()
-            this.moveTrack()
-            this.flexEle()
+            this.slider() //时间轴
 
-            this.abbrTrack()
+            this.abbrTrack() //缩略时间轴
 
-            this.repertory()
+            this.repertory() //素材仓库
 
-            this.btnBind()
+            this.btnBind() //按钮绑定
         }
 
         //画布属性
@@ -55,7 +52,7 @@ function main() {
                 $(document).on('mouseup', upE)
             })
 
-
+            this.showControl()
 
         }
 
@@ -149,7 +146,7 @@ function main() {
                         that.remove()
                         cloner.show()
 
-                        if (thats.checkHover(e, $('#canvas'))) {
+                        if (thats.checkHover(e, $('#canvas'))) { //移动到画布进行绘制
 
                             let nowX = e.clientX
                             let nowY = e.clientY
@@ -166,6 +163,43 @@ function main() {
                             $(document).off('mouseup', upE)
                             $(document).off('mousemove', moveE)
 
+                        } else if (thats.checkHover(e, $('.trackBox'))) { //移动到轨道上新增元素并绘制
+                            for (const item of $('.trackBox').children()) {
+                                if ($(item).hasClass('track')) {
+                                    if (thats.checkHover(e, $(item))) {
+                                        let filename
+                                        let path = that[0].src
+                                        if (path.indexOf("/") > 0) //如果包含有"/"号 从最后一个"/"号+1的位置开始截取字符串
+                                        {
+                                            filename = path.substring(path.lastIndexOf("/") + 1, path.length);
+                                        } else {
+                                            filename = path;
+                                        }
+
+                                        let trackContent = $(item).find('.trackContent')
+                                        let leftAll = 0
+                                        for (const i of trackContent.children()) { //有元素 获取最后一个元素的x定位
+                                            let thisX = parseFloat($(i).css('left')) + $(i).width()
+                                            if (thisX > leftAll) {
+                                                leftAll = thisX
+                                            }
+                                        }
+
+                                        let html = `
+                                            <div class="silderBlock" data-l=${leftAll} style='left: ${leftAll}px'>
+                                                ${filename}
+                                            </div>
+                                        `
+
+                                        if (trackContent.children().length == 0) { //轨道为空 绘制图片
+                                            thats.drawImg(that.attr('src'), 0, 0)
+                                            $(item).find('.trackController').attr('data-t', $('#itemIndex').val())
+
+                                        }
+                                        trackContent.append(html)
+                                    }
+                                }
+                            }
                         }
 
                         flag = false
@@ -408,6 +442,10 @@ function main() {
             $('#circles-slider').append(html)
 
             this.alignment()
+            this.moveEle()
+            this.moveTrack()
+            this.flexEle()
+            this.trackTypeObserver()
         }
 
         alignment() { //滑块校准线、range、时间
@@ -462,7 +500,7 @@ function main() {
             }
 
             let html = `
-                <div class="silderBlock" data-l='0'>
+                <div class="silderBlock" data-l='0'}>
                     ${filename}
                 </div>
             `
@@ -471,15 +509,17 @@ function main() {
             let index = lastTrack.attr('id').substr(5)
 
             function recursion(index) { //递归查询空轨道
-
+                debugger
                 index = Number(index)
                 if (index == 1) {
                     if ($(`#track${index}`).children().length == 0) {
                         $(`#track${index}`).append(html)
+                        $(`#track${index}`).parent().find('.trackController').attr('data-t', $('#itemIndex').val())
                         return
                     } else {
                         that.newTrack()
                         $(`#track${index+1}`).append(html)
+                        $(`#track${index+1}`).parent().find('.trackController').attr('data-t', $('#itemIndex').val())
                         return
                     }
                 }
@@ -489,11 +529,13 @@ function main() {
                         recursion(index - 1)
                     } else {
                         $(`#track${index}`).append(html)
+                        $(`#track${index}`).parent().find('.trackController').attr('data-t', $('#itemIndex').val())
                         return
                     }
                 } else {
                     that.newTrack()
                     $(`#track${index+1}`).append(html)
+                    $(`#track${index+1}`).parent().find('.trackController').attr('data-t', $('#itemIndex').val())
                     return
                 }
             }
@@ -504,11 +546,20 @@ function main() {
         }
 
         newTrack() { //新建轨道
-            let index = ($('.track').length) + 1
+            // let index = ($('.track').length) + 1
+
+            let typeIndex = $('#itemIndex').val()
+            let index = 1
+            for (const item of $('.track')) {   //判断重复类型轨道
+                if ($(item).find('.trackController').attr('data-t') == typeIndex) {
+                    index++
+                }
+            }
+
             let html = `
                 <div class="track clearfix">
-                    <div class="trackController col-sm-2">
-                        <span>轨道${index}</span>
+                    <div class="trackController col-sm-2" data-t=${typeIndex}>
+                        <span>${this.typeIndex[typeIndex - 1]}${index}</span>
                         <span class="glyphicon glyphicon glyphicon-align-justify" aria-hidden="true"></span>
                     </div>
                     <div id="track${index}" class="trackContent col-sm-10"></div>
@@ -519,6 +570,8 @@ function main() {
             }
 
             $('.track:last').after(html)
+
+            
         }
 
         moveEle() { //移动元素到其他轨道
@@ -836,6 +889,35 @@ function main() {
             })
         }
 
+        trackTypeObserver() { //监听轨道类型变化
+            let that = this
+            var observer = new MutationObserver(function (mutations, observer) {
+                mutations.forEach(function (mutation) {
+                    let target = $(mutation.target)
+                    let change = target.attr('data-t')
+                    let index = 0
+                    for (const item of $('.track')) {
+                        if ($(item).find('.trackController').attr('data-t') == change) {
+                            index++
+                        }
+                    }
+
+                    target.children().eq(0).text(`${that.typeIndex[change - 1]}${index}`)
+                })
+            })
+            var config = {
+                attributes: true,
+                attributeOldValue: true,
+                attributeFilter: [
+                    'data-t'
+                ]
+            }
+
+            let el = $('.trackController')[0]
+            observer.observe(el, config)
+        }
+
+
 
         //缩略时间轴
         abbrTrack() { //初始化滑块
@@ -853,6 +935,7 @@ function main() {
                 })
 
             this.abbrBind()
+            this.abbrCss()
         }
 
         abbrBind() { //绑定时间轴
@@ -884,15 +967,18 @@ function main() {
         }
 
         abbrCss() { //时间轴样式
-
+            $('.timeLineBox').css('height', $('.timeLine').height() + 14)
         }
 
 
         //素材仓库
-        repertory() {
-            let bodyH = window.screen.availHeight
-            $('#materialList').css('height', bodyH - $('#myTab').height() - $('#myTabContent .breadcrumb').height())
+        repertory() { //素材仓库初始化
+            let bodyH = document.body.clientHeight
+            let height = bodyH - $('#myTab').height()
+
+            $('#myTabContent').css('height', height)
         }
+
 
 
 

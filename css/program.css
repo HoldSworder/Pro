@@ -1,5 +1,6 @@
 body {
     background: #e8edf1;
+    height: 100vh;
 }
 
 #canvas {
@@ -104,6 +105,7 @@ body {
     width: 5%;
     text-align: center;
     cursor: move;
+    overflow: hidden;
 }
 
 .trackBox {
@@ -165,8 +167,9 @@ body {
     padding: 0 15px;
 }
 
-#materialList {
+#myTabContent {
     background: #f4f5f5;
+    overflow-y: auto;
 }
 
 .defaultAdd {
@@ -196,4 +199,14 @@ body {
     position: fixed;
     bottom: 0;
     width: 100%;
+    background: white;
+    left: 0;
+}
+
+#myTab {
+    background: #f4f5f5;
+}
+
+#materialList .breadcrumb a {
+    font-size: 16px;
 }

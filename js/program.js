@@ -509,7 +509,7 @@ function main() {
             let index = lastTrack.attr('id').substr(5)
 
             function recursion(index) { //递归查询空轨道
-                debugger
+                
                 index = Number(index)
                 if (index == 1) {
                     if ($(`#track${index}`).children().length == 0) {
@@ -546,7 +546,7 @@ function main() {
         }
 
         newTrack() { //新建轨道
-            // let index = ($('.track').length) + 1
+            let indexT = ($('.track').length) + 1
 
             let typeIndex = $('#itemIndex').val()
             let index = 1
@@ -562,7 +562,7 @@ function main() {
                         <span>${this.typeIndex[typeIndex - 1]}${index}</span>
                         <span class="glyphicon glyphicon glyphicon-align-justify" aria-hidden="true"></span>
                     </div>
-                    <div id="track${index}" class="trackContent col-sm-10"></div>
+                    <div id="track${indexT}" class="trackContent col-sm-10"></div>
                 </div>
             `
             if ($('.trackSeize').length != 0) {
@@ -574,7 +574,7 @@ function main() {
             
         }
 
-        moveEle() { //移动元素到其他轨道
+        moveEle() { //在轨道上移动元素
             let that = this
             $('.trackBox').on('mousedown', '.silderBlock', function (e) {
                 e.preventDefault()

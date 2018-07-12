@@ -31,10 +31,10 @@
 
                             </div>
 
-                            
+
                         </div>
-                        
-                        
+
+
                         <div class="timeLineBox">
                             <div class="timeLine clearfix">
                                 <div class="sliderContainer row">
@@ -57,39 +57,39 @@
                                         </div>
                                         <div id="track1" class="trackContent col-sm-10"></div>
                                     </div>
-    
+
                                     <div class="trackSeize clearfix">
                                         <div class="trackController col-sm-2">
                                             <span></span>
-    
+
                                         </div>
                                         <div id="track0" class="trackContent col-sm-10"></div>
                                     </div>
-    
+
                                     <div class="trackSeize clearfix">
                                         <div class="trackController col-sm-2">
                                             <span></span>
-    
+
                                         </div>
                                         <div id="track0" class="trackContent col-sm-10"></div>
                                     </div>
-    
+
                                     <div class="trackSeize clearfix">
                                         <div class="trackController col-sm-2">
                                             <span></span>
-    
+
                                         </div>
                                         <div id="track0" class="trackContent col-sm-10"></div>
                                     </div>
                                 </div>
-    
+
                                 <div class="abbrTrack row">
                                     <div id="abbr-slider" class="col-sm-2" style="margin: 1em 0; background: #cdd4d7;"></div>
                                     <div class="trackContent col-sm-10"></div>
                                 </div>
                             </div>
                         </div>
-                        
+
 
                         <div class="row-right col-sm-3">
                             <div class="nav-tabs-custom">
@@ -112,7 +112,7 @@
                                             <li>
                                                 <a>素材</a>
                                             </li>
-    
+
                                         </ol>
                                         <select id="itemIndex" class="form-control">
                                             <option value="1">图片</option>
@@ -147,9 +147,92 @@
                                 </div>
 
                                 <div id="ediBox">
-                                    <div id="imgEdi">
-                                        
+                                    <div id="imgEdi" class="hidden">
+                                        <form>
+                                            <div class="form-group clearfix" style="margin-top: 10px">
+                                                <div class="col-sm-6">
+                                                    <div>开始</div>
+                                                    <div>
+
+                                                        <input type="text" name="startTime" class="form-control" min="0" />
+
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-sm-6">
+                                                    <div>结束</div>
+                                                    <div>
+
+                                                        <input type="number" name="endTime" class="form-control" min="0" />
+
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>切换效果</div>
+                                                <select class="form-control">
+                                                    <option value="1">11</option>
+                                                    <option value="2">22</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>切换效果</div>
+                                                <select class="form-control">
+                                                    <option value="1">11</option>
+                                                    <option value="2">22</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group col-sm-10 saveEdi">
+                                                <button class="btn btn-primary">保存</button>
+                                            </div>
+
+                                        </form>
                                     </div>
+
+                                    <div id="videoEdi">
+                                        <form>
+                                            <div class="form-group clearfix " style="margin-top: 10px">
+                                                <div class="col-sm-6">
+                                                    <div>开始</div>
+                                                    <div>
+
+                                                        <input type="text" name="startTime" class="form-control" min="0" />
+
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-sm-6">
+                                                    <div>结束</div>
+                                                    <div>
+
+                                                        <input type="number" name="endTime" class="form-control" min="0" />
+
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>播放时间</div>
+                                                <div id="video-slider" style="margin: 1em 0; background: #cdd4d7;"></div>
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>视频音量</div>
+                                                <div id="video-vol-slider" style="margin: 1em 0; background: #cdd4d7;"></div>
+                                            </div>
+
+
+                                            <div class="form-group col-sm-10 saveEdi">
+                                                <button class="btn btn-primary">保存</button>
+                                            </div>
+
+                                        </form>
+                                    </div>
+
+
                                 </div>
 
                             </div>

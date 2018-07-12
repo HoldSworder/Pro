@@ -975,8 +975,39 @@ function main() {
         repertory() { //素材仓库初始化
             let bodyH = document.body.clientHeight
             let height = bodyH - $('#myTab').height()
+            let top = $('#myTab').height() + $('.breadcrumb').height() + parseFloat($('.breadcrumb').css('padding-top')) + parseFloat($('.breadcrumb').css('padding-bottom'))
 
             $('#myTabContent').css('height', height)
+            $('#ediBox').css({'height': height, 'top': top})
+
+            this.videoEdiInit()
+        }
+
+        videoEdiInit() {
+            $('#video-slider')
+            .slider({
+                min: 0,
+                max: 100,
+                range: true,
+            })
+
+            .slider("pips", {
+                // first: "pip",
+                // last: "pip"
+                rest: false
+            })
+
+            $('#video-vol-slider')
+            .slider({
+                min: 0,
+                max: 100,
+                range: false,
+            })
+            .slider("pips", {
+                // first: "pip",
+                // last: "pip"
+                rest: false
+            }).slider("float");
         }
 
 

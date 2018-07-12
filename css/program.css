@@ -210,3 +210,13 @@ body {
 #materialList .breadcrumb a {
     font-size: 16px;
 }
+
+#ediBox {
+    position: absolute;
+    background: #f4f5f5;
+    width: 100%;
+}
+
+.saveEdi {
+    margin-top: 10px;
+}

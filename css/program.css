@@ -220,3 +220,11 @@ body {
 .saveEdi {
     margin-top: 10px;
 }
+
+#videoEdi span {
+    margin-right: 10px;
+}
+
+#ediBox {
+    overflow-y: auto;
+}

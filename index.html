@@ -12,6 +12,7 @@
     <link href="https://cdn.bootcss.com/jQuery-ui-Slider-Pips/1.11.4/jquery-ui-slider-pips.css" rel="stylesheet">
     <link rel="stylesheet" href="./plugins/jqueryui-ruler/css/jquery.ui.ruler.css">
     <link rel="stylesheet" href="./plugins/jqSlider/jquery-ui-slider-pips.min.css">
+    <link rel="stylesheet" href="./plugins/switch/bootstrap-switch.min.css">
     <link rel="stylesheet" href="./css/program.css">
 </head>
 
@@ -192,7 +193,7 @@
                                         </form>
                                     </div>
 
-                                    <div id="videoEdi">
+                                    <div id="videoEdi" class="hidden">
                                         <form>
                                             <div class="form-group clearfix " style="margin-top: 10px">
                                                 <div class="col-sm-6">
@@ -224,6 +225,16 @@
                                                 <div id="video-vol-slider" style="margin: 1em 0; background: #cdd4d7;"></div>
                                             </div>
 
+                                            <div class="form-group col-sm-10">
+                                                <span>视频</span>
+                                                <input type="checkbox" id="video-video-check" checked data-on-text="YES" data-off-text="NO" />
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <span>音频</span>
+                                                <input type="checkbox" id="video-audio-check" checked data-on-text="YES" data-off-text="NO" />
+                                            </div>
+
 
                                             <div class="form-group col-sm-10 saveEdi">
                                                 <button class="btn btn-primary">保存</button>
@@ -232,8 +243,101 @@
                                         </form>
                                     </div>
 
+                                    <div id="audioEdi" class="hidden">
+                                        <form>
+                                            <div class="form-group clearfix" style="margin-top: 10px">
+                                                <div class="col-sm-6">
+                                                    <div>开始</div>
+                                                    <div>
+
+                                                        <input type="text" name="startTime" class="form-control" min="0" />
+
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-sm-6">
+                                                    <div>结束</div>
+                                                    <div>
+
+                                                        <input type="number" name="endTime" class="form-control" min="0" />
+
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>播放时间</div>
+                                                <div id="audio-slider" style="margin: 1em 0; background: #cdd4d7;"></div>
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>视频音量</div>
+                                                <div id="audio-vol-slider" style="margin: 1em 0; background: #cdd4d7;"></div>
+                                            </div>
+
+                                            <div class="form-group col-sm-10 saveEdi">
+                                                <button class="btn btn-primary">保存</button>
+                                            </div>
+
+                                        </form>
+                                    </div>
+
+                                    <div id="textEdi" >
+                                        <form>
+                                            <div class="form-group clearfix" style="margin-top: 10px">
+                                                <div class="col-sm-6">
+                                                    <div>开始</div>
+                                                    <div>
+
+                                                        <input type="text" name="startTime" class="form-control" min="0" />
+
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-sm-6">
+                                                    <div>结束</div>
+                                                    <div>
+
+                                                        <input type="number" name="endTime" class="form-control" min="0" />
+
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>文本内容</div>
+                                                <textarea class="form-control" rows="3">
+
+                                                </textarea>
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>对齐方式</div>
+                                                <select class="form-control">
+                                                    <option value="1">左对齐</option>
+                                                    <option value="2">居中</option>
+                                                    <option value="3">右对齐</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>字体</div>
+                                                <select class="form-control">
+                                                    <option value="1">111</option>
+                                                    <option value="2">222</option>
+                                                    <option value="3">333</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group col-sm-10 saveEdi">
+                                                <button class="btn btn-primary">保存</button>
+                                            </div>
+
+                                        </form>
+                                    </div>
 
                                 </div>
+
 
                             </div>
                         </div>
@@ -249,6 +353,7 @@
 <script src="https://cdn.bootcss.com/jqueryui/1.12.1/jquery-ui.min.js"></script>
 <script src="./plugins/jqSlider/jquery-ui-slider-pips.js"></script>
 <script src="./plugins/jqueryui-ruler/js/jquery.ui.ruler.js"></script>
+<script src="./plugins/switch/bootstrap-switch.min.js"></script>
 <script src="./plugins/Tdrag/Tdrag.min.js"></script>
 <script src="./js/program.js"></script>
 <script>

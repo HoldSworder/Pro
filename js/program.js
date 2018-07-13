@@ -471,7 +471,7 @@ function main() {
                 $('.ui-slider-handle').mousedown()
 
                 $('#nowTimeLine').css('left', `${change}%`) //时间线
-                $('.ui-slider-range').width(`${change}%`) //时间条
+                $('#circles-slider .ui-slider-range').width(`${change}%`) //时间条
 
                 let totalTime = $('#nowTime').attr('data-t') * 60 //时间显示
                 let nowTime = Math.floor(totalTime * (change / 100))
@@ -981,35 +981,48 @@ function main() {
             $('#ediBox').css({'height': height, 'top': top})
 
             this.videoEdiInit()
+            this.audioEdiInit()
         }
 
         videoEdiInit() {
-            $('#video-slider')
-            .slider({
+            $('#video-slider').slider({
                 min: 0,
                 max: 100,
                 range: true,
-            })
-
-            .slider("pips", {
-                // first: "pip",
-                // last: "pip"
+            }).slider("pips", {
                 rest: false
             })
 
-            $('#video-vol-slider')
-            .slider({
+            $('#video-vol-slider').slider({
                 min: 0,
                 max: 100,
                 range: false,
-            })
-            .slider("pips", {
-                // first: "pip",
-                // last: "pip"
+            }).slider("pips", {
                 rest: false
-            }).slider("float");
+            }).slider("float")
+
+
+            $('#video-video-check').bootstrapSwitch()
+            $('#video-audio-check').bootstrapSwitch()
         }
 
+        audioEdiInit() {
+            $('#audio-slider').slider({
+                min: 0,
+                max: 100,
+                range: true,
+            }).slider("pips", {
+                rest: false
+            })
+
+            $('#audio-vol-slider').slider({
+                min: 0,
+                max: 100,
+                range: false,
+            }).slider("pips", {
+                rest: false
+            }).slider("float")
+        }
 
 
 

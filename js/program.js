@@ -980,6 +980,8 @@ function main() {
             $('#myTabContent').css('height', height)
             $('#ediBox').css({'height': height, 'top': top})
 
+            $('.checkInit').bootstrapSwitch()
+
             this.videoEdiInit()
             this.audioEdiInit()
         }

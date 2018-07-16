@@ -228,3 +228,8 @@ body {
 #ediBox {
     overflow-y: auto;
 }
+
+.inline-input {
+    display: inline-block ;
+    width: initial ;
+}

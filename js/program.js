@@ -974,8 +974,9 @@ function main() {
         //素材仓库
         repertory() { //素材仓库初始化
             let bodyH = document.body.clientHeight
-            let height = bodyH - $('#myTab').height()
+            // let height = bodyH - $('#myTab').height()
             let top = $('#myTab').height() + $('.breadcrumb').height() + parseFloat($('.breadcrumb').css('padding-top')) + parseFloat($('.breadcrumb').css('padding-bottom'))
+            let height = bodyH - top
 
             $('#myTabContent').css('height', height)
             $('#ediBox').css({'height': height, 'top': top})

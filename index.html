@@ -171,7 +171,7 @@
                                             </div>
 
                                             <div class="form-group col-sm-10">
-                                                <div>切换效果</div>
+                                                <div>文字特效</div>
                                                 <select class="form-control">
                                                     <option value="1">11</option>
                                                     <option value="2">22</option>
@@ -282,7 +282,7 @@
                                         </form>
                                     </div>
 
-                                    <div id="textEdi" >
+                                    <div id="textEdi" class="hidden">
                                         <form>
                                             <div class="form-group clearfix" style="margin-top: 10px">
                                                 <div class="col-sm-6">
@@ -360,10 +360,37 @@
 
                                             <div class="form-group col-sm-10">
                                                 <div>播放速度</div>
+
+                                                <select class="form-control">
+                                                    <option value="1">111</option>
+                                                    <option value="2">222</option>
+                                                    <option value="3">333</option>
+                                                </select>
+
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>停留时间</div>
                                                 <div class="input-group">
                                                     <input type="number" class="form-control inline-input" min="0">
                                                     <div class="input-group-addon">秒</div>
                                                 </div>
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>切换效果</div>
+                                                <select class="form-control">
+                                                    <option value="1">11</option>
+                                                    <option value="2">22</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>文字特效</div>
+                                                <select class="form-control">
+                                                    <option value="1">11</option>
+                                                    <option value="2">22</option>
+                                                </select>
                                             </div>
 
                                             <div class="form-group col-sm-10 saveEdi">
@@ -373,7 +400,177 @@
                                         </form>
                                     </div>
 
+                                    <div id="rtspEdi" class="hidden">
+                                        <form>
+                                            <div class="form-group clearfix" style="margin-top: 10px">
+                                                <div class="col-sm-6">
+                                                    <div>开始</div>
+                                                    <div>
+
+                                                        <input type="text" name="startTime" class="form-control" min="0" />
+
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-sm-6">
+                                                    <div>结束</div>
+                                                    <div>
+
+                                                        <input type="number" name="endTime" class="form-control" min="0" />
+
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>协议</div>
+                                                <select class="form-control">
+                                                    <option value="0">rtsp</option>
+                                                    <option value="1">rtmp</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>链接地址</div>
+                                                <input class="form-control" type="text">
+
+                                                </input>
+                                            </div>
+
+                                            <div class="form-group col-sm-10 saveEdi">
+                                                <button class="btn btn-primary">保存</button>
+                                            </div>
+
+                                        </form>
+                                    </div>
                                     
+                                    <div id="tabelEdi" class="hidden">
+                                        <form>
+                                            <div class="form-group clearfix" style="margin-top: 10px">
+                                                <div class="col-sm-6">
+                                                    <div>开始</div>
+                                                    <div>
+
+                                                        <input type="text" name="startTime" class="form-control" min="0" />
+
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-sm-6">
+                                                    <div>结束</div>
+                                                    <div>
+
+                                                        <input type="number" name="endTime" class="form-control" min="0" />
+
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>表格高度</div>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control inline-input" min="0">
+                                                    <div class="input-group-addon">px</div>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>表格宽度</div>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control inline-input" min="0">
+                                                    <div class="input-group-addon">px</div>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>包含的列</div>
+                                                <select class="form-control">
+                                                    <option value="1">11</option>
+                                                    <option value="2">22</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>列名</div>
+                                                <select class="form-control">
+                                                    <option value="1">11</option>
+                                                    <option value="2">22</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>mq链接地址</div>
+                                                <input class="form-control" type="text">
+
+                                                </input>
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>消息队列名称</div>
+                                                <input class="form-control" type="text">
+
+                                                </input>
+                                            </div>
+
+                                            
+                                            <div class="form-group col-sm-10">
+                                                <div>列样式</div>
+                                                <select class="form-control">
+                                                    <option value="1">11</option>
+                                                    <option value="2">22</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group col-sm-10 saveEdi">
+                                                <button class="btn btn-primary">保存</button>
+                                            </div>
+
+                                        </form>
+                                    </div>
+
+                                    <div id="clockEdi" class="">
+                                        <form>
+                                            <div class="form-group clearfix" style="margin-top: 10px">
+                                                <div class="col-sm-6">
+                                                    <div>开始</div>
+                                                    <div>
+
+                                                        <input type="text" name="startTime" class="form-control" min="0" />
+
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-sm-6">
+                                                    <div>结束</div>
+                                                    <div>
+
+                                                        <input type="number" name="endTime" class="form-control" min="0" />
+
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>协议</div>
+                                                <select class="form-control">
+                                                    <option value="0">rtsp</option>
+                                                    <option value="1">rtmp</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>链接地址</div>
+                                                <input class="form-control" type="text">
+
+                                                </input>
+                                            </div>
+
+                                            <div class="form-group col-sm-10 saveEdi">
+                                                <button class="btn btn-primary">保存</button>
+                                            </div>
+
+                                        </form>
+                                    </div>
                                 </div>
 
 

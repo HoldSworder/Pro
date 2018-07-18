@@ -167,6 +167,7 @@ function main() {
                             for (const item of $('.trackBox').children()) {
                                 if ($(item).hasClass('track')) {
                                     if (thats.checkHover(e, $(item))) {
+                                        debugger
                                         let filename
                                         let path = that[0].src
                                         if (path.indexOf("/") > 0) //如果包含有"/"号 从最后一个"/"号+1的位置开始截取字符串
@@ -186,7 +187,7 @@ function main() {
                                         }
 
                                         let html = `
-                                            <div class="silderBlock" data-l=${leftAll} style='left: ${leftAll}px'>
+                                            <div class="silderBlock" data-l=${leftAll} data-t=${$('#itemIndex').val()} style='left: ${leftAll}px'>
                                                 ${filename}
                                             </div>
                                         `
@@ -500,7 +501,7 @@ function main() {
             }
 
             let html = `
-                <div class="silderBlock" data-l='0'}>
+                <div class="silderBlock" data-l='0' data-t=${$('#itemIndex').val()}>
                     ${filename}
                 </div>
             `
@@ -977,8 +978,9 @@ function main() {
             // let height = bodyH - $('#myTab').height()
             let top = $('#myTab').height() + $('.breadcrumb').height() + parseFloat($('.breadcrumb').css('padding-top')) + parseFloat($('.breadcrumb').css('padding-bottom'))
             let height = bodyH - top
+            let contentH = bodyH - $('#myTab').height()
 
-            $('#myTabContent').css('height', height)
+            $('#myTabContent').css('height', contentH)
             $('#ediBox').css({'height': height, 'top': top})
 
             $('.checkInit').bootstrapSwitch()

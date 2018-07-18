@@ -147,7 +147,7 @@
                                     <div id="cloneBox"></div>
                                 </div>
 
-                                <div id="ediBox">
+                                <div id="ediBox" class="hidden">
                                     <div id="imgEdi" class="hidden">
                                         <form>
                                             <div class="form-group clearfix" style="margin-top: 10px">
@@ -528,7 +528,7 @@
                                         </form>
                                     </div>
 
-                                    <div id="clockEdi" class="">
+                                    <div id="clockEdi" class="hidden">
                                         <form>
                                             <div class="form-group clearfix" style="margin-top: 10px">
                                                 <div class="col-sm-6">
@@ -551,18 +551,97 @@
                                             </div>
 
                                             <div class="form-group col-sm-10">
-                                                <div>协议</div>
+                                                <div>时钟样式</div>
                                                 <select class="form-control">
-                                                    <option value="0">rtsp</option>
-                                                    <option value="1">rtmp</option>
+                                                    <option value="1">11</option>
+                                                    <option value="2">22</option>
                                                 </select>
                                             </div>
 
+                                            <div class="form-group col-sm-10 saveEdi">
+                                                <button class="btn btn-primary">保存</button>
+                                            </div>
+
+                                        </form>
+                                    </div>
+
+                                    <div id="weatherEdi" class="hidden">
+                                        <form>
+                                            <div class="form-group clearfix" style="margin-top: 10px">
+                                                <div class="col-sm-6">
+                                                    <div>开始</div>
+                                                    <div>
+
+                                                        <input type="text" name="startTime" class="form-control" min="0" />
+
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-sm-6">
+                                                    <div>结束</div>
+                                                    <div>
+
+                                                        <input type="number" name="endTime" class="form-control" min="0" />
+
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                             <div class="form-group col-sm-10">
-                                                <div>链接地址</div>
+                                                <div>天气样式</div>
+                                                <select class="form-control">
+                                                    <option value="1">11</option>
+                                                    <option value="2">22</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group col-sm-10 saveEdi">
+                                                <button class="btn btn-primary">保存</button>
+                                            </div>
+
+                                        </form>
+                                    </div>
+
+                                    <div id="htmlEdi" class="hidden">
+                                        <form>
+                                            <div class="form-group clearfix" style="margin-top: 10px">
+                                                <div class="col-sm-6">
+                                                    <div>开始</div>
+                                                    <div>
+
+                                                        <input type="text" name="startTime" class="form-control" min="0" />
+
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-sm-6">
+                                                    <div>结束</div>
+                                                    <div>
+
+                                                        <input type="number" name="endTime" class="form-control" min="0" />
+
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>网页地址</div>
                                                 <input class="form-control" type="text">
 
                                                 </input>
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>透明度</div>
+                                                <input type="range" >
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>溢出处理方式</div>
+                                                <select class="form-control">
+                                                    <option value="1">滚动条</option>
+                                                    <option value="2">隐藏</option>
+                                                </select>
                                             </div>
 
                                             <div class="form-group col-sm-10 saveEdi">

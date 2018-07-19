@@ -56,60 +56,6 @@ function main() {
 
         }
 
-        flexImg() { //缩放一
-            let checkFlag = false
-            let startX
-            let startY
-            let that
-
-            this.canvas.on('click', '.canvasDiv', function (e) {
-                e.stopPropagation()
-
-                if ($(this).children().length <= 2) {
-                    let html = `
-                        <div class='flexBtn flexBtnLeft' style="width: 5px; height: 5px; position: absolute; background: white; top: 0; left: 0; border: 1px solid black" z-index: 9999;></div>
-                        <div class='flexBtn flexBtnRight' style="width: 5px; height: 5px; position: absolute; background: white; top: 0; right: 0; border: 1px solid black" z-index: 9999;></div>
-                        <div class='flexBtn flexBtnRight' style="width: 5px; height: 5px; position: absolute; background: white; bottom: 0; left: 0; border: 1px solid black" z-index: 9999;></div>
-                        <div class='flexBtn flexBtnLeft' style="width: 5px; height: 5px; position: absolute; background: white; bottom: 0; right: 0; border: 1px solid black" z-index: 9999;></div>
-                    `
-                    $(this).append(html)
-                    that = $(this)
-                }
-
-                $('.flexBtn').on('mousedown', function (ev) {
-                    ev.stopPropagation()
-
-                    startX = ev.clientX
-                    startY = ev.clientY
-
-                    checkFlag = true
-                })
-
-            })
-
-            $(document).on('mousemove', function (ev) {
-                ev.stopPropagation()
-
-                if (checkFlag) {
-                    let nowX = ev.clientX
-                    let nowY = ev.clientY
-
-                    let widthN = that.find('img').width()
-
-                    that.find('img').width(widthN + (nowX - startX) / 20)
-                }
-            })
-
-            $(document).on('mouseup', function (ev) {
-                ev.stopPropagation()
-
-                if (checkFlag) {
-                    checkFlag = false
-                }
-            })
-
-        }
-
         drag() { //拖动绘制属性
             let top
             let left
@@ -141,6 +87,7 @@ function main() {
 
                 let upE = function (e) {
                     e.preventDefault()
+                    let nameId = (new Date()).getTime().toString()
 
                     if (flag) {
                         that.remove()
@@ -233,7 +180,7 @@ function main() {
 
         }
 
-        resize(oparent, handle, isleft, istop, lookx, looky) { //缩放函数
+        resize(oparent, handle, isleft, istop, lookx, looky) { //缩放属性
 
             let that = this
             let disX = 0;
@@ -346,6 +293,7 @@ function main() {
                 let index = $('#canvas').children().length
                 e.stopPropagation()
 
+                $('.flexBtn').remove()
                 if ($(this).children().length <= 2) {
                     let html = `
                         <div class='flexBtn flexBtnLeft' id='resizeLT${index}' style="width: 5px; height: 5px; position: absolute; background: white; top: 0; left: 0; border: 1px solid black" z-index: 9999;></div>
@@ -510,7 +458,7 @@ function main() {
             let index = lastTrack.attr('id').substr(5)
 
             function recursion(index) { //递归查询空轨道
-                
+
                 index = Number(index)
                 if (index == 1) {
                     if ($(`#track${index}`).children().length == 0) {
@@ -551,7 +499,7 @@ function main() {
 
             let typeIndex = $('#itemIndex').val()
             let index = 1
-            for (const item of $('.track')) {   //判断重复类型轨道
+            for (const item of $('.track')) { //判断重复类型轨道
                 if ($(item).find('.trackController').attr('data-t') == typeIndex) {
                     index++
                 }
@@ -572,7 +520,7 @@ function main() {
 
             $('.track:last').after(html)
 
-            
+
         }
 
         moveEle() { //在轨道上移动元素
@@ -798,14 +746,23 @@ function main() {
             })
         }
 
-        flexEle() { //元素伸缩属性
+        flexEle() { //轨道元素点击事件 添加伸缩属性 读取元素信息
             let that = this
+            
+
+            $('#showBox').on('click', function() {
+                $('#ediBox').addClass('hidden')
+                $('#ediBox').children().addClass('hidden')
+                $('#breadcrumb').find('.active').remove()
+            })
+
             $('.trackBox').on('click', '.silderBlock', function () {
                 let parent = this
                 let trackL = $(this).parent().offset().left
                 let trackW = $(this).parent().width()
                 let divW = $(this).width()
                 let divH = $(this).height()
+                let thisT = $(this).attr('data-t')
 
                 $('.checkEle').removeClass('checkEle')
                 $(this).addClass('checkEle')
@@ -820,8 +777,17 @@ function main() {
                     $(this).append(html)
                 }
 
+                $('#ediBox').removeClass('hidden')
+                $('#ediBox').children().eq(thisT - 1).removeClass('hidden')
+                $('#breadcrumb').find('.active').remove()
+                $('#breadcrumb').append(`
+                    <li class="active">${that.typeIndex[thisT - 1]}</li>
+                `)
 
-                $(this).on('mousedown', '.eleWidth', function (e) {
+                
+
+
+                $(this).on('mousedown', '.eleWidth', function (e) { //轨道元素拉伸属性
                     e.preventDefault()
                     e.stopPropagation()
 
@@ -981,7 +947,10 @@ function main() {
             let contentH = bodyH - $('#myTab').height()
 
             $('#myTabContent').css('height', contentH)
-            $('#ediBox').css({'height': height, 'top': top})
+            $('#ediBox').css({
+                'height': height,
+                'top': top
+            })
 
             $('.checkInit').bootstrapSwitch()
 

@@ -24,11 +24,11 @@ function main() {
         }
 
         //画布属性
-        drawImg(imgPath, x, y) { //在画布上绘制元素
+        drawImg(imgPath,id, x, y) { //在画布上绘制元素
             let index = $('#canvas').children().length
             let html = ''
             html += `
-                <div class="canvasDiv " id="div${index}" style="top: ${y}px; left: ${x}px; position: absolute; overflow: hidden; width: auto; height: auto;">
+                <div class="canvasDiv" data-i="${id}" id="div${index}" style="top: ${y}px; left: ${x}px; position: absolute; overflow: hidden; width: auto; height: auto;">
                     <img src=${imgPath} class='canvasChild' style='width: ${this.imgWidth}px; '>
                 </div>    
                 `
@@ -104,8 +104,8 @@ function main() {
                             let imgX = that.width()
                             let imgY = that.height()
 
-                            thats.drawImg(that.attr('src'), nowX - canX - imgX / 2, nowY - canY - imgY / 2)
-                            thats.sliderEle(that)
+                            thats.drawImg(that.attr('src'), nameId, nowX - canX - imgX / 2, nowY - canY - imgY / 2)
+                            thats.sliderEle(that, nameId)
 
                             $(document).off('mouseup', upE)
                             $(document).off('mousemove', moveE)
@@ -114,7 +114,7 @@ function main() {
                             for (const item of $('.trackBox').children()) {
                                 if ($(item).hasClass('track')) {
                                     if (thats.checkHover(e, $(item))) {
-                                        debugger
+                                        
                                         let filename
                                         let path = that[0].src
                                         if (path.indexOf("/") > 0) //如果包含有"/"号 从最后一个"/"号+1的位置开始截取字符串
@@ -134,13 +134,13 @@ function main() {
                                         }
 
                                         let html = `
-                                            <div class="silderBlock" data-l=${leftAll} data-t=${$('#itemIndex').val()} style='left: ${leftAll}px'>
+                                            <div class="silderBlock" data-i=${nameId} data-l=${leftAll} data-t=${$('#itemIndex').val()} style='left: ${leftAll}px'>
                                                 ${filename}
                                             </div>
                                         `
 
                                         if (trackContent.children().length == 0) { //轨道为空 绘制图片
-                                            thats.drawImg(that.attr('src'), 0, 0)
+                                            thats.drawImg(that.attr('src'),nameId , 0, 0)
                                             $(item).find('.trackController').attr('data-t', $('#itemIndex').val())
 
                                         }
@@ -437,7 +437,7 @@ function main() {
 
         }
 
-        sliderEle(img) { //绑定元素绘制 并生成轨道
+        sliderEle(img, id) { //绑定元素绘制 并生成轨道
             let filename
             let that = this
             let path = img[0].src
@@ -449,7 +449,7 @@ function main() {
             }
 
             let html = `
-                <div class="silderBlock" data-l='0' data-t=${$('#itemIndex').val()}>
+                <div class="silderBlock" data-l='0' data-i="${id}" data-t=${$('#itemIndex').val()}>
                     ${filename}
                 </div>
             `
@@ -816,6 +816,7 @@ function main() {
                         }
 
                         if ($(eleW).hasClass('eleWidthR')) {
+                            
                             if (nowX > trackL && nowX < trackL + trackW) {
                                 $(parent).css({
                                     'width': `${width + (nowX - left)}`

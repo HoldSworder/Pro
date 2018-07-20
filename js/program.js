@@ -778,6 +778,7 @@ function main() {
                 }
 
                 $('#ediBox').removeClass('hidden')
+                $('#ediBox').children().addClass('hidden')
                 $('#ediBox').children().eq(thisT - 1).removeClass('hidden')
                 $('#breadcrumb').find('.active').remove()
                 $('#breadcrumb').append(`

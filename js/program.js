@@ -24,7 +24,7 @@ function main() {
         }
 
         //画布属性
-        drawImg(imgPath,id, x, y) { //在画布上绘制元素
+        drawImg(imgPath, id, x, y) { //在画布上绘制元素
             let index = $('#canvas').children().length
             let html = ''
             html += `
@@ -114,7 +114,7 @@ function main() {
                             for (const item of $('.trackBox').children()) {
                                 if ($(item).hasClass('track')) {
                                     if (thats.checkHover(e, $(item))) {
-                                        
+
                                         let filename
                                         let path = that[0].src
                                         if (path.indexOf("/") > 0) //如果包含有"/"号 从最后一个"/"号+1的位置开始截取字符串
@@ -140,7 +140,7 @@ function main() {
                                         `
 
                                         if (trackContent.children().length == 0) { //轨道为空 绘制图片
-                                            thats.drawImg(that.attr('src'),nameId , 0, 0)
+                                            thats.drawImg(that.attr('src'), nameId, 0, 0)
                                             $(item).find('.trackController').attr('data-t', $('#itemIndex').val())
 
                                         }
@@ -293,16 +293,25 @@ function main() {
                 let index = $('#canvas').children().length
                 e.stopPropagation()
 
+                let dataId = $(thats).attr('data-i')
+                let trackEle = $('.trackBox').find(`div[data-i=${dataId}]`)
+                if (!trackEle.hasClass('checkEle')) {
+                    trackEle.click()
+                }
+
                 $('.flexBtn').remove()
                 if ($(this).children().length <= 2) {
                     let html = `
                         <div class='flexBtn flexBtnLeft' id='resizeLT${index}' style="width: 5px; height: 5px; position: absolute; background: white; top: 0; left: 0; border: 1px solid black" z-index: 9999;></div>
-                        <div class='flexBtn flexBtnRight ' id='resizeRT${index}' style="width: 5px; height: 5px; position: absolute; background: white; top: 0; right: 0; border: 1px solid black" z-index: 9999;></div>
-                        <div class='flexBtn flexBtnRight ' id='resizeLB${index}' style="width: 5px; height: 5px; position: absolute; background: white; bottom: 0; left: 0; border: 1px solid black" z-index: 9999;></div>
+                        <div class='flexBtn flexBtnRight' id='resizeRT${index}' style="width: 5px; height: 5px; position: absolute; background: white; top: 0; right: 0; border: 1px solid black" z-index: 9999;></div>
+                        <div class='flexBtn flexBtnRight' id='resizeLB${index}' style="width: 5px; height: 5px; position: absolute; background: white; bottom: 0; left: 0; border: 1px solid black" z-index: 9999;></div>
                         <div class='flexBtn flexBtnLeft ' id='resizeRB${index}' style="width: 5px; height: 5px; position: absolute; background: white; bottom: 0; right: 0; border: 1px solid black" z-index: 9999;></div>
                     `
                     $(this).append(html)
                     // that = $(this)
+                    $('.checkCanvas').removeClass('checkCanvas')
+                    $(this).addClass('checkCanvas')
+                    
 
                     let resizeRB = document.querySelector(`#resizeRB${index}`)
                     let resizeRT = document.querySelector(`#resizeRT${index}`)
@@ -748,9 +757,9 @@ function main() {
 
         flexEle() { //轨道元素点击事件 添加伸缩属性 读取元素信息
             let that = this
-            
 
-            $('#showBox').on('click', function() {
+
+            $('#showBox').on('click', function () {
                 $('#ediBox').addClass('hidden')
                 $('#ediBox').children().addClass('hidden')
                 $('#breadcrumb').find('.active').remove()
@@ -785,7 +794,11 @@ function main() {
                     <li class="active">${that.typeIndex[thisT - 1]}</li>
                 `)
 
-                
+
+                let dataId = $(this).attr('data-i')
+                let trackEle = $('#canvas').find(`div[data-i=${dataId}]`)
+                trackEle.click()
+
 
 
                 $(this).on('mousedown', '.eleWidth', function (e) { //轨道元素拉伸属性
@@ -816,18 +829,21 @@ function main() {
                             }
                         }
 
+                        let nowW = parseFloat($(parent).css('width'))
+
                         if ($(eleW).hasClass('eleWidthR')) {
-                            
-                            if (nowX > trackL && nowX < trackL + trackW) {
+
+                            if (nowX > trackL && nowX < trackL + trackW && nowW >= 10) {
                                 $(parent).css({
-                                    'width': `${width + (nowX - left)}`
+                                    'width': `${(width + (nowX - left)) < 10 ? 10 : width + (nowX - left)}`
                                 })
                             }
+
                         } else {
-                            if (nowX > trackL && nowX < trackL + trackW) {
+                            if (nowX > trackL && nowX < trackL + trackW && nowW >= 10) {
                                 let followX = parseFloat($(parent).attr('data-l')) - parseFloat(left - nowX)
                                 $(parent).css({
-                                    'width': `${width + (left - nowX)}`,
+                                    'width': `${(width + (left - nowX)) < 10 ? 10 : width + (left - nowX)}`,
                                     'left': `${followX}px`
                                 })
                             }
@@ -1006,6 +1022,16 @@ function main() {
             let that = this
             $('#addTrack').on('click', function () {
                 that.newTrack()
+            })
+
+            $(document).on('keydown', function (e) { //监听del键盘事件
+                var code = e.keyCode
+                if (46 == code) {
+                    console.log('adsf')
+                    $('.checkEle').remove()
+                    $('.checkCanvas').remove()
+                    $('#showBox').click()
+                }
             })
         }
 

@@ -7,6 +7,7 @@ function main() {
             this.height = canvas.height()
             this.imgWidth = 128
             this.typeIndex = ['图片', '视频', '音频', '文本', 'rtsp', '表格', '时钟', '天气', '网页']
+            this.SceneDto = []
         }
 
         init() { //入口

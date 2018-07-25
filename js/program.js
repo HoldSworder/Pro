@@ -312,7 +312,7 @@ function main() {
                     // that = $(this)
                     $('.checkCanvas').removeClass('checkCanvas')
                     $(this).addClass('checkCanvas')
-                    
+
 
                     let resizeRB = document.querySelector(`#resizeRB${index}`)
                     let resizeRT = document.querySelector(`#resizeRT${index}`)
@@ -578,6 +578,7 @@ function main() {
                         let itemId = $(item).children().eq(1).attr('id')
                         let itemChildren = $(item).children().eq(1).children()
                         let trackW = $(item).find('.trackContent').width() //轨道长度
+                        let track = $(thats).parent().parent()
 
                         let eX = e.clientX //鼠标点击距离左边界距离
                         let thisX = parseFloat($(thats).offset().left) //元素距离左边界距离
@@ -606,6 +607,8 @@ function main() {
                                     'z-index': '0'
                                 })
 
+                                that.removeTrack(track)
+
                             } else { //没元素 成为第一个元素
 
 
@@ -619,6 +622,22 @@ function main() {
                                     'z-index': '0'
                                 })
 
+                                that.removeTrack(track)
+
+                                let tContent = $(thats).parent().prev('.trackController')
+                                let thisType = $(thats).attr('data-t')
+                                if(thisType != tContent.attr('data-t')) {
+                                    
+                                    let index = 1
+                                    for (const item of $('.track')) { //判断重复类型轨道
+                                        if ($(item).find('.trackController').attr('data-t') == thisType) {
+                                            index++
+                                        }
+                                    }
+
+                                    tContent.text(`${that.typeIndex[thisType - 1]}${index}`)
+                                    tContent.attr('data-t', thisType)
+                                }
                             }
                             break
                         } else if (that.checkHover(e, $(item).find('.trackContent')) &&
@@ -903,6 +922,24 @@ function main() {
             observer.observe(el, config)
         }
 
+        removeTrack(ele) { //当轨道内没有元素时 删除轨道
+            
+            if (ele.find('.trackContent').children().length == 0) {
+                ele.remove()
+            }
+
+            if ($('.trackBox').children().length < 4) {
+                $('.trackBox').append(`
+                <div class="trackSeize clearfix">
+                <div class="trackController col-sm-2">
+                    <span></span>
+
+                </div>
+                <div id="track0" class="trackContent col-sm-10"></div>
+            </div>
+                `)
+            }
+        }
 
 
         //缩略时间轴
@@ -1028,11 +1065,15 @@ function main() {
             $(document).on('keydown', function (e) { //监听del键盘事件
                 var code = e.keyCode
                 if (46 == code) {
-                    console.log('adsf')
+                    let track = $('.checkEle').parent().parent()
+                    
                     $('.checkEle').remove()
                     $('.checkCanvas').remove()
                     $('#showBox').click()
+
+                    that.removeTrack(track)
                 }
+
             })
         }
 

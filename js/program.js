@@ -135,7 +135,7 @@ function main() {
                                         }
 
                                         let html = `
-                                            <div class="silderBlock" data-i=${nameId} data-l=${leftAll} data-t=${$('#itemIndex').val()} style='left: ${leftAll}px'>
+                                            <div class="silderBlock" data-s=${path} data-i=${nameId} data-l=${leftAll} data-t=${$('#itemIndex').val()} style='left: ${leftAll}px'>
                                                 ${filename}
                                             </div>
                                         `
@@ -459,7 +459,7 @@ function main() {
             }
 
             let html = `
-                <div class="silderBlock" data-l='0' data-i="${id}" data-t=${$('#itemIndex').val()}>
+                <div class="silderBlock" data-s=${path} data-l='0' data-i="${id}" data-t=${$('#itemIndex').val()}>
                     ${filename}
                 </div>
             `
@@ -607,7 +607,8 @@ function main() {
                                     'z-index': '0'
                                 })
 
-                                that.removeTrack(track)
+                                that.removeTrack(track, thats)
+                                
 
                             } else { //没元素 成为第一个元素
 
@@ -622,8 +623,8 @@ function main() {
                                     'z-index': '0'
                                 })
 
-                                that.removeTrack(track)
-
+                                that.removeTrack(track, thats)
+                                
                                 let tContent = $(thats).parent().prev('.trackController')
                                 let thisType = $(thats).attr('data-t')
                                 if(thisType != tContent.attr('data-t')) {
@@ -922,21 +923,24 @@ function main() {
             observer.observe(el, config)
         }
 
-        removeTrack(ele) { //当轨道内没有元素时 删除轨道
+        removeTrack(ele, item) { //当轨道内没有元素时 删除轨道
             
             if (ele.find('.trackContent').children().length == 0) {
                 ele.remove()
+
+                let id = $(item).attr('data-i')
+                $('#canvas').find(`div[data-i=${id}]`).remove()
             }
 
             if ($('.trackBox').children().length < 4) {
                 $('.trackBox').append(`
                 <div class="trackSeize clearfix">
-                <div class="trackController col-sm-2">
-                    <span></span>
+                    <div class="trackController col-sm-2">
+                        <span></span>
 
+                    </div>
+                    <div id="track0" class="trackContent col-sm-10"></div>
                 </div>
-                <div id="track0" class="trackContent col-sm-10"></div>
-            </div>
                 `)
             }
         }
@@ -1068,10 +1072,27 @@ function main() {
                     let track = $('.checkEle').parent().parent()
                     
                     $('.checkEle').remove()
-                    $('.checkCanvas').remove()
                     $('#showBox').click()
 
-                    that.removeTrack(track)
+                    let trackEle = track.find('.trackContent').children()
+                    if(trackEle.length == 0) {
+                        $('.checkCanvas').remove()
+                    }else {
+                        
+                        let firstL = 999999999
+                        let firstE
+                        for (const item of trackEle) {
+                            let length = $(item).attr('data-l')
+                            if(parseFloat(length) < (firstL)) {
+                                firstL = length
+                                firstE = item
+                            }
+                        }
+
+                        $('.checkCanvas').find('img').attr('src', $(firstE).attr('data-s'))
+                    }
+
+                    that.removeTrack(track, $('.checkEle')[0])
                 }
 
             })

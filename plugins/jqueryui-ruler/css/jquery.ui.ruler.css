@@ -12,8 +12,8 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: 18px;
-    height: 18px;
+    /* width: 18px;
+    height: 18px; */
     background-color: #fff;
     border-width: 0 1px 1px 0;
     border-style: solid;
@@ -107,6 +107,7 @@
     position: absolute;
     top: 0;
     left: 18px;
+    /* margin-left: 18px; */
     height: 18px;
     border-bottom: 1px solid #000;
 }
@@ -136,6 +137,7 @@
 .ef-ruler .left {
     position: absolute;
     top: 18px;
+    /* margin-top: 18px; */
     left: 0;
     width: 18px;
     border-right: 1px solid #000;

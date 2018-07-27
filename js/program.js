@@ -87,6 +87,7 @@ function main() {
                 flag = true
 
                 let upE = function (e) {
+                    
                     e.preventDefault()
                     let nameId = (new Date()).getTime().toString()
 
@@ -465,10 +466,16 @@ function main() {
             `
 
             let lastTrack = $('.trackBox .track:last .trackContent')
-            let index = lastTrack.attr('id').substr(5)
+            let index
+            if (lastTrack.length != 0) {
+                index = lastTrack.attr('id').substr(5)
+            } else {
+                index = 0
+            }
+
 
             function recursion(index) { //递归查询空轨道
-
+                // debugger
                 index = Number(index)
                 if (index == 1) {
                     if ($(`#track${index}`).children().length == 0) {
@@ -481,6 +488,11 @@ function main() {
                         $(`#track${index+1}`).parent().find('.trackController').attr('data-t', $('#itemIndex').val())
                         return
                     }
+                } else if (index == 0) {
+                    that.newTrack()
+                    $(`#track${index+1}`).append(html)
+                    $(`#track${index+1}`).parent().find('.trackController').attr('data-t', $('#itemIndex').val())
+                    return
                 }
 
                 if ($(`#track${index}`).children().length == 0) {
@@ -505,6 +517,7 @@ function main() {
         }
 
         newTrack() { //新建轨道
+            // debugger
             let indexT = ($('.track').length) + 1
 
             let typeIndex = $('#itemIndex').val()
@@ -528,7 +541,11 @@ function main() {
                 $('.trackSeize').eq(0).remove()
             }
 
-            $('.track:last').after(html)
+            if(index != 1) {
+                $('.track:last').after(html)
+            }else {
+                $('.trackBox').prepend(html)
+            }
 
 
         }
@@ -566,7 +583,6 @@ function main() {
                         'left': `${nowX - eItemX}px`
                     })
                 }
-
 
 
                 let upE = function (e) {
@@ -608,7 +624,7 @@ function main() {
                                 })
 
                                 that.removeTrack(track, thats)
-                                
+
 
                             } else { //没元素 成为第一个元素
 
@@ -624,11 +640,12 @@ function main() {
                                 })
 
                                 that.removeTrack(track, thats)
-                                
+                                that.drawImg($(thats).attr('data-s'), $(thats).attr('data-i'), 0, 0)
+
                                 let tContent = $(thats).parent().prev('.trackController')
                                 let thisType = $(thats).attr('data-t')
-                                if(thisType != tContent.attr('data-t')) {
-                                    
+                                if (thisType != tContent.attr('data-t')) {
+
                                     let index = 1
                                     for (const item of $('.track')) { //判断重复类型轨道
                                         if ($(item).find('.trackController').attr('data-t') == thisType) {
@@ -924,7 +941,7 @@ function main() {
         }
 
         removeTrack(ele, item) { //当轨道内没有元素时 删除轨道
-            
+
             if (ele.find('.trackContent').children().length == 0) {
                 ele.remove()
 
@@ -1070,20 +1087,20 @@ function main() {
                 var code = e.keyCode
                 if (46 == code) {
                     let track = $('.checkEle').parent().parent()
-                    
+
                     $('.checkEle').remove()
                     $('#showBox').click()
 
                     let trackEle = track.find('.trackContent').children()
-                    if(trackEle.length == 0) {
+                    if (trackEle.length == 0) {
                         $('.checkCanvas').remove()
-                    }else {
-                        
+                    } else {
+
                         let firstL = 999999999
                         let firstE
                         for (const item of trackEle) {
                             let length = $(item).attr('data-l')
-                            if(parseFloat(length) < (firstL)) {
+                            if (parseFloat(length) < (firstL)) {
                                 firstL = length
                                 firstE = item
                             }

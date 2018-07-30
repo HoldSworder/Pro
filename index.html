@@ -172,7 +172,7 @@
 
                                             <div class="form-group col-sm-10">
                                                 <div>文字特效</div>
-                                                <select class="form-control">
+                                                <select class="form-control" name="transition">
                                                     <option value="1">11</option>
                                                     <option value="2">22</option>
                                                 </select>
@@ -180,7 +180,7 @@
 
                                             <div class="form-group col-sm-10">
                                                 <div>切换效果</div>
-                                                <select class="form-control">
+                                                <select class="form-control" name="animation">
                                                     <option value="1">11</option>
                                                     <option value="2">22</option>
                                                 </select>
@@ -313,10 +313,21 @@
 
                                             <div class="form-group col-sm-10">
                                                 <div>对齐方式</div>
-                                                <select class="form-control">
-                                                    <option value="1">左对齐</option>
-                                                    <option value="2">居中</option>
-                                                    <option value="3">右对齐</option>
+                                                <select class="form-control" name="alignment">
+                                                    <option value="0">左对齐</option>
+                                                    <option value="1">居中</option>
+                                                    <option value="2">右对齐</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>旋转</div>
+                                                <select class="form-control" name="rolling">
+                                                    <option value="0">静止</option>
+                                                    <option value="1">右到左</option>
+                                                    <option value="2">上到下</option>
+                                                    <option value="3">下到上</option>
+                                                    <option value="4">上游</option>
                                                 </select>
                                             </div>
 
@@ -359,6 +370,11 @@
                                             </div>
 
                                             <div class="form-group col-sm-10">
+                                                <span>是否多行</span>
+                                                <input type="checkbox" id="text-multiline-check" class="checkInit" checked data-on-text="YES" data-off-text="NO" />
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
                                                 <div>播放速度</div>
 
                                                 <select class="form-control">
@@ -386,7 +402,7 @@
                                             </div>
 
                                             <div class="form-group col-sm-10">
-                                                <div>文字特效</div>
+                                                <div>文字动画</div>
                                                 <select class="form-control">
                                                     <option value="1">11</option>
                                                     <option value="2">22</option>

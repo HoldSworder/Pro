@@ -1033,6 +1033,7 @@ function main() {
 
             this.videoEdiInit()
             this.audioEdiInit()
+            this.setEdi()
         }
 
         videoEdiInit() {
@@ -1075,6 +1076,79 @@ function main() {
             }).slider("float")
         }
 
+        setEdi() {  //设置保存参数
+            function getTime(obj, id) {
+                obj.beginTime = $(id).find('input[name="startTime"]').val()
+                obj.endTime = $(id).find('input[name="endTime"]').val()
+            }
+
+            $('#imgEdi').find('.saveEdi button').on('click', function(e) {  //图片
+                e.preventDefault()
+                let edi = $('#imgEdi')
+                let ele = $('.checkEle')
+                let data = {}
+
+                getTime(data, '#imgEdi')
+                data.transition = edi.find('select[name="transition"]').val()
+                data.animation = edi.find('select[name="animation"]').val()
+                
+                let str = JSON.stringify(data)
+                ele.attr('data-p', str)
+            })
+
+
+            $('#videoEdi').find('.saveEdi button').on('click', function(e) {  //视频
+                e.preventDefault()
+                let edi = $('#videoEdi')
+                let ele = $('.checkEle')
+                let data = {}
+
+                getTime(data, '#imgEdi')
+                data.video = edi.find('#video-video-check').is(':checked')
+                data.audio = edi.find('#video-audio-check').is(':checked')
+                data.volume = edi.find('#video-vol-slider .ui-slider-tip').text()
+
+                data.inTime = ''  //wait
+                data.outTime = ''
+                
+                let str = JSON.stringify(data)
+                ele.attr('data-p', str)
+            })
+
+            $('#audioEdi').find('.saveEdi button').on('click', function(e) {  //音频
+                e.preventDefault()
+                let edi = $('#audioEdi')
+                let ele = $('.checkEle')
+                let data = {}
+
+                getTime(data, '#imgEdi')
+                data.volume = edi.find('#audio-vol-slider .ui-slider-tip').text()
+
+                data.inTime = ''  //wait
+                data.outTime = ''
+                
+                let str = JSON.stringify(data)
+                ele.attr('data-p', str)
+            })
+
+            $('#textEdi').find('.saveEdi button').on('click', function(e) {  //音频
+                e.preventDefault()
+                let edi = $('#textEdi')
+                let ele = $('.checkEle')
+                let data = {}
+
+                getTime(data, '#imgEdi')
+                data.text = ele.find('textarea').val()
+                data.alignment = ele.find('select[name="alignment"]').val()
+                data.multiline = ele.find('#text-multiline-check').is(':checked')
+                data.rolling = ele.find('select[name="rolling"]').val()
+                
+                let str = JSON.stringify(data)
+                ele.attr('data-p', str)
+            })
+        }
+
+        
 
 
         btnBind() { //按钮绑定事件

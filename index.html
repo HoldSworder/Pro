@@ -333,7 +333,16 @@
 
                                             <div class="form-group col-sm-10">
                                                 <div>字体</div>
-                                                <select class="form-control">
+                                                <select class="form-control" name="font">
+                                                    <option value="1">111</option>
+                                                    <option value="2">222</option>
+                                                    <option value="3">333</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group col-sm-10">
+                                                <div>字号</div>
+                                                <select class="form-control" name="size">
                                                     <option value="1">111</option>
                                                     <option value="2">222</option>
                                                     <option value="3">333</option>
@@ -342,7 +351,7 @@
 
                                             <div class="form-group col-sm-10">
                                                 <div>字体颜色</div>
-                                                <input type="color" class="form-control">
+                                                <input type="color" name="color" class="form-control">
                                             </div>
 
                                             <div class="form-group col-sm-10">
@@ -351,12 +360,12 @@
                                                       <input type="checkbox"> 背景颜色
                                                     </label>
                                                   </div>
-                                                <input type="color" class="form-control">
+                                                <input type="color" name="backgroundcolor" class="form-control">
                                             </div>
 
                                             <div class="form-group col-sm-10">
                                                 <div>透明度</div>
-                                                <input type="range" >
+                                                <input type="range" name="transparency">
                                             </div>
 
                                             <div class="form-group col-sm-10">
@@ -377,7 +386,7 @@
                                             <div class="form-group col-sm-10">
                                                 <div>播放速度</div>
 
-                                                <select class="form-control">
+                                                <select class="form-control" name="playbackspeed">
                                                     <option value="1">111</option>
                                                     <option value="2">222</option>
                                                     <option value="3">333</option>
@@ -388,14 +397,14 @@
                                             <div class="form-group col-sm-10">
                                                 <div>停留时间</div>
                                                 <div class="input-group">
-                                                    <input type="number" class="form-control inline-input" min="0">
+                                                    <input type="number" name="residencetime" class="form-control inline-input" min="0">
                                                     <div class="input-group-addon">秒</div>
                                                 </div>
                                             </div>
 
                                             <div class="form-group col-sm-10">
                                                 <div>切换效果</div>
-                                                <select class="form-control">
+                                                <select class="form-control" name="transition">
                                                     <option value="1">11</option>
                                                     <option value="2">22</option>
                                                 </select>
@@ -403,7 +412,7 @@
 
                                             <div class="form-group col-sm-10">
                                                 <div>文字动画</div>
-                                                <select class="form-control">
+                                                <select class="form-control" name="animation">
                                                     <option value="1">11</option>
                                                     <option value="2">22</option>
                                                 </select>
@@ -440,7 +449,7 @@
 
                                             <div class="form-group col-sm-10">
                                                 <div>协议</div>
-                                                <select class="form-control">
+                                                <select class="form-control" name="protocol">
                                                     <option value="0">rtsp</option>
                                                     <option value="1">rtmp</option>
                                                 </select>
@@ -448,7 +457,7 @@
 
                                             <div class="form-group col-sm-10">
                                                 <div>链接地址</div>
-                                                <input class="form-control" type="text">
+                                                <input class="form-control" type="text" name="address">
 
                                                 </input>
                                             </div>
@@ -482,7 +491,7 @@
                                                 </div>
                                             </div>
 
-                                            <div class="form-group col-sm-10">
+                                            <!-- <div class="form-group col-sm-10">
                                                 <div>表格高度</div>
                                                 <div class="input-group">
                                                     <input type="number" class="form-control inline-input" min="0">
@@ -496,11 +505,11 @@
                                                     <input type="number" class="form-control inline-input" min="0">
                                                     <div class="input-group-addon">px</div>
                                                 </div>
-                                            </div>
+                                            </div> -->
 
                                             <div class="form-group col-sm-10">
                                                 <div>包含的列</div>
-                                                <select class="form-control">
+                                                <select class="form-control" name="rowList">
                                                     <option value="1">11</option>
                                                     <option value="2">22</option>
                                                 </select>
@@ -508,7 +517,7 @@
 
                                             <div class="form-group col-sm-10">
                                                 <div>列名</div>
-                                                <select class="form-control">
+                                                <select class="form-control" name="dataColumnList">
                                                     <option value="1">11</option>
                                                     <option value="2">22</option>
                                                 </select>
@@ -516,14 +525,14 @@
 
                                             <div class="form-group col-sm-10">
                                                 <div>mq链接地址</div>
-                                                <input class="form-control" type="text">
+                                                <input class="form-control" type="text" name="mqAddress">
 
                                                 </input>
                                             </div>
 
                                             <div class="form-group col-sm-10">
                                                 <div>消息队列名称</div>
-                                                <input class="form-control" type="text">
+                                                <input class="form-control" type="text" name="queueName">
 
                                                 </input>
                                             </div>
@@ -531,7 +540,7 @@
                                             
                                             <div class="form-group col-sm-10">
                                                 <div>列样式</div>
-                                                <select class="form-control">
+                                                <select class="form-control" name="styleId">
                                                     <option value="1">11</option>
                                                     <option value="2">22</option>
                                                 </select>
@@ -568,7 +577,7 @@
 
                                             <div class="form-group col-sm-10">
                                                 <div>时钟样式</div>
-                                                <select class="form-control">
+                                                <select class="form-control" name="styleId">
                                                     <option value="1">11</option>
                                                     <option value="2">22</option>
                                                 </select>
@@ -605,7 +614,7 @@
 
                                             <div class="form-group col-sm-10">
                                                 <div>天气样式</div>
-                                                <select class="form-control">
+                                                <select class="form-control" name="styleId">
                                                     <option value="1">11</option>
                                                     <option value="2">22</option>
                                                 </select>

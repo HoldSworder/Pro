@@ -1078,8 +1078,8 @@ function main() {
 
         setEdi() {  //设置保存参数
             function getTime(obj, id) {
-                obj.beginTime = $(id).find('input[name="startTime"]').val()
-                obj.endTime = $(id).find('input[name="endTime"]').val()
+                obj.beginTime = id.find('input[name="startTime"]').val()
+                obj.endTime = id.find('input[name="endTime"]').val()
             }
 
             $('#imgEdi').find('.saveEdi button').on('click', function(e) {  //图片
@@ -1088,7 +1088,7 @@ function main() {
                 let ele = $('.checkEle')
                 let data = {}
 
-                getTime(data, '#imgEdi')
+                getTime(data, edi)
                 data.transition = edi.find('select[name="transition"]').val()
                 data.animation = edi.find('select[name="animation"]').val()
                 
@@ -1096,14 +1096,13 @@ function main() {
                 ele.attr('data-p', str)
             })
 
-
             $('#videoEdi').find('.saveEdi button').on('click', function(e) {  //视频
                 e.preventDefault()
                 let edi = $('#videoEdi')
                 let ele = $('.checkEle')
                 let data = {}
 
-                getTime(data, '#imgEdi')
+                getTime(data, edi)
                 data.video = edi.find('#video-video-check').is(':checked')
                 data.audio = edi.find('#video-audio-check').is(':checked')
                 data.volume = edi.find('#video-vol-slider .ui-slider-tip').text()
@@ -1121,7 +1120,7 @@ function main() {
                 let ele = $('.checkEle')
                 let data = {}
 
-                getTime(data, '#imgEdi')
+                getTime(data, edi)
                 data.volume = edi.find('#audio-vol-slider .ui-slider-tip').text()
 
                 data.inTime = ''  //wait
@@ -1131,21 +1130,107 @@ function main() {
                 ele.attr('data-p', str)
             })
 
-            $('#textEdi').find('.saveEdi button').on('click', function(e) {  //音频
+            $('#textEdi').find('.saveEdi button').on('click', function(e) {  //文字
                 e.preventDefault()
                 let edi = $('#textEdi')
                 let ele = $('.checkEle')
                 let data = {}
 
-                getTime(data, '#imgEdi')
+                getTime(data, edi)
                 data.text = ele.find('textarea').val()
                 data.alignment = ele.find('select[name="alignment"]').val()
                 data.multiline = ele.find('#text-multiline-check').is(':checked')
                 data.rolling = ele.find('select[name="rolling"]').val()
+                data.font = ele.find('select[name="font"]').val()
+                data.size = ele.find('select[name="size"]').val()
+                data.color = ele.find('input[name="color"]').val()
+                data.backgroundcolor = ele.find('input[name="backgroundcolor"]').val()
+                data.transparency = ele.find('input[name="transparency"]').val()
+                data.bold = ele.find('#text-border-check').is(':checked')
+                data.italic = ele.find('#text-italic-check').is(':checked')
+                data.playbackspeed = ele.find('select[name="playbackspeed"]').val()
+                data.residencetime = ele.find('input[name="residencetime"]').val()
+                data.transition = edi.find('select[name="transition"]').val()
+                data.animation = edi.find('select[name="animation"]').val()
                 
                 let str = JSON.stringify(data)
                 ele.attr('data-p', str)
             })
+
+            $('#rtspEdi').find('.saveEdi button').on('click', function(e) {  //RTSP
+                e.preventDefault()
+                let edi = $('#rtspEdi')
+                let ele = $('.checkEle')
+                let data = {}
+
+                getTime(data, edi)
+                data.adress = edi.find('input[name="address"]').val()
+                data.protocol = edi.find('select[name="protocol"]').val()
+                
+                let str = JSON.stringify(data)
+                ele.attr('data-p', str)
+            })
+
+            $('#tabelEdi').find('.saveEdi button').on('click', function(e) {  //表格
+                e.preventDefault()
+                let edi = $('#tabelEdi')
+                let ele = $('.checkEle')
+                let imgEle = $('.checkCanvas')
+                let data = {}
+
+                getTime(data, edi)
+                data.height = imgEle.height()
+                data.width = imgEle.width()
+                data.rowList = edi.find('select[name="rowList"]').val()
+                data.dataColumnList = edi.find('select[name="dataColumnList"]').val()
+                data.mqAddress = edi.find('input[name="mqAddress"]').val()
+                data.queueName = edi.find('input[name="queueName"]').val()
+                data.styleId = edi.find('select[name="styleId"]').val()
+                
+                let str = JSON.stringify(data)
+                ele.attr('data-p', str)
+            })
+
+            $('#clockEdi').find('.saveEdi button').on('click', function(e) {  //时钟
+                e.preventDefault()
+                let edi = $('#clockEdi')
+                let ele = $('.checkEle')
+                let data = {}
+
+                getTime(data, edi)
+                data.styleId = edi.find('select[name="styleId"]').val()
+                
+                let str = JSON.stringify(data)
+                ele.attr('data-p', str)
+            })
+
+            $('#weatherEdi').find('.saveEdi button').on('click', function(e) {  //天气
+                e.preventDefault()
+                let edi = $('#weatherEdi')
+                let ele = $('.checkEle')
+                let data = {}
+
+                getTime(data, edi)
+                data.styleId = edi.find('select[name="styleId"]').val()
+                
+                let str = JSON.stringify(data)
+                ele.attr('data-p', str)
+            })
+
+            $('#htmlEdi').find('.saveEdi button').on('click', function(e) {  //Html
+                e.preventDefault()
+                let edi = $('#htmlEdi')
+                let ele = $('.checkEle')
+                let data = {}
+
+                getTime(data, edi)
+                data.styleId = edi.find('select[name="styleId"]').val()
+                
+                let str = JSON.stringify(data)
+                ele.attr('data-p', str)
+            })
+
+
         }
 
         

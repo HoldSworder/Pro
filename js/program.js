@@ -87,7 +87,7 @@ function main() {
                 flag = true
 
                 let upE = function (e) {
-                    
+
                     e.preventDefault()
                     let nameId = (new Date()).getTime().toString()
 
@@ -541,9 +541,9 @@ function main() {
                 $('.trackSeize').eq(0).remove()
             }
 
-            if(index != 1) {
+            if (index != 1) {
                 $('.track:last').after(html)
-            }else {
+            } else {
                 $('.trackBox').prepend(html)
             }
 
@@ -811,6 +811,8 @@ function main() {
                 let divH = $(this).height()
                 let thisT = $(this).attr('data-t')
 
+                that.setTime($(this)) //获取起止时间到data属性上
+
                 $('.checkEle').removeClass('checkEle')
                 $(this).addClass('checkEle')
 
@@ -824,10 +826,16 @@ function main() {
                     $(this).append(html)
                 }
 
-                $('#ediBox').removeClass('hidden')
+                $('#ediBox').removeClass('hidden') //显示素材仓库
                 $('#ediBox').children().addClass('hidden')
                 $('#ediBox').children().eq(thisT - 1).removeClass('hidden')
-                $('#breadcrumb').find('.active').remove()
+
+                //填充起止时间 
+                $('#ediBox').children().eq(thisT - 1).find('input[name="startTime"]').val($('.checkEle').attr('data-begin'))
+                $('#ediBox').children().eq(thisT - 1).find('input[name="endTime"]').val($('.checkEle').attr('data-end'))
+
+
+                $('#breadcrumb').find('.active').remove() //显示仓库索引
                 $('#breadcrumb').append(`
                     <li class="active">${that.typeIndex[thisT - 1]}</li>
                 `)
@@ -962,6 +970,58 @@ function main() {
             }
         }
 
+        setTime(el) { //计算起止时间
+
+
+            let track = el.parent()
+            let timeS = $('#nowTime').attr('data-t') * 60 //时间轴总时间换算s
+            let trackW = track.width()
+            let elL = el.attr('data-l')
+            let elR = el.width() + elL//元素左右长度
+
+            let beginT = parseInt((elL / trackW) * timeS)
+            let endT = parseInt((elR / trackW) * timeS)
+
+            el.attr('data-begin', formatSeconds(beginT))
+            el.attr('data-end', formatSeconds(endT))
+            console.log(formatSeconds(beginT))
+            console.log(formatSeconds(endT))
+
+            function formatSeconds(value) {
+                
+                var theTime = parseInt(value); // 秒
+                var theTime1 = 0; // 分
+                var theTime2 = 0; // 小时
+
+                if (theTime > 60) {
+                    theTime1 = parseInt(theTime / 60);
+                    theTime = parseInt(theTime % 60);
+
+                    if (theTime1 > 60) {
+                        theTime2 = parseInt(theTime1 / 60);
+                        theTime1 = parseInt(theTime1 % 60);
+                    }
+                }
+
+                theTime1 = theTime1 < 10 ? `0${theTime1}` : theTime1
+                theTime2 = theTime2 < 10 ? `0${theTime2}` : theTime2
+                theTime = theTime < 10 ? `0${theTime}` : theTime
+
+                var result = `00:00:${theTime}`
+
+                if (theTime1 > 0) {
+                    result = `00:${theTime1}:${theTime}`
+                }
+
+                if (theTime2 > 0) {
+                    result = `${theTime2}:${theTime1}:${theTime}`
+                }
+
+                return result;
+
+            }
+        }
+
 
         //缩略时间轴
         abbrTrack() { //初始化滑块
@@ -1076,13 +1136,13 @@ function main() {
             }).slider("float")
         }
 
-        setEdi() {  //设置保存参数
+        setEdi() { //设置保存参数
             function getTime(obj, id) {
                 obj.beginTime = id.find('input[name="startTime"]').val()
                 obj.endTime = id.find('input[name="endTime"]').val()
             }
 
-            $('#imgEdi').find('.saveEdi button').on('click', function(e) {  //图片
+            $('#imgEdi').find('.saveEdi button').on('click', function (e) { //图片
                 e.preventDefault()
                 let edi = $('#imgEdi')
                 let ele = $('.checkEle')
@@ -1091,12 +1151,12 @@ function main() {
                 getTime(data, edi)
                 data.transition = edi.find('select[name="transition"]').val()
                 data.animation = edi.find('select[name="animation"]').val()
-                
+
                 let str = JSON.stringify(data)
                 ele.attr('data-p', str)
             })
 
-            $('#videoEdi').find('.saveEdi button').on('click', function(e) {  //视频
+            $('#videoEdi').find('.saveEdi button').on('click', function (e) { //视频
                 e.preventDefault()
                 let edi = $('#videoEdi')
                 let ele = $('.checkEle')
@@ -1107,14 +1167,14 @@ function main() {
                 data.audio = edi.find('#video-audio-check').is(':checked')
                 data.volume = edi.find('#video-vol-slider .ui-slider-tip').text()
 
-                data.inTime = ''  //wait
+                data.inTime = '' //wait
                 data.outTime = ''
-                
+
                 let str = JSON.stringify(data)
                 ele.attr('data-p', str)
             })
 
-            $('#audioEdi').find('.saveEdi button').on('click', function(e) {  //音频
+            $('#audioEdi').find('.saveEdi button').on('click', function (e) { //音频
                 e.preventDefault()
                 let edi = $('#audioEdi')
                 let ele = $('.checkEle')
@@ -1123,14 +1183,14 @@ function main() {
                 getTime(data, edi)
                 data.volume = edi.find('#audio-vol-slider .ui-slider-tip').text()
 
-                data.inTime = ''  //wait
+                data.inTime = '' //wait
                 data.outTime = ''
-                
+
                 let str = JSON.stringify(data)
                 ele.attr('data-p', str)
             })
 
-            $('#textEdi').find('.saveEdi button').on('click', function(e) {  //文字
+            $('#textEdi').find('.saveEdi button').on('click', function (e) { //文字
                 e.preventDefault()
                 let edi = $('#textEdi')
                 let ele = $('.checkEle')
@@ -1152,12 +1212,12 @@ function main() {
                 data.residencetime = ele.find('input[name="residencetime"]').val()
                 data.transition = edi.find('select[name="transition"]').val()
                 data.animation = edi.find('select[name="animation"]').val()
-                
+
                 let str = JSON.stringify(data)
                 ele.attr('data-p', str)
             })
 
-            $('#rtspEdi').find('.saveEdi button').on('click', function(e) {  //RTSP
+            $('#rtspEdi').find('.saveEdi button').on('click', function (e) { //RTSP
                 e.preventDefault()
                 let edi = $('#rtspEdi')
                 let ele = $('.checkEle')
@@ -1166,12 +1226,12 @@ function main() {
                 getTime(data, edi)
                 data.adress = edi.find('input[name="address"]').val()
                 data.protocol = edi.find('select[name="protocol"]').val()
-                
+
                 let str = JSON.stringify(data)
                 ele.attr('data-p', str)
             })
 
-            $('#tabelEdi').find('.saveEdi button').on('click', function(e) {  //表格
+            $('#tabelEdi').find('.saveEdi button').on('click', function (e) { //表格
                 e.preventDefault()
                 let edi = $('#tabelEdi')
                 let ele = $('.checkEle')
@@ -1186,12 +1246,12 @@ function main() {
                 data.mqAddress = edi.find('input[name="mqAddress"]').val()
                 data.queueName = edi.find('input[name="queueName"]').val()
                 data.styleId = edi.find('select[name="styleId"]').val()
-                
+
                 let str = JSON.stringify(data)
                 ele.attr('data-p', str)
             })
 
-            $('#clockEdi').find('.saveEdi button').on('click', function(e) {  //时钟
+            $('#clockEdi').find('.saveEdi button').on('click', function (e) { //时钟
                 e.preventDefault()
                 let edi = $('#clockEdi')
                 let ele = $('.checkEle')
@@ -1199,12 +1259,12 @@ function main() {
 
                 getTime(data, edi)
                 data.styleId = edi.find('select[name="styleId"]').val()
-                
+
                 let str = JSON.stringify(data)
                 ele.attr('data-p', str)
             })
 
-            $('#weatherEdi').find('.saveEdi button').on('click', function(e) {  //天气
+            $('#weatherEdi').find('.saveEdi button').on('click', function (e) { //天气
                 e.preventDefault()
                 let edi = $('#weatherEdi')
                 let ele = $('.checkEle')
@@ -1212,12 +1272,12 @@ function main() {
 
                 getTime(data, edi)
                 data.styleId = edi.find('select[name="styleId"]').val()
-                
+
                 let str = JSON.stringify(data)
                 ele.attr('data-p', str)
             })
 
-            $('#htmlEdi').find('.saveEdi button').on('click', function(e) {  //Html
+            $('#htmlEdi').find('.saveEdi button').on('click', function (e) { //Html
                 e.preventDefault()
                 let edi = $('#htmlEdi')
                 let ele = $('.checkEle')
@@ -1225,7 +1285,7 @@ function main() {
 
                 getTime(data, edi)
                 data.styleId = edi.find('select[name="styleId"]').val()
-                
+
                 let str = JSON.stringify(data)
                 ele.attr('data-p', str)
             })
@@ -1233,7 +1293,7 @@ function main() {
 
         }
 
-        
+
 
 
         btnBind() { //按钮绑定事件

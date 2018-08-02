@@ -87,7 +87,7 @@ function main() {
                 flag = true
 
                 let upE = function (e) {
-
+                    
                     e.preventDefault()
                     let nameId = (new Date()).getTime().toString()
 
@@ -517,7 +517,7 @@ function main() {
         }
 
         newTrack() { //新建轨道
-            // debugger
+            
             let indexT = ($('.track').length) + 1
 
             let typeIndex = $('#itemIndex').val()
@@ -541,11 +541,16 @@ function main() {
                 $('.trackSeize').eq(0).remove()
             }
 
-            if (index != 1) {
+            if ($('.track').length != 0) {
                 $('.track:last').after(html)
             } else {
                 $('.trackBox').prepend(html)
             }
+            // if (index != 1) {
+            //     $('.track:last').after(html)
+            // } else {
+            //     $('.trackBox').prepend(html)
+            // }
 
 
         }
@@ -977,7 +982,7 @@ function main() {
             let timeS = $('#nowTime').attr('data-t') * 60 //时间轴总时间换算s
             let trackW = track.width()
             let elL = el.attr('data-l')
-            let elR = el.width() + elL//元素左右长度
+            let elR = el.width() + elL //元素左右长度
 
             let beginT = parseInt((elL / trackW) * timeS)
             let endT = parseInt((elR / trackW) * timeS)
@@ -988,7 +993,7 @@ function main() {
             console.log(formatSeconds(endT))
 
             function formatSeconds(value) {
-                
+
                 var theTime = parseInt(value); // 秒
                 var theTime1 = 0; // 分
                 var theTime2 = 0; // 小时
@@ -1331,6 +1336,31 @@ function main() {
                     that.removeTrack(track, $('.checkEle')[0])
                 }
 
+            })
+
+            $('#ediBox input[name="startTime"], #ediBox input[name="endTime"]').on('blur', function (e) {
+                let str = $(this).val().trim()
+
+                if (str.length != 0) {
+                    let reg = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/
+                    if (!reg.test(str)) {
+                        let html = `
+                        <div class="alert alert-warning alert-dismissible fade in" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
+                            请输入正确的格式
+                            如 00:00:00
+                        </div>
+                        `
+
+                        $(this).after(html)
+
+                        setTimeout(() => {
+                            $('.alert').alert('close')
+                        }, 3000)
+
+                        $(this).val('')
+                    }
+                }
             })
         }
 

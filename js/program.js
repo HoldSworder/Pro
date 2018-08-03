@@ -87,7 +87,7 @@ function main() {
                 flag = true
 
                 let upE = function (e) {
-                    
+
                     e.preventDefault()
                     let nameId = (new Date()).getTime().toString()
 
@@ -136,7 +136,7 @@ function main() {
                                         }
 
                                         let html = `
-                                            <div class="silderBlock" data-s=${path} data-i=${nameId} data-l=${leftAll} data-t=${$('#itemIndex').val()} style='left: ${leftAll}px'>
+                                            <div class="silderBlock" data-s=${path} data-i=${nameId} data-J=${that.attr('data-J')} data-l=${leftAll} data-t=${$('#itemIndex').val()} style='left: ${leftAll}px'>
                                                 ${filename}
                                             </div>
                                         `
@@ -460,7 +460,7 @@ function main() {
             }
 
             let html = `
-                <div class="silderBlock" data-s=${path} data-l='0' data-i="${id}" data-t=${$('#itemIndex').val()}>
+                <div class="silderBlock" data-s=${path} data-l='0' data-J=${img.attr('data-J')} data-i="${id}" data-t=${$('#itemIndex').val()}>
                     ${filename}
                 </div>
             `
@@ -517,7 +517,7 @@ function main() {
         }
 
         newTrack() { //新建轨道
-            
+
             let indexT = ($('.track').length) + 1
 
             let typeIndex = $('#itemIndex').val()
@@ -1099,6 +1099,7 @@ function main() {
             this.videoEdiInit()
             this.audioEdiInit()
             this.setEdi()
+            this.setPlayTime()
         }
 
         videoEdiInit() {
@@ -1298,6 +1299,21 @@ function main() {
 
         }
 
+        setPlayTime() { //监听video进度设置
+            let el = $('#video-slider .ui-slider-range')[0]
+            let timeL = $('.checkEle').attr('data-timeL')
+
+            function obs(mutation) {
+                let style = mutation.target.style
+                let left = parseInt(style.left)
+                let right = parseInt(style.left) + parseInt(style.width)
+
+                console.log(left)
+                console.log(right)
+            }
+
+            this.observer(el, obs)
+        }
 
 
 

@@ -8,6 +8,7 @@ function main() {
             this.imgWidth = 128
             this.typeIndex = ['图片', '视频', '音频', '文本', 'rtsp', '表格', '时钟', '天气', '网页']
             this.SceneDto = []
+            this.addImgPath = 'img/add/add.png'
         }
 
         init() { //入口
@@ -26,6 +27,8 @@ function main() {
 
         //画布属性
         drawImg(imgPath, id, x, y) { //在画布上绘制元素
+
+
             let index = $('#canvas').children().length
             let html = ''
             html += `
@@ -444,7 +447,7 @@ function main() {
                 $('#nowTime').text(`${mo}:${yu}`)
             }
 
-            that.observer(el, obs)
+            that.observer(el, obs, ['style'])
 
         }
 
@@ -989,8 +992,6 @@ function main() {
 
             el.attr('data-begin', formatSeconds(beginT))
             el.attr('data-end', formatSeconds(endT))
-            console.log(formatSeconds(beginT))
-            console.log(formatSeconds(endT))
 
             function formatSeconds(value) {
 
@@ -1026,6 +1027,7 @@ function main() {
 
             }
         }
+
 
 
         //缩略时间轴
@@ -1071,7 +1073,7 @@ function main() {
 
             }
 
-            this.observer(el, obs)
+            this.observer(el, obs, ['style'])
 
         }
 
@@ -1312,14 +1314,14 @@ function main() {
                 console.log(right)
             }
 
-            this.observer(el, obs)
+            this.observer(el, obs, ['style'])
         }
 
 
-
+        //其他方法
         btnBind() { //按钮绑定事件
             let that = this
-            $('#addTrack').on('click', function () {
+            $('#addTrack').on('click', function () { //添加轨道按钮
                 that.newTrack()
             })
 
@@ -1354,13 +1356,13 @@ function main() {
 
             })
 
-            $('#ediBox input[name="startTime"], #ediBox input[name="endTime"]').on('blur', function (e) {
+            $('#ediBox input[name="startTime"], #ediBox input[name="endTime"]').on('blur', function (e) { //时间格式验证
                 let str = $(this).val().trim()
 
-                if (str.length != 0) {
-                    let reg = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/
-                    if (!reg.test(str)) {
-                        let html = `
+
+                let reg = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/
+                if (!reg.test(str)) {
+                    let html = `
                         <div class="alert alert-warning alert-dismissible fade in" role="alert">
                             <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
                             请输入正确的格式
@@ -1368,19 +1370,45 @@ function main() {
                         </div>
                         `
 
-                        $(this).after(html)
+                    $(this).after(html)
 
-                        setTimeout(() => {
-                            $('.alert').alert('close')
-                        }, 3000)
+                    setTimeout(() => {
+                        $('.alert').alert('close')
+                    }, 3000)
 
-                        $(this).val('')
+                    $(this).val('')
+                }else {
+                    let thisV = $(this).val()
+                    let indexF = thisV.indexOf(':')
+                    
+                    let h = Number(thisV.slice(0, indexF))
+                    let m = Number(thisV.slice(indexF + 1, indexF + 3))
+                    let s = Number(thisV.slice(indexF + 4, indexF + 6)) 
+                    
+                    let timeS = h * 60 + m * 60 + s
+
+                    let timeA = $('#nowTime').attr('data-t')
+                    if($(this).attr('name') == 'startTime') {
+                        let timeSe = timeS / (timeA * 60)
+                        $('.checkEle').css('left', `${timeSe * 100}%`)
+                    }else {
+                        let timeSe = timeS / (timeA * 60)
+                        $('.checkEle').css('width', `${timeSe * parseFloat($('.trackContent').width()) - parseFloat($('.checkEle').css('left'))}px`)
                     }
+                }
+
+            })
+
+            $('#itemIndex').on('change', function (e) { //添加格式变换事件
+                if ($(this).val() == 4) {
+                    $('#addMate').removeClass('hidden')
+                } else {
+                    $('#addMate').addClass('hidden')
                 }
             })
         }
 
-        observer(el, func) { //监听属性变化观察者
+        observer(el, func, filter) { //监听属性变化观察者
             var observer = new MutationObserver(function (mutations, observer) {
                 mutations.forEach(function (mutation) {
                     func(mutation)
@@ -1389,9 +1417,7 @@ function main() {
             var config = {
                 attributes: true,
                 attributeOldValue: true,
-                attributeFilter: [
-                    'style'
-                ]
+                attributeFilter: filter
             }
 
             observer.observe(el, config)

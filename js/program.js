@@ -885,7 +885,7 @@ function main() {
 
                         let nowW = parseFloat($(parent).css('width'))
 
-                        if ($(eleW).hasClass('eleWidthR')) {
+                        if ($(eleW).hasClass('eleWidthR')) {    //右拉
 
                             if (nowX > trackL && nowX < trackL + trackW && nowW >= 10) {
                                 $(parent).css({
@@ -893,7 +893,8 @@ function main() {
                                 })
                             }
 
-                        } else {
+                        } else {        //左拉
+                            console.log(left)
                             if (nowX > trackL && nowX < trackL + trackW && nowW >= 10) {
                                 let followX = parseFloat($(parent).attr('data-l')) - parseFloat(left - nowX)
                                 $(parent).css({
@@ -984,14 +985,15 @@ function main() {
             let track = el.parent()
             let timeS = $('#nowTime').attr('data-t') * 60 //时间轴总时间换算s
             let trackW = track.width()
-            let elL = el.attr('data-l')
-            let elR = el.width() + elL //元素左右长度
+            let elL = parseFloat(el.attr('data-l'))
+            let elR = parseFloat(el.width()) + elL //元素左右长度
 
             let beginT = parseInt((elL / trackW) * timeS)
             let endT = parseInt((elR / trackW) * timeS)
 
             el.attr('data-begin', formatSeconds(beginT))
             el.attr('data-end', formatSeconds(endT))
+           
 
             function formatSeconds(value) {
 
@@ -1100,7 +1102,7 @@ function main() {
 
             this.videoEdiInit()
             this.audioEdiInit()
-            this.setEdi()
+            this.saveEdi()
             this.setPlayTime()
         }
 
@@ -1144,7 +1146,7 @@ function main() {
             }).slider("float")
         }
 
-        setEdi() { //设置保存参数
+        saveEdi() { //设置保存参数
             function getTime(obj, id) {
                 obj.beginTime = id.find('input[name="startTime"]').val()
                 obj.endTime = id.find('input[name="endTime"]').val()
@@ -1309,18 +1311,18 @@ function main() {
                 let style = mutation.target.style
                 let left = parseInt(style.left)
                 let right = parseInt(style.left) + parseInt(style.width)
-
-                console.log(left)
-                console.log(right)
+                
             }
 
             this.observer(el, obs, ['style'])
         }
 
 
+
         //其他方法
         btnBind() { //按钮绑定事件
             let that = this
+            
             $('#addTrack').on('click', function () { //添加轨道按钮
                 that.newTrack()
             })

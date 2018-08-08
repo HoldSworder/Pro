@@ -1104,6 +1104,8 @@ function main() {
             this.audioEdiInit()
             this.saveEdi()
             this.setPlayTime()
+            this.getMaterial()
+            this.textEdiInit()
         }
 
         videoEdiInit() {
@@ -1144,6 +1146,18 @@ function main() {
             }).slider("pips", {
                 rest: false
             }).slider("float")
+        }
+
+        textEdiInit() {
+
+            $('#text-transparency-slider').slider({
+                min: 0,
+                max: 100,
+                range: false,
+            }).slider("pips", {
+                rest: false
+            }).slider("float")
+
         }
 
         saveEdi() { //设置保存参数
@@ -1215,7 +1229,7 @@ function main() {
                 data.size = ele.find('select[name="size"]').val()
                 data.color = ele.find('input[name="color"]').val()
                 data.backgroundcolor = ele.find('input[name="backgroundcolor"]').val()
-                data.transparency = ele.find('input[name="transparency"]').val()
+                data.transparency = edi.find('#text-transparency-slider .ui-slider-tip').text()
                 data.bold = ele.find('#text-border-check').is(':checked')
                 data.italic = ele.find('#text-italic-check').is(':checked')
                 data.playbackspeed = ele.find('select[name="playbackspeed"]').val()
@@ -1317,6 +1331,50 @@ function main() {
             this.observer(el, obs, ['style'])
         }
 
+        getMaterial() { //获取素材并分类
+            function getMate() {
+                let thats = $('#itemIndex')
+                $.ajax({
+                    type: 'post',
+                    dataType: 'json',
+                    url: './json/material.json',    //idm/template/getmaterial.do
+                    data: {
+                        areaId: '',
+                        materialType: thats.val(),
+                        searchValue: '',
+                    },
+                    success(res) {
+                        if(res.success) {
+                            let html = ''
+                            let thisVal = thats.val()
+                            if(thisVal == 4 || thisVal == 5 || thisVal == 6 || thisVal == 7 || thisVal == 8 || thisVal == 9) {
+                                html += `
+                                    <img class="material defaultAdd " src="img/add/add.png">
+                                `
+                            }
+
+                            for (const item of res.materialList) {
+                                
+                                html += `
+                                    <img src=${item.fileName} class="material" data-p='${JSON.stringify(item)}'>
+                                `
+                            }
+
+                            $('#itemList').html(html)
+                        }
+                    }
+                })
+            }
+            $('#itemIndex').on('change', function() {
+                let thats = $(this)
+                getMate()
+                
+            })
+
+            getMate()
+        }
+
+
 
 
         //其他方法
@@ -1402,7 +1460,8 @@ function main() {
             })
 
             $('#itemIndex').on('change', function (e) { //添加格式变换事件
-                if ($(this).val() == 4) {
+                let thisVal = $(this).val()
+                if (thisVal == 4 || thisVal == 5 || thisVal == 6 || thisVal == 7 || thisVal == 8 || thisVal == 9) {
                     $('#addMate').removeClass('hidden')
                 } else {
                     $('#addMate').addClass('hidden')

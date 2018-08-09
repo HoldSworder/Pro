@@ -63,7 +63,7 @@
         "updateTime": "2018-06-27 10:41:00",
         "userName": "admin",
         "thumbnail": null,
-        "note": null,
+        "note": {"timeLine": 3600},
         "groupName": "001"
     }]
 }

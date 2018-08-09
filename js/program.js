@@ -26,13 +26,12 @@ function main() {
         }
 
         //画布属性
-        drawImg(imgPath, id, x, y) { //在画布上绘制元素
-
+        drawImg(imgPath, id, x, y, img) { //在画布上绘制元素
 
             let index = $('#canvas').children().length
             let html = ''
             html += `
-                <div class="canvasDiv" data-i="${id}" id="div${index}" style="top: ${y}px; left: ${x}px; position: absolute; overflow: hidden; width: auto; height: auto;">
+                <div class="canvasDiv" data-J='${img.attr('data-J')}' data-i="${id}" id="div${index}" style="top: ${y}px; left: ${x}px; position: absolute; overflow: hidden; width: auto; height: auto;">
                     <img src=${imgPath} class='canvasChild' style='width: ${this.imgWidth}px; '>
                 </div>    
                 `
@@ -109,7 +108,7 @@ function main() {
                             let imgX = that.width()
                             let imgY = that.height()
 
-                            thats.drawImg(that.attr('src'), nameId, nowX - canX - imgX / 2, nowY - canY - imgY / 2)
+                            thats.drawImg(that.attr('src'), nameId, nowX - canX - imgX / 2, nowY - canY - imgY / 2, that)
                             thats.sliderEle(that, nameId)
 
                             $(document).off('mouseup', upE)
@@ -139,13 +138,13 @@ function main() {
                                         }
 
                                         let html = `
-                                            <div class="silderBlock" data-s=${path} data-i=${nameId} data-J=${that.attr('data-J')} data-l=${leftAll} data-t=${$('#itemIndex').val()} style='left: ${leftAll}px'>
+                                            <div class="silderBlock" data-s=${path} data-i=${nameId} data-J='${that.attr('data-J')}' data-l=${leftAll} data-t=${$('#itemIndex').val()} style='left: ${leftAll}px'>
                                                 ${filename}
                                             </div>
                                         `
 
                                         if (trackContent.children().length == 0) { //轨道为空 绘制图片
-                                            thats.drawImg(that.attr('src'), nameId, 0, 0)
+                                            thats.drawImg(that.attr('src'), nameId, 0, 0, that)
                                             $(item).find('.trackController').attr('data-t', $('#itemIndex').val())
 
                                         }
@@ -463,7 +462,7 @@ function main() {
             }
 
             let html = `
-                <div class="silderBlock" data-s=${path} data-l='0' data-J=${img.attr('data-J')} data-i="${id}" data-t=${$('#itemIndex').val()}>
+                <div class="silderBlock" data-s=${path} data-l='0' data-J='${img.attr('data-J')}' data-i="${id}" data-t=${$('#itemIndex').val()}>
                     ${filename}
                 </div>
             `
@@ -648,7 +647,7 @@ function main() {
                                 })
 
                                 that.removeTrack(track, thats)
-                                that.drawImg($(thats).attr('data-s'), $(thats).attr('data-i'), 0, 0)
+                                that.drawImg($(thats).attr('data-s'), $(thats).attr('data-i'), 0, 0, $(thats))
 
                                 let tContent = $(thats).parent().prev('.trackController')
                                 let thisType = $(thats).attr('data-t')
@@ -885,7 +884,7 @@ function main() {
 
                         let nowW = parseFloat($(parent).css('width'))
 
-                        if ($(eleW).hasClass('eleWidthR')) {    //右拉
+                        if ($(eleW).hasClass('eleWidthR')) { //右拉
 
                             if (nowX > trackL && nowX < trackL + trackW && nowW >= 10) {
                                 $(parent).css({
@@ -893,7 +892,7 @@ function main() {
                                 })
                             }
 
-                        } else {        //左拉
+                        } else { //左拉
                             console.log(left)
                             if (nowX > trackL && nowX < trackL + trackW && nowW >= 10) {
                                 let followX = parseFloat($(parent).attr('data-l')) - parseFloat(left - nowX)
@@ -991,43 +990,11 @@ function main() {
             let beginT = parseInt((elL / trackW) * timeS)
             let endT = parseInt((elR / trackW) * timeS)
 
-            el.attr('data-begin', formatSeconds(beginT))
-            el.attr('data-end', formatSeconds(endT))
-           
+            el.attr('data-begin', this.formatSeconds(beginT))
+            el.attr('data-end', this.formatSeconds(endT))
 
-            function formatSeconds(value) {
 
-                var theTime = parseInt(value); // 秒
-                var theTime1 = 0; // 分
-                var theTime2 = 0; // 小时
 
-                if (theTime > 60) {
-                    theTime1 = parseInt(theTime / 60);
-                    theTime = parseInt(theTime % 60);
-
-                    if (theTime1 > 60) {
-                        theTime2 = parseInt(theTime1 / 60);
-                        theTime1 = parseInt(theTime1 % 60);
-                    }
-                }
-
-                theTime1 = theTime1 < 10 ? `0${theTime1}` : theTime1
-                theTime2 = theTime2 < 10 ? `0${theTime2}` : theTime2
-                theTime = theTime < 10 ? `0${theTime}` : theTime
-
-                var result = `00:00:${theTime}`
-
-                if (theTime1 > 0) {
-                    result = `00:${theTime1}:${theTime}`
-                }
-
-                if (theTime2 > 0) {
-                    result = `${theTime2}:${theTime1}:${theTime}`
-                }
-
-                return result;
-
-            }
         }
 
 
@@ -1191,8 +1158,8 @@ function main() {
                 data.audio = edi.find('#video-audio-check').is(':checked')
                 data.volume = edi.find('#video-vol-slider .ui-slider-tip').text()
 
-                data.inTime = '' //wait
-                data.outTime = ''
+                data.inTime = edi.find('input[name="startPlay"]')
+                data.outTime = edi.find('input[name="endPlay"]')
 
                 let str = JSON.stringify(data)
                 ele.attr('data-p', str)
@@ -1207,8 +1174,8 @@ function main() {
                 getTime(data, edi)
                 data.volume = edi.find('#audio-vol-slider .ui-slider-tip').text()
 
-                data.inTime = '' //wait
-                data.outTime = ''
+                data.inTime = edi.find('input[name="startPlay"]')
+                data.outTime = edi.find('input[name="endPlay"]')
 
                 let str = JSON.stringify(data)
                 ele.attr('data-p', str)
@@ -1318,17 +1285,83 @@ function main() {
         }
 
         setPlayTime() { //监听video进度设置
-            let el = $('#video-slider .ui-slider-range')[0]
-            let timeL = $('.checkEle').attr('data-timeL')
+            let that = this
+            setPlay($('#videoEdi'), '#video-slider')
+            setPlay($('#audioEdi'), '#audio-slider')
 
-            function obs(mutation) {
-                let style = mutation.target.style
-                let left = parseInt(style.left)
-                let right = parseInt(style.left) + parseInt(style.width)
-                
+            function setPlay(form, id) {
+
+                let el = form.find(id).find('.ui-slider-range')[0]
+
+                function obs(mutation) {
+                    let timeL = parseFloat(JSON.parse($('.checkEle').attr('data-J')).note.timeLine)
+                    let style = mutation.target.style
+                    let left = parseInt(style.left)
+                    let right = parseInt(style.left) + parseInt(style.width)
+
+                    let startT = timeL * left / 100
+                    let endT = timeL * right / 100
+
+                    form.find('.videoPlayTime').eq(0).val(that.formatSeconds(startT))
+                    form.find('.videoPlayTime').eq(1).val(that.formatSeconds(endT))
+                }
+
+                that.observer(el, obs, ['style'])
+
+                form.find('.videoPlayTime').on('blur', function () {
+                    let str = $(this).val().trim()
+
+                    let reg = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/
+                    if (!reg.test(str)) {
+                        let html = `
+                            <div class="alert alert-warning alert-dismissible fade in" role="alert">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                请输入正确的格式
+                                如 00:00:00
+                            </div>
+                            `
+
+                        $(this).after(html)
+
+                        setTimeout(() => {
+                            $('.alert').alert('close')
+                        }, 3000)
+
+                        $(this).val('')
+                    } else {
+                        let thisV = $(this).val()
+                        let indexF = thisV.indexOf(':')
+                        let ele = $(id).find('.ui-slider-handle')
+                        let range = $(id).find('.ui-slider-range')
+
+                        let h = Number(thisV.slice(0, indexF))
+                        let m = Number(thisV.slice(indexF + 1, indexF + 3))
+                        let s = Number(thisV.slice(indexF + 4, indexF + 6))
+
+                        let timeS = h * 60 + m * 60 + s
+
+                        let timeA = JSON.parse($('.checkEle').attr('data-J')).note.timeLine
+                        if ($(this).attr('name') == 'startPlay') {
+                            let timeSe = timeS / timeA
+
+                            ele.eq(0).css('left', `${timeSe*100}%`)
+                            range.css({
+                                'left': `${timeSe*100}%`,
+                                'width': `${(parseFloat(ele.eq(1).css('left')) / $(id).width() - timeSe) * 100}%`
+                            })
+                        } else {
+                            
+                            let timeSe = timeS / timeA
+
+                            ele.eq(1).css('left', `${timeSe*100}%`)
+                            range.css({
+                                'width': `${(timeSe - parseFloat(ele.eq(0).css('left')) / $(id).width()) * 100}%`
+                            })
+                        }
+                    }
+                })
+
             }
-
-            this.observer(el, obs, ['style'])
         }
 
         getMaterial() { //获取素材并分类
@@ -1337,26 +1370,26 @@ function main() {
                 $.ajax({
                     type: 'post',
                     dataType: 'json',
-                    url: './json/material.json',    //idm/template/getmaterial.do
+                    url: './json/material.json', //idm/template/getmaterial.do
                     data: {
                         areaId: '',
                         materialType: thats.val(),
                         searchValue: '',
                     },
                     success(res) {
-                        if(res.success) {
+                        if (res.success) {
                             let html = ''
                             let thisVal = thats.val()
-                            if(thisVal == 4 || thisVal == 5 || thisVal == 6 || thisVal == 7 || thisVal == 8 || thisVal == 9) {
+                            if (thisVal == 4 || thisVal == 5 || thisVal == 6 || thisVal == 7 || thisVal == 8 || thisVal == 9) {
                                 html += `
                                     <img class="material defaultAdd " src="img/add/add.png">
                                 `
                             }
 
                             for (const item of res.materialList) {
-                                
+
                                 html += `
-                                    <img src=${item.fileName} class="material" data-p='${JSON.stringify(item)}'>
+                                    <img src=${item.fileName} class="material" data-J='${JSON.stringify(item)}'>
                                 `
                             }
 
@@ -1365,10 +1398,10 @@ function main() {
                     }
                 })
             }
-            $('#itemIndex').on('change', function() {
+            $('#itemIndex').on('change', function () {
                 let thats = $(this)
                 getMate()
-                
+
             })
 
             getMate()
@@ -1376,11 +1409,10 @@ function main() {
 
 
 
-
         //其他方法
         btnBind() { //按钮绑定事件
             let that = this
-            
+
             $('#addTrack').on('click', function () { //添加轨道按钮
                 that.newTrack()
             })
@@ -1437,21 +1469,21 @@ function main() {
                     }, 3000)
 
                     $(this).val('')
-                }else {
+                } else {
                     let thisV = $(this).val()
                     let indexF = thisV.indexOf(':')
-                    
+
                     let h = Number(thisV.slice(0, indexF))
                     let m = Number(thisV.slice(indexF + 1, indexF + 3))
-                    let s = Number(thisV.slice(indexF + 4, indexF + 6)) 
-                    
+                    let s = Number(thisV.slice(indexF + 4, indexF + 6))
+
                     let timeS = h * 60 + m * 60 + s
 
                     let timeA = $('#nowTime').attr('data-t')
-                    if($(this).attr('name') == 'startTime') {
+                    if ($(this).attr('name') == 'startTime') {
                         let timeSe = timeS / (timeA * 60)
                         $('.checkEle').css('left', `${timeSe * 100}%`)
-                    }else {
+                    } else {
                         let timeSe = timeS / (timeA * 60)
                         $('.checkEle').css('width', `${timeSe * parseFloat($('.trackContent').width()) - parseFloat($('.checkEle').css('left'))}px`)
                     }
@@ -1459,14 +1491,6 @@ function main() {
 
             })
 
-            $('#itemIndex').on('change', function (e) { //添加格式变换事件
-                let thisVal = $(this).val()
-                if (thisVal == 4 || thisVal == 5 || thisVal == 6 || thisVal == 7 || thisVal == 8 || thisVal == 9) {
-                    $('#addMate').removeClass('hidden')
-                } else {
-                    $('#addMate').addClass('hidden')
-                }
-            })
         }
 
         observer(el, func, filter) { //监听属性变化观察者
@@ -1483,6 +1507,41 @@ function main() {
 
             observer.observe(el, config)
         }
+
+        formatSeconds(value) { //秒转化为00:00:00格式
+
+            var theTime = parseInt(value); // 秒
+            var theTime1 = 0; // 分
+            var theTime2 = 0; // 小时
+
+            if (theTime > 60) {
+                theTime1 = parseInt(theTime / 60);
+                theTime = parseInt(theTime % 60);
+
+                if (theTime1 > 60) {
+                    theTime2 = parseInt(theTime1 / 60);
+                    theTime1 = parseInt(theTime1 % 60);
+                }
+            }
+
+            theTime1 = theTime1 < 10 ? `0${theTime1}` : theTime1
+            theTime2 = theTime2 < 10 ? `0${theTime2}` : theTime2
+            theTime = theTime < 10 ? `0${theTime}` : theTime
+
+            var result = `00:00:${theTime}`
+
+            if (theTime1 > 0) {
+                result = `00:${theTime1}:${theTime}`
+            }
+
+            if (theTime2 > 0) {
+                result = `${theTime2}:${theTime1}:${theTime}`
+            }
+
+            return result;
+
+        }
+
     }
 
 

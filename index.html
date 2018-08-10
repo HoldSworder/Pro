@@ -543,6 +543,37 @@
                                                 </select>
                                             </div>
 
+                                            <div class="table-responsive col-sm-12">
+                                                <table class="table table-striped table-bordered table-hover col-sm-12" id="rowDataTable">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>列名</th>
+                                                            <th>包含的列</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>
+                                                                <input name="dataColumnList" class="form-control">
+                                                            </td>
+                                                            <td>
+                                                                <input name="rowList" class="form-control">
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                    <tfoot>
+                                                        <tr>
+                                                            <td colspan='2' style="text-align: center">
+
+                                                                <span id="addTableRow">
+                                                                    <img src="./img/add/add.svg" alt=""> 添加
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+
                                             <div class="form-group col-sm-10">
                                                 <div>mq链接地址</div>
                                                 <input class="form-control" type="text" name="mqAddress">

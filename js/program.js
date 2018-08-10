@@ -1073,6 +1073,7 @@ function main() {
             this.setPlayTime()
             this.getMaterial()
             this.textEdiInit()
+            this.tableEdiInit()
         }
 
         videoEdiInit() {
@@ -1125,6 +1126,24 @@ function main() {
                 rest: false
             }).slider("float")
 
+        }
+
+        tableEdiInit() {
+            $('#addTableRow').on('click', function() {
+                let html = `
+                <tr>
+                    <td>
+                        <input name="dataColumnList" class="form-control">
+                    </td>
+                    <td>
+                        <input name="rowList" class="form-control">
+                    </td>
+                </tr>
+                `
+
+                $('#rowDataTable tbody').append(html)
+                
+            })
         }
 
         saveEdi() { //设置保存参数
@@ -1232,12 +1251,20 @@ function main() {
                 getTime(data, edi)
                 data.height = imgEle.height()
                 data.width = imgEle.width()
-                data.rowList = edi.find('select[name="rowList"]').val()
-                data.dataColumnList = edi.find('select[name="dataColumnList"]').val()
                 data.mqAddress = edi.find('input[name="mqAddress"]').val()
                 data.queueName = edi.find('input[name="queueName"]').val()
                 data.styleId = edi.find('select[name="styleId"]').val()
-
+                
+                let rowList = []
+                let dataColumnList = []
+                for (const item of $('#rowDataTable tbody tr')) {
+                    let ele = $(item)
+                    rowList.push(ele.find('input[name="rowList"]').val())
+                    dataColumnList.push(ele.find('input[name="dataColumnList"]').val())
+                }
+                data.rowList = rowList
+                data.dataColumnList = dataColumnList
+                
                 let str = JSON.stringify(data)
                 ele.attr('data-p', str)
             })

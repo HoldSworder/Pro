@@ -9,12 +9,13 @@ function main() {
             this.typeIndex = ['图片', '视频', '音频', '文本', 'rtsp', '表格', '时钟', '天气', '网页']
             this.SceneDto = []
             this.addImgPath = 'img/add/add.png'
+            this.seize = 'size=256x128&text='
         }
 
         init() { //入口
             $('#ruler').ruler()
 
-            this.drag() //画布
+            this.initDraw() //画布
 
             this.slider() //时间轴
 
@@ -26,15 +27,34 @@ function main() {
         }
 
         //画布属性
+        initDraw() {
+            // this.initHolder()
+            this.drag()
+        }
+
         drawImg(imgPath, id, x, y, img) { //在画布上绘制元素
 
             let index = $('#canvas').children().length
+
             let html = ''
             html += `
-                <div class="canvasDiv" data-J='${img.attr('data-J')}' data-i="${id}" id="div${index}" style="top: ${y}px; left: ${x}px; position: absolute; overflow: hidden; width: auto; height: auto;">
-                    <img src=${imgPath} class='canvasChild' style='width: ${this.imgWidth}px; '>
-                </div>    
+            <div class="canvasDiv" data-J='${img.attr('data-J')}' data-i="${id}" id="div${index}" style="top: ${y}px; left: ${x}px; position: absolute; overflow: hidden; width: auto; height: auto;">
+            <img src=${imgPath} class='canvasChild' style='width: ${this.imgWidth}px; '>
+            </div>    
+            `
+
+            console.log(imgPath)
+            console.log(this.addImgPath)
+            if (imgPath == this.addImgPath) {
+                console.log('asd')
+                imgPath = this.seize + $('#itemIndex').find("option:selected").text()
+                html = `
+                    <div class="canvasDiv" data-J='${img.attr('data-J')}' data-i="${id}" id="div${index}" style="top: ${y}px; left: ${x}px; position: absolute; overflow: hidden; width: auto; height: auto;">
+                        <img options=${imgPath} class='canvasChild placeholder' style='width: ${this.imgWidth}px; '>
+                    </div>    
                 `
+            }
+
             this.canvas.append(html)
 
             this.fixPosition(this, $(`#div${index}`).children()[0])
@@ -56,6 +76,8 @@ function main() {
             })
 
             this.showControl()
+
+            placeholder.render()
 
         }
 
@@ -380,6 +402,16 @@ function main() {
                 return false
             }
 
+        }
+
+        initHolder() {
+            Holder.addTheme("red", {
+                bg: "#F00",
+                fg: "#aaa",
+                size: 11,
+                font: "Monaco",
+                fontweight: "normal"
+            });
         }
 
 
@@ -1129,7 +1161,7 @@ function main() {
         }
 
         tableEdiInit() {
-            $('#addTableRow').on('click', function() {
+            $('#addTableRow').on('click', function () {
                 let html = `
                 <tr>
                     <td>
@@ -1142,7 +1174,7 @@ function main() {
                 `
 
                 $('#rowDataTable tbody').append(html)
-                
+
             })
         }
 
@@ -1254,7 +1286,7 @@ function main() {
                 data.mqAddress = edi.find('input[name="mqAddress"]').val()
                 data.queueName = edi.find('input[name="queueName"]').val()
                 data.styleId = edi.find('select[name="styleId"]').val()
-                
+
                 let rowList = []
                 let dataColumnList = []
                 for (const item of $('#rowDataTable tbody tr')) {
@@ -1264,7 +1296,7 @@ function main() {
                 }
                 data.rowList = rowList
                 data.dataColumnList = dataColumnList
-                
+
                 let str = JSON.stringify(data)
                 ele.attr('data-p', str)
             })
@@ -1377,7 +1409,7 @@ function main() {
                                 'width': `${(parseFloat(ele.eq(1).css('left')) / $(id).width() - timeSe) * 100}%`
                             })
                         } else {
-                            
+
                             let timeSe = timeS / timeA
 
                             ele.eq(1).css('left', `${timeSe*100}%`)

@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: lightgray;
+        }
+
+        .clock {
+            position: relative;
+            width: 250px;
+            height: 250px;
+            background-color: white;
+            border: 10px solid black;
+            border-radius: 100%;
+            -webkit-transform: rotate(180deg);
+            transform: rotate(180deg);
+        }
+
+        .clock:before {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            margin: auto;
+            width: 20px;
+            height: 20px;
+            border: 5px solid white;
+            background-color: black;
+            border-radius: 100%;
+            z-index: 99;
+        }
+
+        .clock__hand {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            margin: auto;
+            height: 8px;
+            background-color: black;
+            -webkit-transform-origin: 0;
+            transform-origin: 0;
+            transition: -webkit-transform cubic-bezier(0.1, 2.5, 0.5, 1);
+            transition: transform cubic-bezier(0.1, 2.5, 0.5, 1);
+            transition: transform cubic-bezier(0.1, 2.5, 0.5, 1), -webkit-transform cubic-bezier(0.1, 2.5, 0.5, 1);
+        }
+
+        .clock__hand--hour {
+            width: calc(50% - 250px / 4);
+        }
+
+        .clock__hand--minute {
+            width: calc(50% - 250px / 6);
+        }
+
+        .clock__hand--second {
+            width: calc(50% - 250px / 10);
+            height: 4px;
+            background-color: red;
+        }
+
+        .clock__tick {
+            display: block;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            width: 2px;
+            height: 8px;
+            background-color: lightgray;
+            -webkit-transform-origin: 0 115px;
+            transform-origin: 0 115px;
+            -webkit-transform: translateX(-50%);
+            transform: translateX(-50%);
+        }
+
+        .clock__tick:nth-child(5n + 1) {
+            width: 4px;
+            height: 16px;
+            background-color: black;
+        }
+
+        .clock__tick:nth-child(1) {
+            -webkit-transform: rotate(0deg) translateX(-50%);
+            transform: rotate(0deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(2) {
+            -webkit-transform: rotate(6deg) translateX(-50%);
+            transform: rotate(6deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(3) {
+            -webkit-transform: rotate(12deg) translateX(-50%);
+            transform: rotate(12deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(4) {
+            -webkit-transform: rotate(18deg) translateX(-50%);
+            transform: rotate(18deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(5) {
+            -webkit-transform: rotate(24deg) translateX(-50%);
+            transform: rotate(24deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(6) {
+            -webkit-transform: rotate(30deg) translateX(-50%);
+            transform: rotate(30deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(7) {
+            -webkit-transform: rotate(36deg) translateX(-50%);
+            transform: rotate(36deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(8) {
+            -webkit-transform: rotate(42deg) translateX(-50%);
+            transform: rotate(42deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(9) {
+            -webkit-transform: rotate(48deg) translateX(-50%);
+            transform: rotate(48deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(10) {
+            -webkit-transform: rotate(54deg) translateX(-50%);
+            transform: rotate(54deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(11) {
+            -webkit-transform: rotate(60deg) translateX(-50%);
+            transform: rotate(60deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(12) {
+            -webkit-transform: rotate(66deg) translateX(-50%);
+            transform: rotate(66deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(13) {
+            -webkit-transform: rotate(72deg) translateX(-50%);
+            transform: rotate(72deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(14) {
+            -webkit-transform: rotate(78deg) translateX(-50%);
+            transform: rotate(78deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(15) {
+            -webkit-transform: rotate(84deg) translateX(-50%);
+            transform: rotate(84deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(16) {
+            -webkit-transform: rotate(90deg) translateX(-50%);
+            transform: rotate(90deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(17) {
+            -webkit-transform: rotate(96deg) translateX(-50%);
+            transform: rotate(96deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(18) {
+            -webkit-transform: rotate(102deg) translateX(-50%);
+            transform: rotate(102deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(19) {
+            -webkit-transform: rotate(108deg) translateX(-50%);
+            transform: rotate(108deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(20) {
+            -webkit-transform: rotate(114deg) translateX(-50%);
+            transform: rotate(114deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(21) {
+            -webkit-transform: rotate(120deg) translateX(-50%);
+            transform: rotate(120deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(22) {
+            -webkit-transform: rotate(126deg) translateX(-50%);
+            transform: rotate(126deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(23) {
+            -webkit-transform: rotate(132deg) translateX(-50%);
+            transform: rotate(132deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(24) {
+            -webkit-transform: rotate(138deg) translateX(-50%);
+            transform: rotate(138deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(25) {
+            -webkit-transform: rotate(144deg) translateX(-50%);
+            transform: rotate(144deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(26) {
+            -webkit-transform: rotate(150deg) translateX(-50%);
+            transform: rotate(150deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(27) {
+            -webkit-transform: rotate(156deg) translateX(-50%);
+            transform: rotate(156deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(28) {
+            -webkit-transform: rotate(162deg) translateX(-50%);
+            transform: rotate(162deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(29) {
+            -webkit-transform: rotate(168deg) translateX(-50%);
+            transform: rotate(168deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(30) {
+            -webkit-transform: rotate(174deg) translateX(-50%);
+            transform: rotate(174deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(31) {
+            -webkit-transform: rotate(180deg) translateX(-50%);
+            transform: rotate(180deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(32) {
+            -webkit-transform: rotate(186deg) translateX(-50%);
+            transform: rotate(186deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(33) {
+            -webkit-transform: rotate(192deg) translateX(-50%);
+            transform: rotate(192deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(34) {
+            -webkit-transform: rotate(198deg) translateX(-50%);
+            transform: rotate(198deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(35) {
+            -webkit-transform: rotate(204deg) translateX(-50%);
+            transform: rotate(204deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(36) {
+            -webkit-transform: rotate(210deg) translateX(-50%);
+            transform: rotate(210deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(37) {
+            -webkit-transform: rotate(216deg) translateX(-50%);
+            transform: rotate(216deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(38) {
+            -webkit-transform: rotate(222deg) translateX(-50%);
+            transform: rotate(222deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(39) {
+            -webkit-transform: rotate(228deg) translateX(-50%);
+            transform: rotate(228deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(40) {
+            -webkit-transform: rotate(234deg) translateX(-50%);
+            transform: rotate(234deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(41) {
+            -webkit-transform: rotate(240deg) translateX(-50%);
+            transform: rotate(240deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(42) {
+            -webkit-transform: rotate(246deg) translateX(-50%);
+            transform: rotate(246deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(43) {
+            -webkit-transform: rotate(252deg) translateX(-50%);
+            transform: rotate(252deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(44) {
+            -webkit-transform: rotate(258deg) translateX(-50%);
+            transform: rotate(258deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(45) {
+            -webkit-transform: rotate(264deg) translateX(-50%);
+            transform: rotate(264deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(46) {
+            -webkit-transform: rotate(270deg) translateX(-50%);
+            transform: rotate(270deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(47) {
+            -webkit-transform: rotate(276deg) translateX(-50%);
+            transform: rotate(276deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(48) {
+            -webkit-transform: rotate(282deg) translateX(-50%);
+            transform: rotate(282deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(49) {
+            -webkit-transform: rotate(288deg) translateX(-50%);
+            transform: rotate(288deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(50) {
+            -webkit-transform: rotate(294deg) translateX(-50%);
+            transform: rotate(294deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(51) {
+            -webkit-transform: rotate(300deg) translateX(-50%);
+            transform: rotate(300deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(52) {
+            -webkit-transform: rotate(306deg) translateX(-50%);
+            transform: rotate(306deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(53) {
+            -webkit-transform: rotate(312deg) translateX(-50%);
+            transform: rotate(312deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(54) {
+            -webkit-transform: rotate(318deg) translateX(-50%);
+            transform: rotate(318deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(55) {
+            -webkit-transform: rotate(324deg) translateX(-50%);
+            transform: rotate(324deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(56) {
+            -webkit-transform: rotate(330deg) translateX(-50%);
+            transform: rotate(330deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(57) {
+            -webkit-transform: rotate(336deg) translateX(-50%);
+            transform: rotate(336deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(58) {
+            -webkit-transform: rotate(342deg) translateX(-50%);
+            transform: rotate(342deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(59) {
+            -webkit-transform: rotate(348deg) translateX(-50%);
+            transform: rotate(348deg) translateX(-50%);
+        }
+
+        .clock__tick:nth-child(60) {
+            -webkit-transform: rotate(354deg) translateX(-50%);
+            transform: rotate(354deg) translateX(-50%);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="clock" id="new-clock">
+        <div class="clock__ticks">
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+            <span class="clock__tick"></span>
+        </div>
+        <div class="clock__hand clock__hand--hour"></div>
+        <div class="clock__hand clock__hand--minute"></div>
+        <div class="clock__hand clock__hand--second"></div>
+    </div>
+</body>
+
+<script>
+    class Clock {
+        constructor(id) {
+            const el = document.getElementById(id);
+            this.handHr = el.querySelector('.clock__hand--hour');
+            this.handMin = el.querySelector('.clock__hand--minute');
+            this.handSec = el.querySelector('.clock__hand--second');
+
+            this.setTime();
+            this.init();
+        }
+
+        tick(hrs, mins, secs) {
+            const degHrs = ((hrs / 12) * 360) + 90;
+            const degMins = ((mins / 60) * 360) + 90;
+            const degSecs = ((secs / 60) * 360) + 90;
+
+            this.handHr.style.transform = `rotate(${degHrs}deg)`;
+            this.handMin.style.transform = `rotate(${degMins}deg)`;
+            this.handSec.style.transform = `rotate(${degSecs}deg)`;
+
+            if (degSecs === 90) {
+                this.handSec.style.transitionDuration = "0s";
+            } else {
+                this.handSec.style.transitionDuration = "0.1s";
+            }
+
+        }
+
+        setTime() {
+            const now = new Date();
+            const hrs = now.getHours();
+            const mins = now.getMinutes();
+            const secs = now.getSeconds();
+
+            this.tick(hrs, mins, secs);
+        }
+
+        init() {
+            setInterval(this.setTime.bind(this), 1000);
+        }
+    }
+
+    let clock = new Clock("new-clock");
+</script>
+
+</html>

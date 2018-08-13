@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        @-webkit-keyframes hand {
+            25% {
+                -webkit-transform: rotate(90deg);
+                transform: rotate(90deg);
+            }
+            50% {
+                -webkit-transform: rotate(180deg);
+                transform: rotate(180deg);
+            }
+            75% {
+                -webkit-transform: rotate(270deg);
+                transform: rotate(270deg);
+            }
+            to {
+                -webkit-transform: rotate(360deg);
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes hand {
+            25% {
+                -webkit-transform: rotate(90deg);
+                transform: rotate(90deg);
+            }
+            50% {
+                -webkit-transform: rotate(180deg);
+                transform: rotate(180deg);
+            }
+            75% {
+                -webkit-transform: rotate(270deg);
+                transform: rotate(270deg);
+            }
+            to {
+                -webkit-transform: rotate(360deg);
+                transform: rotate(360deg);
+            }
+        }
+
+        .clockface {
+            border: 2px solid black;
+            border-radius: 50%;
+            height: 20em;
+            margin: 0 auto;
+            position: relative;
+            width: 20em;
+        }
+
+        .clockface:after {
+            background: black;
+            border-radius: 50%;
+            content: "";
+            height: 1em;
+            left: 9.5em;
+            position: absolute;
+            top: 9.5em;
+            width: 1em;
+        }
+
+        .hand {
+            -webkit-animation: hand infinite steps(15);
+            animation: hand infinite steps(15);
+            position: absolute;
+            -webkit-transform-origin: 50% 100%;
+            transform-origin: 50% 100%;
+        }
+
+        .second {
+            background: red;
+            height: 9em;
+            left: calc(50% - 1px);
+            top: 1em;
+            width: 2px;
+            -webkit-animation-duration: 60s;
+            animation-duration: 60s;
+        }
+
+        .minute {
+            background: black;
+            border-radius: 3px;
+            height: 7.5em;
+            left: calc(50% - 3px);
+            top: 2.5em;
+            width: 6px;
+            -webkit-animation-duration: 3600s;
+            animation-duration: 3600s;
+        }
+
+        .hour {
+            background: black;
+            height: 4.5rem;
+            left: calc(50% - 5px);
+            top: 5.5rem;
+            width: 10px;
+            -webkit-animation-duration: 43200s;
+            animation-duration: 43200s;
+        }
+
+        .hour:after {
+            border: solid transparent;
+            border-bottom-color: black;
+            border-width: 10px 5px;
+            content: "";
+            position: absolute;
+            top: -20px;
+        }
+
+        .label {
+            font-size: 2em;
+            position: absolute;
+            text-align: center;
+            -webkit-transform-origin: 50% 9.5rem;
+            transform-origin: 50% 9.5rem;
+            top: 0.5rem;
+            width: 100%;
+        }
+
+        .label-1 {
+            -webkit-transform: rotate(30deg);
+            transform: rotate(30deg);
+        }
+
+        .label-1 .label_number {
+            -webkit-transform: rotate(-30deg);
+            transform: rotate(-30deg);
+        }
+
+        .label-2 {
+            -webkit-transform: rotate(60deg);
+            transform: rotate(60deg);
+        }
+
+        .label-2 .label_number {
+            -webkit-transform: rotate(-60deg);
+            transform: rotate(-60deg);
+        }
+
+        .label-3 {
+            -webkit-transform: rotate(90deg);
+            transform: rotate(90deg);
+        }
+
+        .label-3 .label_number {
+            -webkit-transform: rotate(-90deg);
+            transform: rotate(-90deg);
+        }
+
+        .label-4 {
+            -webkit-transform: rotate(120deg);
+            transform: rotate(120deg);
+        }
+
+        .label-4 .label_number {
+            -webkit-transform: rotate(-120deg);
+            transform: rotate(-120deg);
+        }
+
+        .label-5 {
+            -webkit-transform: rotate(150deg);
+            transform: rotate(150deg);
+        }
+
+        .label-5 .label_number {
+            -webkit-transform: rotate(-150deg);
+            transform: rotate(-150deg);
+        }
+
+        .label-6 {
+            -webkit-transform: rotate(180deg);
+            transform: rotate(180deg);
+        }
+
+        .label-6 .label_number {
+            -webkit-transform: rotate(-180deg);
+            transform: rotate(-180deg);
+        }
+
+        .label-7 {
+            -webkit-transform: rotate(210deg);
+            transform: rotate(210deg);
+        }
+
+        .label-7 .label_number {
+            -webkit-transform: rotate(-210deg);
+            transform: rotate(-210deg);
+        }
+
+        .label-8 {
+            -webkit-transform: rotate(240deg);
+            transform: rotate(240deg);
+        }
+
+        .label-8 .label_number {
+            -webkit-transform: rotate(-240deg);
+            transform: rotate(-240deg);
+        }
+
+        .label-9 {
+            -webkit-transform: rotate(270deg);
+            transform: rotate(270deg);
+        }
+
+        .label-9 .label_number {
+            -webkit-transform: rotate(-270deg);
+            transform: rotate(-270deg);
+        }
+
+        .label-10 {
+            -webkit-transform: rotate(300deg);
+            transform: rotate(300deg);
+        }
+
+        .label-10 .label_number {
+            -webkit-transform: rotate(-300deg);
+            transform: rotate(-300deg);
+        }
+
+        .label-11 {
+            -webkit-transform: rotate(330deg);
+            transform: rotate(330deg);
+        }
+
+        .label-11 .label_number {
+            -webkit-transform: rotate(-330deg);
+            transform: rotate(-330deg);
+        }
+
+        .digital {
+            margin: 2em auto;
+            text-align: center;
+        }
+
+        .division {
+            display: inline-block;
+            font-family: monospace;
+            font-size: 3rem;
+            font-weight: bold;
+            line-height: 1.5;
+        }
+
+        .hours:after,
+        .minutes:after {
+            content: ":";
+            display: inline-block;
+            margin: 0 0.45ex 0 -0.45ex;
+        }
+
+        .counter {
+            display: inline-block;
+            height: 1.5em;
+            margin: 0 -0.45ch;
+            overflow: hidden;
+            vertical-align: bottom;
+            width: 1em;
+        }
+
+        .digit {
+            background: linear-gradient(#666, #000);
+            color: white;
+            height: 1.5em;
+            text-align: center;
+            width: 100%;
+        }
+
+        @-webkit-keyframes seconds_units {
+            0%,
+            8% {
+                -webkit-transform: translateY(0em);
+                transform: translateY(0em);
+            }
+            10%,
+            18% {
+                -webkit-transform: translateY(-1.5em);
+                transform: translateY(-1.5em);
+            }
+            20%,
+            28% {
+                -webkit-transform: translateY(-3em);
+                transform: translateY(-3em);
+            }
+            30%,
+            38% {
+                -webkit-transform: translateY(-4.5em);
+                transform: translateY(-4.5em);
+            }
+            40%,
+            48% {
+                -webkit-transform: translateY(-6em);
+                transform: translateY(-6em);
+            }
+            50%,
+            58% {
+                -webkit-transform: translateY(-7.5em);
+                transform: translateY(-7.5em);
+            }
+            60%,
+            68% {
+                -webkit-transform: translateY(-9em);
+                transform: translateY(-9em);
+            }
+            70%,
+            78% {
+                -webkit-transform: translateY(-10.5em);
+                transform: translateY(-10.5em);
+            }
+            80%,
+            88% {
+                -webkit-transform: translateY(-12em);
+                transform: translateY(-12em);
+            }
+            90%,
+            98% {
+                -webkit-transform: translateY(-13.5em);
+                transform: translateY(-13.5em);
+            }
+            99.99999% {
+                -webkit-transform: translateY(-15em);
+                transform: translateY(-15em);
+            }
+        }
+
+        @keyframes seconds_units {
+            0%,
+            8% {
+                -webkit-transform: translateY(0em);
+                transform: translateY(0em);
+            }
+            10%,
+            18% {
+                -webkit-transform: translateY(-1.5em);
+                transform: translateY(-1.5em);
+            }
+            20%,
+            28% {
+                -webkit-transform: translateY(-3em);
+                transform: translateY(-3em);
+            }
+            30%,
+            38% {
+                -webkit-transform: translateY(-4.5em);
+                transform: translateY(-4.5em);
+            }
+            40%,
+            48% {
+                -webkit-transform: translateY(-6em);
+                transform: translateY(-6em);
+            }
+            50%,
+            58% {
+                -webkit-transform: translateY(-7.5em);
+                transform: translateY(-7.5em);
+            }
+            60%,
+            68% {
+                -webkit-transform: translateY(-9em);
+                transform: translateY(-9em);
+            }
+            70%,
+            78% {
+                -webkit-transform: translateY(-10.5em);
+                transform: translateY(-10.5em);
+            }
+            80%,
+            88% {
+                -webkit-transform: translateY(-12em);
+                transform: translateY(-12em);
+            }
+            90%,
+            98% {
+                -webkit-transform: translateY(-13.5em);
+                transform: translateY(-13.5em);
+            }
+            99.99999% {
+                -webkit-transform: translateY(-15em);
+                transform: translateY(-15em);
+            }
+        }
+
+        .seconds_units {
+            -webkit-animation: seconds_units 10s infinite;
+            animation: seconds_units 10s infinite;
+        }
+
+        @-webkit-keyframes seconds_tens {
+            0%,
+            16.3333333333% {
+                -webkit-transform: translateY(0em);
+                transform: translateY(0em);
+            }
+            16.6666666667%,
+            33% {
+                -webkit-transform: translateY(-1.5em);
+                transform: translateY(-1.5em);
+            }
+            33.3333333333%,
+            49.6666666667% {
+                -webkit-transform: translateY(-3em);
+                transform: translateY(-3em);
+            }
+            50%,
+            66.3333333333% {
+                -webkit-transform: translateY(-4.5em);
+                transform: translateY(-4.5em);
+            }
+            66.6666666667%,
+            83% {
+                -webkit-transform: translateY(-6em);
+                transform: translateY(-6em);
+            }
+            83.3333333333%,
+            99.6666666667% {
+                -webkit-transform: translateY(-7.5em);
+                transform: translateY(-7.5em);
+            }
+            99.99999% {
+                -webkit-transform: translateY(-9em);
+                transform: translateY(-9em);
+            }
+        }
+
+        @keyframes seconds_tens {
+            0%,
+            16.3333333333% {
+                -webkit-transform: translateY(0em);
+                transform: translateY(0em);
+            }
+            16.6666666667%,
+            33% {
+                -webkit-transform: translateY(-1.5em);
+                transform: translateY(-1.5em);
+            }
+            33.3333333333%,
+            49.6666666667% {
+                -webkit-transform: translateY(-3em);
+                transform: translateY(-3em);
+            }
+            50%,
+            66.3333333333% {
+                -webkit-transform: translateY(-4.5em);
+                transform: translateY(-4.5em);
+            }
+            66.6666666667%,
+            83% {
+                -webkit-transform: translateY(-6em);
+                transform: translateY(-6em);
+            }
+            83.3333333333%,
+            99.6666666667% {
+                -webkit-transform: translateY(-7.5em);
+                transform: translateY(-7.5em);
+            }
+            99.99999% {
+                -webkit-transform: translateY(-9em);
+                transform: translateY(-9em);
+            }
+        }
+
+        .seconds_tens {
+            -webkit-animation: seconds_tens 60s infinite;
+            animation: seconds_tens 60s infinite;
+        }
+
+        @-webkit-keyframes minutes_units {
+            0%,
+            9.9666666667% {
+                -webkit-transform: translateY(0em);
+                transform: translateY(0em);
+            }
+            10%,
+            19.9666666667% {
+                -webkit-transform: translateY(-1.5em);
+                transform: translateY(-1.5em);
+            }
+            20%,
+            29.9666666667% {
+                -webkit-transform: translateY(-3em);
+                transform: translateY(-3em);
+            }
+            30%,
+            39.9666666667% {
+                -webkit-transform: translateY(-4.5em);
+                transform: translateY(-4.5em);
+            }
+            40%,
+            49.9666666667% {
+                -webkit-transform: translateY(-6em);
+                transform: translateY(-6em);
+            }
+            50%,
+            59.9666666667% {
+                -webkit-transform: translateY(-7.5em);
+                transform: translateY(-7.5em);
+            }
+            60%,
+            69.9666666667% {
+                -webkit-transform: translateY(-9em);
+                transform: translateY(-9em);
+            }
+            70%,
+            79.9666666667% {
+                -webkit-transform: translateY(-10.5em);
+                transform: translateY(-10.5em);
+            }
+            80%,
+            89.9666666667% {
+                -webkit-transform: translateY(-12em);
+                transform: translateY(-12em);
+            }
+            90%,
+            99.9666666667% {
+                -webkit-transform: translateY(-13.5em);
+                transform: translateY(-13.5em);
+            }
+            99.99999% {
+                -webkit-transform: translateY(-15em);
+                transform: translateY(-15em);
+            }
+        }
+
+        @keyframes minutes_units {
+            0%,
+            9.9666666667% {
+                -webkit-transform: translateY(0em);
+                transform: translateY(0em);
+            }
+            10%,
+            19.9666666667% {
+                -webkit-transform: translateY(-1.5em);
+                transform: translateY(-1.5em);
+            }
+            20%,
+            29.9666666667% {
+                -webkit-transform: translateY(-3em);
+                transform: translateY(-3em);
+            }
+            30%,
+            39.9666666667% {
+                -webkit-transform: translateY(-4.5em);
+                transform: translateY(-4.5em);
+            }
+            40%,
+            49.9666666667% {
+                -webkit-transform: translateY(-6em);
+                transform: translateY(-6em);
+            }
+            50%,
+            59.9666666667% {
+                -webkit-transform: translateY(-7.5em);
+                transform: translateY(-7.5em);
+            }
+            60%,
+            69.9666666667% {
+                -webkit-transform: translateY(-9em);
+                transform: translateY(-9em);
+            }
+            70%,
+            79.9666666667% {
+                -webkit-transform: translateY(-10.5em);
+                transform: translateY(-10.5em);
+            }
+            80%,
+            89.9666666667% {
+                -webkit-transform: translateY(-12em);
+                transform: translateY(-12em);
+            }
+            90%,
+            99.9666666667% {
+                -webkit-transform: translateY(-13.5em);
+                transform: translateY(-13.5em);
+            }
+            99.99999% {
+                -webkit-transform: translateY(-15em);
+                transform: translateY(-15em);
+            }
+        }
+
+        .minutes_units {
+            -webkit-animation: minutes_units 600s infinite;
+            animation: minutes_units 600s infinite;
+        }
+
+        @-webkit-keyframes minutes_tens {
+            0%,
+            16.6611111111% {
+                -webkit-transform: translateY(0em);
+                transform: translateY(0em);
+            }
+            16.6666666667%,
+            33.3277777778% {
+                -webkit-transform: translateY(-1.5em);
+                transform: translateY(-1.5em);
+            }
+            33.3333333333%,
+            49.9944444444% {
+                -webkit-transform: translateY(-3em);
+                transform: translateY(-3em);
+            }
+            50%,
+            66.6611111111% {
+                -webkit-transform: translateY(-4.5em);
+                transform: translateY(-4.5em);
+            }
+            66.6666666667%,
+            83.3277777778% {
+                -webkit-transform: translateY(-6em);
+                transform: translateY(-6em);
+            }
+            83.3333333333%,
+            99.9944444444% {
+                -webkit-transform: translateY(-7.5em);
+                transform: translateY(-7.5em);
+            }
+            99.99999% {
+                -webkit-transform: translateY(-9em);
+                transform: translateY(-9em);
+            }
+        }
+
+        @keyframes minutes_tens {
+            0%,
+            16.6611111111% {
+                -webkit-transform: translateY(0em);
+                transform: translateY(0em);
+            }
+            16.6666666667%,
+            33.3277777778% {
+                -webkit-transform: translateY(-1.5em);
+                transform: translateY(-1.5em);
+            }
+            33.3333333333%,
+            49.9944444444% {
+                -webkit-transform: translateY(-3em);
+                transform: translateY(-3em);
+            }
+            50%,
+            66.6611111111% {
+                -webkit-transform: translateY(-4.5em);
+                transform: translateY(-4.5em);
+            }
+            66.6666666667%,
+            83.3277777778% {
+                -webkit-transform: translateY(-6em);
+                transform: translateY(-6em);
+            }
+            83.3333333333%,
+            99.9944444444% {
+                -webkit-transform: translateY(-7.5em);
+                transform: translateY(-7.5em);
+            }
+            99.99999% {
+                -webkit-transform: translateY(-9em);
+                transform: translateY(-9em);
+            }
+        }
+
+        .minutes_tens {
+            -webkit-animation: minutes_tens 3600s infinite;
+            animation: minutes_tens 3600s infinite;
+        }
+
+        @-webkit-keyframes hours_units {
+            4.1666666667%,
+            8.3331018519%,
+            45.8333333333%,
+            49.9997685185% {
+                -webkit-transform: translateY(-1.5em);
+                transform: translateY(-1.5em);
+            }
+            8.3333333333%,
+            12.4997685185%,
+            50%,
+            54.1664351852% {
+                -webkit-transform: translateY(-3em);
+                transform: translateY(-3em);
+            }
+            12.5%,
+            16.6664351852%,
+            54.1666666667%,
+            58.3331018519% {
+                -webkit-transform: translateY(-4.5em);
+                transform: translateY(-4.5em);
+            }
+            16.6666666667%,
+            20.8331018519%,
+            58.3333333333%,
+            62.4997685185% {
+                -webkit-transform: translateY(-6em);
+                transform: translateY(-6em);
+            }
+            20.8333333333%,
+            24.9997685185%,
+            62.5%,
+            66.6664351852% {
+                -webkit-transform: translateY(-7.5em);
+                transform: translateY(-7.5em);
+            }
+            25%,
+            29.1664351852%,
+            66.6666666667%,
+            70.8331018519% {
+                -webkit-transform: translateY(-9em);
+                transform: translateY(-9em);
+            }
+            29.1666666667%,
+            33.3331018519%,
+            70.8333333333%,
+            74.9997685185% {
+                -webkit-transform: translateY(-10.5em);
+                transform: translateY(-10.5em);
+            }
+            33.3333333333%,
+            37.4997685185%,
+            75%,
+            79.1664351852% {
+                -webkit-transform: translateY(-12em);
+                transform: translateY(-12em);
+            }
+            37.5%,
+            41.6664351852%,
+            79.1666666667%,
+            83.3331018519% {
+                -webkit-transform: translateY(-13.5em);
+                transform: translateY(-13.5em);
+            }
+            99.99999%,
+            41.6666566667%,
+            83.3333233333% {
+                -webkit-transform: translateY(-15em);
+                transform: translateY(-15em);
+            }
+            87.5%,
+            91.6664351852% {
+                -webkit-transform: translateY(-1.5em);
+                transform: translateY(-1.5em);
+            }
+            91.6666666667%,
+            95.8331018519% {
+                -webkit-transform: translateY(-3em);
+                transform: translateY(-3em);
+            }
+            95.8333333333%,
+            99.9997685185% {
+                -webkit-transform: translateY(-4.5em);
+                transform: translateY(-4.5em);
+            }
+            from,
+            to,
+            41.6666666667%,
+            83.3333333333%,
+            4.1664351852%,
+            45.8331018519%,
+            87.4997685185% {
+                -webkit-transform: none;
+                transform: none;
+            }
+        }
+
+        @keyframes hours_units {
+            4.1666666667%,
+            8.3331018519%,
+            45.8333333333%,
+            49.9997685185% {
+                -webkit-transform: translateY(-1.5em);
+                transform: translateY(-1.5em);
+            }
+            8.3333333333%,
+            12.4997685185%,
+            50%,
+            54.1664351852% {
+                -webkit-transform: translateY(-3em);
+                transform: translateY(-3em);
+            }
+            12.5%,
+            16.6664351852%,
+            54.1666666667%,
+            58.3331018519% {
+                -webkit-transform: translateY(-4.5em);
+                transform: translateY(-4.5em);
+            }
+            16.6666666667%,
+            20.8331018519%,
+            58.3333333333%,
+            62.4997685185% {
+                -webkit-transform: translateY(-6em);
+                transform: translateY(-6em);
+            }
+            20.8333333333%,
+            24.9997685185%,
+            62.5%,
+            66.6664351852% {
+                -webkit-transform: translateY(-7.5em);
+                transform: translateY(-7.5em);
+            }
+            25%,
+            29.1664351852%,
+            66.6666666667%,
+            70.8331018519% {
+                -webkit-transform: translateY(-9em);
+                transform: translateY(-9em);
+            }
+            29.1666666667%,
+            33.3331018519%,
+            70.8333333333%,
+            74.9997685185% {
+                -webkit-transform: translateY(-10.5em);
+                transform: translateY(-10.5em);
+            }
+            33.3333333333%,
+            37.4997685185%,
+            75%,
+            79.1664351852% {
+                -webkit-transform: translateY(-12em);
+                transform: translateY(-12em);
+            }
+            37.5%,
+            41.6664351852%,
+            79.1666666667%,
+            83.3331018519% {
+                -webkit-transform: translateY(-13.5em);
+                transform: translateY(-13.5em);
+            }
+            99.99999%,
+            41.6666566667%,
+            83.3333233333% {
+                -webkit-transform: translateY(-15em);
+                transform: translateY(-15em);
+            }
+            87.5%,
+            91.6664351852% {
+                -webkit-transform: translateY(-1.5em);
+                transform: translateY(-1.5em);
+            }
+            91.6666666667%,
+            95.8331018519% {
+                -webkit-transform: translateY(-3em);
+                transform: translateY(-3em);
+            }
+            95.8333333333%,
+            99.9997685185% {
+                -webkit-transform: translateY(-4.5em);
+                transform: translateY(-4.5em);
+            }
+            from,
+            to,
+            41.6666666667%,
+            83.3333333333%,
+            4.1664351852%,
+            45.8331018519%,
+            87.4997685185% {
+                -webkit-transform: none;
+                transform: none;
+            }
+        }
+
+        @-webkit-keyframes hours_tens {
+            from,
+            to,
+            41.6664351852% {
+                -webkit-transform: none;
+                transform: none;
+            }
+            41.6666666667%,
+            83.3331018519% {
+                -webkit-transform: translateY(-1.5em);
+                transform: translateY(-1.5em);
+            }
+            83.3333333333%,
+            99.9997685185% {
+                -webkit-transform: translateY(-3em);
+                transform: translateY(-3em);
+            }
+            99.99999% {
+                -webkit-transform: translateY(-4.5em);
+                transform: translateY(-4.5em);
+            }
+        }
+
+        @keyframes hours_tens {
+            from,
+            to,
+            41.6664351852% {
+                -webkit-transform: none;
+                transform: none;
+            }
+            41.6666666667%,
+            83.3331018519% {
+                -webkit-transform: translateY(-1.5em);
+                transform: translateY(-1.5em);
+            }
+            83.3333333333%,
+            99.9997685185% {
+                -webkit-transform: translateY(-3em);
+                transform: translateY(-3em);
+            }
+            99.99999% {
+                -webkit-transform: translateY(-4.5em);
+                transform: translateY(-4.5em);
+            }
+        }
+
+        .hours_units {
+            -webkit-animation: hours_units 86400s infinite;
+            animation: hours_units 86400s infinite;
+        }
+
+        .hours_tens {
+            -webkit-animation: hours_tens 86400s infinite;
+            animation: hours_tens 86400s infinite;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="clockface">
+        <div class="hand second animate"></div>
+        <div class="hand minute animate"></div>
+        <div class="hand hour animate"></div>
+        <div class="label label-1">
+            <div class="label_number">1</div>
+        </div>
+        <div class="label label-2">
+            <div class="label_number">2</div>
+        </div>
+        <div class="label label-3">
+            <div class="label_number">3</div>
+        </div>
+        <div class="label label-4">
+            <div class="label_number">4</div>
+        </div>
+        <div class="label label-5">
+            <div class="label_number">5</div>
+        </div>
+        <div class="label label-6">
+            <div class="label_number">6</div>
+        </div>
+        <div class="label label-7">
+            <div class="label_number">7</div>
+        </div>
+        <div class="label label-8">
+            <div class="label_number">8</div>
+        </div>
+        <div class="label label-9">
+            <div class="label_number">9</div>
+        </div>
+        <div class="label label-10">
+            <div class="label_number">10</div>
+        </div>
+        <div class="label label-11">
+            <div class="label_number">11</div>
+        </div>
+        <div class="label label-12">
+            <div class="label_number">12</div>
+        </div>
+    </div>
+    <div class="digital">
+        <div class="hours division">
+            <div class="counter">
+                <div class="digits animate hours_tens">
+                    <div class="digit">0</div>
+                    <div class="digit">1</div>
+                    <div class="digit">2</div>
+                    <div class="digit">0</div>
+                </div>
+            </div>
+            <div class="counter">
+                <div class="digits animate hours_units">
+                    <div class="digit">0</div>
+                    <div class="digit">1</div>
+                    <div class="digit">2</div>
+                    <div class="digit">3</div>
+                    <div class="digit">4</div>
+                    <div class="digit">5</div>
+                    <div class="digit">6</div>
+                    <div class="digit">7</div>
+                    <div class="digit">8</div>
+                    <div class="digit">9</div>
+                    <div class="digit">0</div>
+                </div>
+            </div>
+        </div>
+        <div class="minutes division">
+            <div class="counter">
+                <div class="digits animate minutes_tens">
+                    <div class="digit">0</div>
+                    <div class="digit">1</div>
+                    <div class="digit">2</div>
+                    <div class="digit">3</div>
+                    <div class="digit">4</div>
+                    <div class="digit">5</div>
+                    <div class="digit">0</div>
+                </div>
+            </div>
+            <div class="counter">
+                <div class="digits animate minutes_units">
+                    <div class="digit">0</div>
+                    <div class="digit">1</div>
+                    <div class="digit">2</div>
+                    <div class="digit">3</div>
+                    <div class="digit">4</div>
+                    <div class="digit">5</div>
+                    <div class="digit">6</div>
+                    <div class="digit">7</div>
+                    <div class="digit">8</div>
+                    <div class="digit">9</div>
+                    <div class="digit">0</div>
+                </div>
+            </div>
+        </div>
+        <div class="seconds division">
+            <div class="counter">
+                <div class="digits animate seconds_tens">
+                    <div class="digit">0</div>
+                    <div class="digit">1</div>
+                    <div class="digit">2</div>
+                    <div class="digit">3</div>
+                    <div class="digit">4</div>
+                    <div class="digit">5</div>
+                    <div class="digit">0</div>
+                </div>
+            </div>
+            <div class="counter">
+                <div class="digits animate seconds_units">
+                    <div class="digit">0</div>
+                    <div class="digit">1</div>
+                    <div class="digit">2</div>
+                    <div class="digit">3</div>
+                    <div class="digit">4</div>
+                    <div class="digit">5</div>
+                    <div class="digit">6</div>
+                    <div class="digit">7</div>
+                    <div class="digit">8</div>
+                    <div class="digit">9</div>
+                    <div class="digit">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script>
+    (function() {
+        var now=new Date();
+        var delay=-now.getMilliseconds() - 1000 * now.getSeconds() - 60000 * now.getMinutes() - 3600000 * now.getHours();
+
+        var elementsToAnimate=document.getElementsByClassName('animate');
+        for (var i=0;
+        i<elementsToAnimate.length;
+        i++) {
+            elementsToAnimate[i].style.animationDelay=delay + 'ms';
+        }
+    }
+
+    ) ();
+</script>
+
+</html>

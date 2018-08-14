@@ -233,3 +233,12 @@ body {
     display: inline-block ;
     width: initial ;
 }
+
+#itemList img {
+    width: 100px;
+    height: 100px;
+}
+
+.width100 {
+    width: 100% !important;
+}

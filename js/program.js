@@ -40,7 +40,7 @@ function main() {
             html += `
             <div class="canvasDiv" data-J='${img.attr('data-J')}' data-i="${id}" id="div${index}" style="top: ${y}px; left: ${x}px; position: absolute; overflow: hidden; width: auto; height: auto;">
             <img src=${imgPath} class='canvasChild' style='width: ${this.imgWidth}px; '>
-            </div>    
+            </div>
             `
 
             console.log(imgPath)
@@ -51,7 +51,7 @@ function main() {
                 html = `
                     <div class="canvasDiv" data-J='${img.attr('data-J')}' data-i="${id}" id="div${index}" style="top: ${y}px; left: ${x}px; position: absolute; overflow: hidden; width: auto; height: auto;">
                         <img options=${imgPath} class='canvasChild placeholder' style='width: ${this.imgWidth}px; '>
-                    </div>    
+                    </div>
                 `
             }
 
@@ -445,7 +445,7 @@ function main() {
         alignment() { //滑块校准线、range、时间
             let that = this
             let html = `
-                <div id="nowTimeLine" style="float:left; width: 1px; left: 0; height: 100px; background: #000; z-index: 99; top: 0; position: absolute"></div> 
+                <div id="nowTimeLine" style="float:left; width: 1px; left: 0; height: 100px; background: #000; z-index: 99; top: 0; position: absolute"></div>
             `
 
             $('#circles-slider').append(html)
@@ -869,7 +869,7 @@ function main() {
                 $('#ediBox').children().addClass('hidden')
                 $('#ediBox').children().eq(thisT - 1).removeClass('hidden')
 
-                //填充起止时间 
+                //填充起止时间
                 $('#ediBox').children().eq(thisT - 1).find('input[name="startTime"]').val($('.checkEle').attr('data-begin'))
                 $('#ediBox').children().eq(thisT - 1).find('input[name="endTime"]').val($('.checkEle').attr('data-end'))
 
@@ -884,7 +884,7 @@ function main() {
                 let trackEle = $('#canvas').find(`div[data-i=${dataId}]`)
                 trackEle.click()
 
-
+                that.setInput()
 
                 $(this).on('mousedown', '.eleWidth', function (e) { //轨道元素拉伸属性
                     e.preventDefault()
@@ -1029,6 +1029,27 @@ function main() {
 
         }
 
+        setInput() {    //点击图片或轨道读取信息填充到素材仓库中
+            let data = JSON.parse($('.checkEle').attr('data-j'))
+            
+            let index = $('.checkEle').attr('data-t')
+            let allEdi =  $('#ediBox').children()
+            let nowEdi
+            for (const item of allEdi) {
+                if(!$(item).hasClass('hidden')) {
+                    nowEdi = $(item)
+                }
+            }
+
+            switch (index) {
+                case 1:
+                    
+                    break;
+            
+                default:
+                    break;
+            }
+        }
 
 
         //缩略时间轴
@@ -1443,20 +1464,27 @@ function main() {
                                 html += `
                                     <img class="material defaultAdd " src="img/add/add.png">
                                 `
+
                             }
 
                             for (const item of res.materialList) {
 
                                 html += `
-                                    <img src=${item.fileName} class="material" data-J='${JSON.stringify(item)}'>
+                                <img src=${item.fileName} class="material" data-J='${JSON.stringify(item)}'>
                                 `
                             }
 
-                            $('#itemList').html(html)
+                            $('#itemList').children().hide()
+                            $('#itemList').append(html)
+                            $('#itemList').find(`img[data-t=${thisVal}]`).show()
+                            
+                        }else {
+                            wade.libs.alert(res.msg)
                         }
                     }
                 })
             }
+
             $('#itemIndex').on('change', function () {
                 let thats = $(this)
                 getMate()

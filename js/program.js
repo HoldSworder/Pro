@@ -1029,25 +1029,93 @@ function main() {
 
         }
 
-        setInput() {    //点击图片或轨道读取信息填充到素材仓库中
-            let data = JSON.parse($('.checkEle').attr('data-j'))
-            
+        setInput() { //点击图片或轨道读取信息填充到素材仓库中
+            let flag = false
+            let data
+            if (!($('.checkEle').attr('data-p') == undefined)) {
+                flag = true
+                data = JSON.parse($('.checkEle').attr('data-p'))
+            }
+
             let index = $('.checkEle').attr('data-t')
-            let allEdi =  $('#ediBox').children()
+            let allEdi = $('#ediBox').children()
             let nowEdi
             for (const item of allEdi) {
-                if(!$(item).hasClass('hidden')) {
+                if (!$(item).hasClass('hidden')) {
                     nowEdi = $(item)
                 }
             }
 
-            switch (index) {
-                case 1:
-                    
-                    break;
-            
-                default:
-                    break;
+            if (flag) {
+                if (index == 1) {
+                    nowEdi.find('select[name="transition"]').val(data.transition)
+                    nowEdi.find('select[name="animation"]').val(data.animation)
+                } else if (index == 2) {
+                    $('#video-video-check').bootstrapSwitch('state', data.video)
+                    $('#video-audio-check').bootstrapSwitch('state', data.audio)
+
+                    nowEdi.find('#video-vol-slider .ui-slider-handle').css('left', `${data.volume}%`)
+                    nowEdi.find('#video-vol-slider .ui-slider-tip').text(data.volume)
+
+                    nowEdi.find('input[name="startPlay"]').val(data.inTime)
+                    nowEdi.find('input[name="endPlay"]').val(data.outTime)
+
+                    nowEdi.find('input[name="startPlay"]').blur()
+                    nowEdi.find('input[name="endPlay"]').blur()
+                } else if (index == 3) {
+                    nowEdi.find('#audio-vol-slider .ui-slider-handle').css('left', `${data.volume}%`)
+                    nowEdi.find('#audio-vol-slider .ui-slider-tip').text(data.volume)
+
+                    nowEdi.find('input[name="startPlay"]').val(data.inTime)
+                    nowEdi.find('input[name="endPlay"]').val(data.outTime)
+
+                    nowEdi.find('input[name="startPlay"]').blur()
+                    nowEdi.find('input[name="endPlay"]').blur()
+
+                } else if (index == 4) {
+                    nowEdi.find('textarea').val(data.text)
+                    nowEdi.find('select[name="alignment"]').val(data.alignment)
+                    nowEdi.find('#text-multiline-check').bootstrapSwitch('state', data.multiline)
+                    nowEdi.find('select[name="rolling"]').val(data.rolling)
+                    nowEdi.find('select[name="font"]').val(data.font)
+                    nowEdi.find('select[name="size"]').val(data.size)
+                    nowEdi.find('input[name="color"]').val(data.color)
+                    nowEdi.find('input[name="backgroundcolor"]').val(data.backgroundcolor)
+                    nowEdi.find('#text-transparency-slider .ui-slider-handle').css('left', `${data.transparency}%`)
+                    nowEdi.find('#text-transparency-slider .ui-slider-tip').text(data.transparency)
+                    nowEdi.find('#text-border-check').bootstrapSwitch('state', data.bold)
+                    nowEdi.find('#text-italic-check').bootstrapSwitch('state', data.italic)
+                    nowEdi.find('select[name="playbackspeed"]').val(data.playbackspeed)
+                    nowEdi.find('input[name="residencetime"]').val(data.residencetime)
+                    nowEdi.find('select[name="transition"]').val(data.transition)
+                    nowEdi.find('select[name="animation"]').val(data.animation)
+                }else if(index == 5) {
+                    nowEdi.find('input[name="address"]').val(data.adress)
+                    nowEdi.find('select[name="protocol"]').val(data.protocol)
+                }else if(index == 6) {
+                    nowEdi.find('input[name="mqAddress"]').val(data.mqAddress)
+                    nowEdi.find('input[name="queueName"]').val(data.queueName)
+                    nowEdi.find('input[name="styleId"]').val(data.styleId)
+
+                    let html = ''
+                    for (let i = 0; i < data.rowList.length; i++) {
+                        const row = data.rowList[i]
+                        const dataCol = data.dataColumnList[i]
+
+                        html += `
+                        <tr>
+                            <td>
+                                <input name="dataColumnList" class="form-control" value="${row}">
+                            </td>
+                            <td>
+                                <input name="rowList" class="form-control" value="${dataCol}">
+                            </td>
+                        </tr>
+                        `
+                    }
+
+                    nowEdi.find('#rowDataTable tbody').html(html)
+                }
             }
         }
 
@@ -1226,12 +1294,12 @@ function main() {
                 let data = {}
 
                 getTime(data, edi)
-                data.video = edi.find('#video-video-check').is(':checked')
-                data.audio = edi.find('#video-audio-check').is(':checked')
+                data.video = edi.find('#video-video-check').bootstrapSwitch('state')
+                data.audio = edi.find('#video-audio-check').bootstrapSwitch('state')
                 data.volume = edi.find('#video-vol-slider .ui-slider-tip').text()
 
-                data.inTime = edi.find('input[name="startPlay"]')
-                data.outTime = edi.find('input[name="endPlay"]')
+                data.inTime = edi.find('input[name="startPlay"]').val()
+                data.outTime = edi.find('input[name="endPlay"]').val()
 
                 let str = JSON.stringify(data)
                 ele.attr('data-p', str)
@@ -1246,8 +1314,8 @@ function main() {
                 getTime(data, edi)
                 data.volume = edi.find('#audio-vol-slider .ui-slider-tip').text()
 
-                data.inTime = edi.find('input[name="startPlay"]')
-                data.outTime = edi.find('input[name="endPlay"]')
+                data.inTime = edi.find('input[name="startPlay"]').val()
+                data.outTime = edi.find('input[name="endPlay"]').val()
 
                 let str = JSON.stringify(data)
                 ele.attr('data-p', str)
@@ -1260,19 +1328,19 @@ function main() {
                 let data = {}
 
                 getTime(data, edi)
-                data.text = ele.find('textarea').val()
-                data.alignment = ele.find('select[name="alignment"]').val()
-                data.multiline = ele.find('#text-multiline-check').is(':checked')
-                data.rolling = ele.find('select[name="rolling"]').val()
-                data.font = ele.find('select[name="font"]').val()
-                data.size = ele.find('select[name="size"]').val()
-                data.color = ele.find('input[name="color"]').val()
-                data.backgroundcolor = ele.find('input[name="backgroundcolor"]').val()
+                data.text = edi.find('textarea').val()
+                data.alignment = edi.find('select[name="alignment"]').val()
+                data.multiline = edi.find('#text-multiline-check').bootstrapSwitch('state')
+                data.rolling = edi.find('select[name="rolling"]').val()
+                data.font = edi.find('select[name="font"]').val()
+                data.size = edi.find('select[name="size"]').val()
+                data.color = edi.find('input[name="color"]').val()
+                data.backgroundcolor = edi.find('input[name="backgroundcolor"]').val()
                 data.transparency = edi.find('#text-transparency-slider .ui-slider-tip').text()
-                data.bold = ele.find('#text-border-check').is(':checked')
-                data.italic = ele.find('#text-italic-check').is(':checked')
-                data.playbackspeed = ele.find('select[name="playbackspeed"]').val()
-                data.residencetime = ele.find('input[name="residencetime"]').val()
+                data.bold = edi.find('#text-border-check').bootstrapSwitch('state')
+                data.italic = edi.find('#text-italic-check').bootstrapSwitch('state')
+                data.playbackspeed = edi.find('select[name="playbackspeed"]').val()
+                data.residencetime = edi.find('input[name="residencetime"]').val()
                 data.transition = edi.find('select[name="transition"]').val()
                 data.animation = edi.find('select[name="animation"]').val()
 
@@ -1477,8 +1545,8 @@ function main() {
                             $('#itemList').children().hide()
                             $('#itemList').append(html)
                             $('#itemList').find(`img[data-t=${thisVal}]`).show()
-                            
-                        }else {
+
+                        } else {
                             wade.libs.alert(res.msg)
                         }
                     }

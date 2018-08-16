@@ -39,12 +39,10 @@ function main() {
             let html = ''
             html += `
             <div class="canvasDiv" data-J='${img.attr('data-J')}' data-i="${id}" id="div${index}" style="top: ${y}px; left: ${x}px; position: absolute; overflow: hidden; width: auto; height: auto;">
-            <img src=${imgPath} class='canvasChild' style='width: ${this.imgWidth}px; '>
+                <img src=${imgPath} class='canvasChild' style='width: ${this.imgWidth}px; '>
             </div>
             `
 
-            console.log(imgPath)
-            console.log(this.addImgPath)
             if (imgPath == this.addImgPath) {
                 console.log('asd')
                 imgPath = this.seize + $('#itemIndex').find("option:selected").text()
@@ -565,7 +563,7 @@ function main() {
             let html = `
                 <div class="track clearfix">
                     <div class="trackController col-sm-2" data-t=${typeIndex}>
-                        <span>${this.typeIndex[typeIndex - 1]}${index}</span>
+                        <span>${this.typeIndex[typeIndex - 1]}</span>
                         <span class="glyphicon glyphicon glyphicon-align-justify" aria-hidden="true"></span>
                     </div>
                     <div id="track${indexT}" class="trackContent col-sm-10"></div>
@@ -627,7 +625,7 @@ function main() {
                 let upE = function (e) {
                     e.stopPropagation()
                     e.preventDefault()
-                    // debugger
+                    debugger
                     for (const item of $('.track')) { //循环所有轨道 找到元素将移动的轨道
                         let copyId = $(thats).parent().attr('id')
                         let itemId = $(item).children().eq(1).attr('id')
@@ -1115,6 +1113,16 @@ function main() {
                     }
 
                     nowEdi.find('#rowDataTable tbody').html(html)
+                }else if(index == 7) {
+                    nowEdi.find('select[name="styleId"]').val(data.styleId)
+                }else if(index == 8) {
+                    nowEdi.find('select[name="styleId"]').val(data.styleId)
+                }else if(index == 9) {
+                    nowEdi.find('select[name="overflow"]').val(data.overflow)
+                    nowEdi.find('input[name="url"]').val(data.url)
+
+                    nowEdi.find('#transparent-range .ui-slider-handle').css('left', `${data.transparency}%`)
+                    nowEdi.find('#transparent-range .ui-slider-tip').text(data.transparency)
                 }
             }
         }
@@ -1195,6 +1203,7 @@ function main() {
             this.getMaterial()
             this.textEdiInit()
             this.tableEdiInit()
+            this.htmlEdiInit()
         }
 
         videoEdiInit() {
@@ -1267,6 +1276,16 @@ function main() {
             })
         }
 
+        htmlEdiInit() {
+            $('#transparent-range').slider({
+                min: 0,
+                max: 100,
+                range: false,
+            }).slider("pips", {
+                rest: false
+            }).slider("float")
+        }
+
         saveEdi() { //设置保存参数
             function getTime(obj, id) {
                 obj.beginTime = id.find('input[name="startTime"]').val()
@@ -1280,7 +1299,7 @@ function main() {
                 let data = {}
 
                 getTime(data, edi)
-                data.transition = edi.find('select[name="transition"]').val()
+                data.transition = edi.find('input[name="url"]').val()
                 data.animation = edi.find('select[name="animation"]').val()
 
                 let str = JSON.stringify(data)
@@ -1423,7 +1442,9 @@ function main() {
                 let data = {}
 
                 getTime(data, edi)
-                data.styleId = edi.find('select[name="styleId"]').val()
+                data.overflow = edi.find('select[name="overflow"]').val()
+                data.url = edi.find('input[name="url"]').val()
+                data.transparency = edi.find('#transparent-range .ui-slider-tip').text()
 
                 let str = JSON.stringify(data)
                 ele.attr('data-p', str)

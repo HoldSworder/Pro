@@ -213,7 +213,7 @@ function main() {
             let dragMinHeight = 'auto'
             let maxw = this.width
             let maxh = 'auto'
-            // handle = handle || oDrag;
+            handle = handle || oDrag;
 
             handle.onmousedown = function (e) {
                 e.stopPropagation()
@@ -225,17 +225,17 @@ function main() {
                 var iparenttop = oparent.parentElement.offsetTop;
                 var iparentleft = oparent.parentElement.offsetLeft;
                 var iparentwidth = oparent.offsetWidth;
-                // var iparentheight = oparent.offsetHeight;
+                var iparentheight = oparent.offsetHeight;
 
                 let moveE = function (e) {
 
                     e = e || event;
                     var iL = e.clientX - disX;
                     var iT = e.clientY - disY;
-                    // var maxw = document.documentElement.clientWidth - oparent.offsetLeft - 2;
-                    // var maxh = document.documentElement.clientHeight - oparent.offsetTop - 2;
+                    var maxw = document.documentElement.clientWidth - oparent.offsetLeft - 2;
+                    var maxh = document.documentElement.clientHeight - oparent.offsetTop - 2;
                     var iw = isleft ? iparentwidth - iL : handle.offsetWidth + iL;
-                    // var ih = istop ? iparentheight - iT : handle.offsetHeight + iT;
+                    var ih = istop ? iparentheight - iT : handle.offsetHeight + iT;
                     if (isleft) {
 
                         oparent.parentElement.style.left = iparentleft + iL + 'px';
@@ -252,11 +252,11 @@ function main() {
                     if (lookx) {
                         oparent.style.width = iw + 'px';
                     };
-                    // if (ih < dragMinHeight) {
-                    //     ih = dragMinHeight;
-                    // } else if (ih > maxh) {
-                    //     ih = maxh;
-                    // };
+                    if (ih < dragMinHeight) {
+                        ih = dragMinHeight;
+                    } else if (ih > maxh) {
+                        ih = maxh;
+                    };
                     // if (looky) {
                     //     oparent.style.height = ih + 'px';
                     // };
@@ -272,11 +272,11 @@ function main() {
                 let upE = function () {
                     $(document).off('mousemove', moveE)
                     $(document).off('mouseup', upE)
-                    // let left = $(oparent).offset().left
-                    // let width = $(oparent).width()
-                    // if ((left + width) > that.width) {
-                    //     $(oparent).parent().css('left', 0)
-                    // }
+                    let left = $(oparent).offset().left
+                    let width = $(oparent).width()
+                    if ((left + width) > that.width) {
+                        $(oparent).parent().css('left', 0)
+                    }
                     that.fixPosition(that, oparent)
                 };
 

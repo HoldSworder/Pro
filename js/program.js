@@ -232,8 +232,8 @@ function main() {
                     e = e || event;
                     var iL = e.clientX - disX;
                     var iT = e.clientY - disY;
-                    var maxw = document.documentElement.clientWidth - oparent.offsetLeft - 2;
-                    var maxh = document.documentElement.clientHeight - oparent.offsetTop - 2;
+                    // maxw = document.documentElement.clientWidth - oparent.offsetLeft - 2;
+                    // maxh = document.documentElement.clientHeight - oparent.offsetTop - 2;
                     var iw = isleft ? iparentwidth - iL : handle.offsetWidth + iL;
                     var ih = istop ? iparentheight - iT : handle.offsetHeight + iT;
                     if (isleft) {
@@ -257,12 +257,15 @@ function main() {
                     } else if (ih > maxh) {
                         ih = maxh;
                     };
-                    // if (looky) {
-                    //     oparent.style.height = ih + 'px';
-                    // };
-                    // if ((isleft && iw == dragMinWidth) || (istop && ih == dragMinHeight)) {
-                    //     document.onmousemove = null;
-                    // };
+
+                    if (looky) {
+                        oparent.style.height = ih + 'px';
+                    };
+                    
+                    if ((isleft && iw == dragMinWidth) || (istop && ih == dragMinHeight)) {
+                        document.onmousemove = null;
+                    };
+
                     if ((isleft && iw == dragMinWidth)) {
                         document.onmousemove = null;
                     };
@@ -345,10 +348,18 @@ function main() {
                     let img = $(this).children('img').get(0)
 
                     //四角放大
-                    that.resize(img, resizeRB, false, false, true, true);
-                    that.resize(img, resizeRT, false, true, true, true);
-                    that.resize(img, resizeLT, true, true, true, true);
-                    that.resize(img, resizeLB, true, false, true, true);
+                    if($(this).attr('data-j') == 'undefined') {
+                        that.resize(img, resizeRB, false, false, true, true);
+                        that.resize(img, resizeRT, false, true, true, true);
+                        that.resize(img, resizeLT, true, true, true, true);
+                        that.resize(img, resizeLB, true, false, true, true);
+                    }else {
+                        that.resize(img, resizeRB, false, false, true, false);
+                        that.resize(img, resizeRT, false, true, true, false);
+                        that.resize(img, resizeLT, true, true, true, false);
+                        that.resize(img, resizeLB, true, false, true, false);
+                    }
+                    
                 }
 
 
@@ -437,7 +448,7 @@ function main() {
             this.moveEle()
             this.moveTrack()
             this.flexEle()
-            this.trackTypeObserver()
+            this.trackTypeObserver($('.trackController')[0])
         }
 
         alignment() { //滑块校准线、range、时间
@@ -481,6 +492,7 @@ function main() {
         }
 
         sliderEle(img, id) { //绑定元素绘制 并生成轨道
+            
             let filename
             let that = this
             let path = img[0].src
@@ -546,6 +558,7 @@ function main() {
             recursion(index)
 
 
+
         }
 
         newTrack() { //新建轨道
@@ -584,7 +597,7 @@ function main() {
             //     $('.trackBox').prepend(html)
             // }
 
-
+            this.trackTypeObserver($(`#track${indexT}`).prev('.trackController')[0])
         }
 
         moveEle() { //在轨道上移动元素
@@ -958,7 +971,8 @@ function main() {
             })
         }
 
-        trackTypeObserver() { //监听轨道类型变化
+        trackTypeObserver(el) { //监听轨道类型变化
+            // debugger
             let that = this
             var observer = new MutationObserver(function (mutations, observer) {
                 mutations.forEach(function (mutation) {
@@ -971,7 +985,8 @@ function main() {
                         }
                     }
 
-                    target.children().eq(0).text(`${that.typeIndex[change - 1]}${index}`)
+                    // target.children().eq(0).text(`${that.typeIndex[change - 1]}${index}`)
+                    target.children().eq(0).text(`${that.typeIndex[change - 1]}`)
                 })
             })
             var config = {
@@ -982,7 +997,8 @@ function main() {
                 ]
             }
 
-            let el = $('.trackController')[0]
+            // let el = $('.trackController')[0]
+
             observer.observe(el, config)
         }
 

@@ -24,6 +24,8 @@ function main() {
             this.repertory() //素材仓库
 
             this.btnBind() //按钮绑定
+
+            this.templateInit() //模版初始化
         }
 
         //画布属性
@@ -638,7 +640,7 @@ function main() {
                 let upE = function (e) {
                     e.stopPropagation()
                     e.preventDefault()
-                    debugger
+                    // debugger
                     for (const item of $('.track')) { //循环所有轨道 找到元素将移动的轨道
                         let copyId = $(thats).parent().attr('id')
                         let itemId = $(item).children().eq(1).attr('id')
@@ -650,7 +652,22 @@ function main() {
                         let thisX = parseFloat($(thats).offset().left) //元素距离左边界距离
                         let trackX = $(thats).parent().offset().left //轨道距离左边界距离
 
-                        if (that.checkHover(e, $(item).find('.trackContent')) && (copyId != itemId)) {
+                        if (that.checkHover(e, $(item).find('.trackContent')) && (copyId != itemId)) { //切换轨道
+
+                            if($(thats).attr('data-t') != $(item).find('.trackController').attr('data-t')) {    //判断类型元素类型不等于轨道类型报错
+                                alert('元素类型不相符')
+                                $(thats).css({
+                                    'position': 'absolute',
+                                    'top': `0px`,
+                                    'left': `${$(thats).attr('data-l')}px`,
+                                    'width': `${divW}px`,
+                                    'z-index': 0
+                                })
+
+                                $(document).off('mousemove', moveE)
+                                $(document).off('mouseup', upE)
+                                return
+                            }
 
                             if (itemChildren.length != 0) { //判断轨道内是否有元素
                                 let leftAll = 0
@@ -1599,6 +1616,40 @@ function main() {
             getMate()
         }
 
+
+        //模版
+        templateInit() {
+            this.getTemplate()
+        }
+
+        getTemplate() { //获取模版
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: './json/template.json', //template/gettemplate.do
+                data: {
+                    areaId: '',
+                    searchValue: '',
+                },
+                success(res) {
+                    if (res.success) {
+                        let html = ''
+
+                        for (const item of res.programList) {
+
+                            html += `
+                            <img src=${item.thumbnail} class="material" data-J='${JSON.stringify(item)}'>
+                            `
+                        }
+
+                        $('#templateList').append(html)
+
+                    } else {
+                        wade.libs.alert(res.msg)
+                    }
+                }
+            })
+        }
 
 
         //其他方法

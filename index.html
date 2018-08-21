@@ -99,9 +99,7 @@
                                     <li id="materialList-l" class="active">
                                         <a href="#materialList" data-toggle="tab">素材</a>
                                     </li>
-                                    <li id="scene-l">
-                                        <a href="#scene" data-toggle="tab">场景</a>
-                                    </li>
+
                                     <li id="template-l">
                                         <a href="#template" data-toggle="tab">模版</a>
                                     </li>
@@ -126,7 +124,7 @@
                                             <option value="8">天气</option>
                                             <option value="9">网页</option>
                                         </select>
-                                        <div id="itemList">
+                                        <div id="itemList" class="itemBox">
                                             <!-- 时钟默认样式 -->
                                             <img src="./img/clock/clock1.png" data-t="7" alt="">
                                             <img src="./img/clock/clock2.png" data-t="7" alt="">
@@ -142,12 +140,12 @@
                                         </div>
                                     </div>
 
-                                    <div class="tab-pane" id="scene">
-                                        2
-                                    </div>
+                                    
 
                                     <div class="tab-pane" id="template">
-                                        3
+                                        <div id="templateList" class="itemBox">
+                                           
+                                        </div>
                                     </div>
                                     <div id="cloneBox"></div>
                                 </div>
@@ -484,7 +482,7 @@
                                                 <div>链接地址</div>
                                                 <input class="form-control" type="text" name="address">
 
-                                                </input>
+                                                
                                             </div>
 
                                             <div class="form-group col-sm-10 saveEdi">

@@ -160,7 +160,7 @@ body {
     margin: 5px 0;
 }
 
-#itemList {
+.itemBox {
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
@@ -234,7 +234,7 @@ body {
     width: initial ;
 }
 
-#itemList img {
+.itemBox img {
     width: 100px;
     height: 100px;
 }

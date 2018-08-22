@@ -263,7 +263,7 @@ function main() {
                     if (looky) {
                         oparent.style.height = ih + 'px';
                     };
-                    
+
                     if ((isleft && iw == dragMinWidth) || (istop && ih == dragMinHeight)) {
                         document.onmousemove = null;
                     };
@@ -350,18 +350,18 @@ function main() {
                     let img = $(this).children('img').get(0)
 
                     //四角放大
-                    if($(this).attr('data-j') == 'undefined') {
+                    if ($(this).attr('data-j') == 'undefined') {
                         that.resize(img, resizeRB, false, false, true, true);
                         that.resize(img, resizeRT, false, true, true, true);
                         that.resize(img, resizeLT, true, true, true, true);
                         that.resize(img, resizeLB, true, false, true, true);
-                    }else {
+                    } else {
                         that.resize(img, resizeRB, false, false, true, false);
                         that.resize(img, resizeRT, false, true, true, false);
                         that.resize(img, resizeLT, true, true, true, false);
                         that.resize(img, resizeLB, true, false, true, false);
                     }
-                    
+
                 }
 
 
@@ -494,7 +494,7 @@ function main() {
         }
 
         sliderEle(img, id) { //绑定元素绘制 并生成轨道
-            
+
             let filename
             let that = this
             let path = img[0].src
@@ -654,7 +654,7 @@ function main() {
 
                         if (that.checkHover(e, $(item).find('.trackContent')) && (copyId != itemId)) { //切换轨道
 
-                            if($(thats).attr('data-t') != $(item).find('.trackController').attr('data-t')) {    //判断类型元素类型不等于轨道类型报错
+                            if ($(thats).attr('data-t') != $(item).find('.trackController').attr('data-t')) { //判断类型元素类型不等于轨道类型报错
                                 alert('元素类型不相符')
                                 $(thats).css({
                                     'position': 'absolute',
@@ -1120,10 +1120,10 @@ function main() {
                     nowEdi.find('input[name="residencetime"]').val(data.residencetime)
                     nowEdi.find('select[name="transition"]').val(data.transition)
                     nowEdi.find('select[name="animation"]').val(data.animation)
-                }else if(index == 5) {
+                } else if (index == 5) {
                     nowEdi.find('input[name="address"]').val(data.adress)
                     nowEdi.find('select[name="protocol"]').val(data.protocol)
-                }else if(index == 6) {
+                } else if (index == 6) {
                     nowEdi.find('input[name="mqAddress"]').val(data.mqAddress)
                     nowEdi.find('input[name="queueName"]').val(data.queueName)
                     nowEdi.find('input[name="styleId"]').val(data.styleId)
@@ -1146,11 +1146,11 @@ function main() {
                     }
 
                     nowEdi.find('#rowDataTable tbody').html(html)
-                }else if(index == 7) {
+                } else if (index == 7) {
                     nowEdi.find('select[name="styleId"]').val(data.styleId)
-                }else if(index == 8) {
+                } else if (index == 8) {
                     nowEdi.find('select[name="styleId"]').val(data.styleId)
-                }else if(index == 9) {
+                } else if (index == 9) {
                     nowEdi.find('select[name="overflow"]').val(data.overflow)
                     nowEdi.find('input[name="url"]').val(data.url)
 
@@ -1620,6 +1620,7 @@ function main() {
         //模版
         templateInit() {
             this.getTemplate()
+            this.readTemplate()
         }
 
         getTemplate() { //获取模版
@@ -1648,6 +1649,21 @@ function main() {
                         wade.libs.alert(res.msg)
                     }
                 }
+            })
+        }
+
+        readTemplate() { //读取模版
+            let that = this
+            $('#templateList').on('click', 'img', function () {
+                var r = confirm("确定读取该模版？");
+                if (r == true) {
+                    let data = JSON.parse($(this).attr('data-j'))
+
+                    for (const item of data) {
+                        
+                    }
+                } 
+
             })
         }
 

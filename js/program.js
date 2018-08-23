@@ -1658,11 +1658,52 @@ function main() {
                 var r = confirm("确定读取该模版？");
                 if (r == true) {
                     let data = JSON.parse($(this).attr('data-j'))
+                    let listIndex = ['imageList', 'videoList', 'audioList', 'textList', 'respList', 'tableList', 'clockList', 'weatherList', 'htmlList']
+                    let html = ''
 
-                    for (const item of data) {
-                        
+                    for (const item of data.params) {
+                        item.layerList.forEach((it, index) => {
+                            let eleHtml = ''
+                            for (const i of it[listIndex[it.type - 1]]) {
+                                eleHtml += `
+                                <div class="silderBlock" data-s="${i.fileName}" data-l data-j="${JSON.stringify(i)}" data-i data-t="${it.type}" data-begin="${i.beginTime}" data-end="${i.endTime}" style>
+                                    ${i.materialName}
+                                </div>
+                                `
+                            }
+
+                            html += `
+                            <div class="track clearfix">
+                                <div class="trackController col-sm-2" data-t="1">
+                                    <span>${that.typeIndex[it.type - 1]}</span>
+                                    <span class="glyphicon glyphicon glyphicon-align-justify" aria-hidden="true"></span>
+                                </div>
+                                <div id="track${index + 1}" class="trackContent col-sm-10">
+                                    ${eleHtml}
+                                </div>
+                            </div>
+                            `
+                        })
+
+                        if (item.layerList.length < 4) {
+                            for (let i = 0; i < 4 - item.layerList.length; i++) {
+                                html += `
+                                <div class="trackSeize clearfix">
+                                    <div class="trackController col-sm-2">
+                                        <span></span>
+
+                                    </div>
+                                    <div id="track0" class="trackContent col-sm-10"></div>
+                                </div>
+                                `
+                            }
+                        }
                     }
-                } 
+
+
+
+                    $('.trackBox').html(html)
+                }
 
             })
         }

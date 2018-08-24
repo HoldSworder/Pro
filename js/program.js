@@ -10,6 +10,7 @@ function main() {
             this.SceneDto = []
             this.addImgPath = 'img/add/add.png'
             this.seize = 'size=256x128&text='
+            this.ImgPath = './img/'
         }
 
         init() { //入口
@@ -35,7 +36,7 @@ function main() {
         }
 
         drawImg(imgPath, id, x, y, img) { //在画布上绘制元素
-
+            console.log(imgPath)
             let index = $('#canvas').children().length
 
             let html = ''
@@ -1660,20 +1661,28 @@ function main() {
                     let data = JSON.parse($(this).attr('data-j'))
                     let listIndex = ['imageList', 'videoList', 'audioList', 'textList', 'respList', 'tableList', 'clockList', 'weatherList', 'htmlList']
                     let html = ''
+                    let timeA = $('#nowTime').attr('data-t') * 60
+                    let IdIndex = (new Date()).getTime().toString()
 
                     for (const item of data.params) {
                         item.layerList.forEach((it, index) => {
                             let eleHtml = ''
                             for (const i of it[listIndex[it.type - 1]]) {
+                                let beginL = calcTime(i.beginTime) / timeA
+                                let endL = calcTime(i.endTime) / timeA
+                                let width = (endL - beginL) * $('.trackContent').width()
+                                let nameId = IdIndex ++
+                                
+
                                 eleHtml += `
-                                <div class="silderBlock" data-s="${i.fileName}" data-l data-j="${JSON.stringify(i)}" data-i data-t="${it.type}" data-begin="${i.beginTime}" data-end="${i.endTime}" style>
+                                <div class="silderBlock" data-s="${i.fileName}" data-l data-j=${JSON.stringify(i)} data-i=${nameId} data-t="${it.type}" data-begin="${i.beginTime}" data-end="${i.endTime}" style="left: ${beginL}%; width: ${width}px">
                                     ${i.materialName}
                                 </div>
                                 `
                             }
 
                             html += `
-                            <div class="track clearfix">
+                            <div class="track clearfix" data-j=${JSON.stringify(it)}>
                                 <div class="trackController col-sm-2" data-t="1">
                                     <span>${that.typeIndex[it.type - 1]}</span>
                                     <span class="glyphicon glyphicon glyphicon-align-justify" aria-hidden="true"></span>
@@ -1685,7 +1694,7 @@ function main() {
                             `
                         })
 
-                        if (item.layerList.length < 4) {
+                        if (item.layerList.length < 4) {    //轨道不到四条 添加预留轨道
                             for (let i = 0; i < 4 - item.layerList.length; i++) {
                                 html += `
                                 <div class="trackSeize clearfix">
@@ -1700,12 +1709,46 @@ function main() {
                         }
                     }
 
-
-
                     $('.trackBox').html(html)
+
+                    
+                    for (const item of $('.track .trackContent')) {
+                        let firstO = {
+                            left: 0,
+                            index: ''
+                        }
+
+                        for (const i of $(item).children()) {
+                            
+                            let iLeft = calcTime($(i).attr('data-begin'))
+                            if(iLeft >= firstO.left) {
+                                firstO = {
+                                    left: iLeft,
+                                    index: i
+                                }
+                            }
+                        }
+
+                        let dataI = $(firstO.index).attr('data-i')
+                        let data = JSON.parse($(firstO.index).attr('data-j'))
+                        let trackData = JSON.parse($(firstO.index).parent().parent().attr('data-j'))
+                        console.log(data)
+                        that.drawImg(data.fileName, dataI, trackData.xAxis, trackData.yAxis, $(firstO.index))
+                    }
                 }
 
             })
+
+            function calcTime(thisV) {
+                let indexF = thisV.indexOf(':')
+
+                let h = Number(thisV.slice(0, indexF))
+                let m = Number(thisV.slice(indexF + 1, indexF + 3))
+                let s = Number(thisV.slice(indexF + 4, indexF + 6))
+
+                let timeS = h * 60 + m * 60 + s
+                return timeS
+            }
         }
 
 

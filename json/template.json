@@ -12,8 +12,8 @@
         "angle": 0,
         "params": [{
             "index": 1,
-            "beginTime": "00: 00: 00 ",
-            "endTime": "00: 00: 00 ",
+            "beginTime": "00:00:00",
+            "endTime": "00:00:00",
             "layerList": [{
                 "zAxis": 1,
                 "type": 1,
@@ -27,11 +27,63 @@
                     "materialName": "sc1",
                     "fileName": "./img/3.jpg",
                     "beginTime": "00:00:00",
-                    "endTime": "00:10:00",
+                    "endTime": "00:10:01",
+                    "transition": 1,
+                    "animation": 1
+                }, {
+                    "index": 0,
+                    "materialId": 1,
+                    "materialName": "sc2",
+                    "fileName": "./img/2.jpg",
+                    "beginTime": "00:10:00",
+                    "endTime": "00:20:00",
                     "transition": 1,
                     "animation": 1
                 }],
                 "videoList": [{}],
+                "audioList": [{}],
+                "textList": [{}],
+                "respList": [{}],
+                "tableList": [{}],
+                "clockList": [{}],
+                "weatherList": [{}],
+                "htmlList": [{}]
+            }, {
+                "zAxis": 1,
+                "type": 2,
+                "yAxis": 0,
+                "xAxis": 0,
+                "width": 0,
+                "height": 0,
+                "imageList": [{
+                    "index": 0,
+                    "materialId": 1,
+                    "materialName": "sc1",
+                    "fileName": "./img/3.jpg",
+                    "beginTime": "00:00:00",
+                    "endTime": "00:10:01",
+                    "transition": 1,
+                    "animation": 1
+                }],
+                "videoList": [{
+                    "index": 0,
+                    "materialId": 1,
+                    "materialName": "sc1",
+                    "fileName": "./img/3.jpg",
+                    "beginTime": "00:00:00",
+                    "endTime": "00:10:01",
+                    "transition": 1,
+                    "animation": 1
+                }, {
+                    "index": 0,
+                    "materialId": 1,
+                    "materialName": "sc2",
+                    "fileName": "./img/2.jpg",
+                    "beginTime": "00:10:00",
+                    "endTime": "00:20:00",
+                    "transition": 1,
+                    "animation": 1
+                }],
                 "audioList": [{}],
                 "textList": [{}],
                 "respList": [{}],
@@ -56,8 +108,8 @@
         "angle": 0,
         "params": [{
             "index": 1,
-            "beginTime": "00: 00: 00 ",
-            "endTime": "00: 00: 00 ",
+            "beginTime": "00:00:00",
+            "endTime": "00:00:00",
             "layerList": [{
                 "zAxis": 1,
                 "type": 1,

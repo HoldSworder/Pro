@@ -316,7 +316,8 @@ function main() {
             }
         }
 
-        showControl() { //显示缩放按钮并绑定缩放属性
+        showControl() { //点击图片 显示缩放按钮并绑定缩放属性
+            // debugger
             let that = this
             this.canvas.on('click', '.canvasDiv', function (e) {
                 let thats = this
@@ -326,6 +327,7 @@ function main() {
                 let dataId = $(thats).attr('data-i')
                 let trackEle = $('.trackBox').find(`div[data-i=${dataId}]`)
                 if (!trackEle.hasClass('checkEle')) {
+                    // debugger
                     trackEle.click()
                 }
 
@@ -641,7 +643,7 @@ function main() {
                 let upE = function (e) {
                     e.stopPropagation()
                     e.preventDefault()
-                    // debugger
+                    debugger
                     for (const item of $('.track')) { //循环所有轨道 找到元素将移动的轨道
                         let copyId = $(thats).parent().attr('id')
                         let itemId = $(item).children().eq(1).attr('id')
@@ -734,8 +736,8 @@ function main() {
                             let flag = false
 
                             let trackEle = $(thats).parent().children()
-
-                            for (const it of trackEle) {
+                                // debugger
+                            for (const it of trackEle) {    //判断是否重合轨道内其他元素
                                 // debugger
                                 if (that.checkHoverDiv($(thats), $(it))) {
                                     $(thats).css({
@@ -749,6 +751,14 @@ function main() {
                                     flag = true
                                 }
                             }
+
+                            // 这里 判断是否为最后一次循环
+                            for (const e of $('.track')) {
+                                if(e == item) {
+
+                                }
+                            }
+                            
 
                             if (!flag) {
 
@@ -899,6 +909,7 @@ function main() {
                 $('#ediBox').children().eq(thisT - 1).removeClass('hidden')
 
                 //填充起止时间
+                // debugger
                 $('#ediBox').children().eq(thisT - 1).find('input[name="startTime"]').val($('.checkEle').attr('data-begin'))
                 $('#ediBox').children().eq(thisT - 1).find('input[name="endTime"]').val($('.checkEle').attr('data-end'))
 
@@ -1043,8 +1054,7 @@ function main() {
         }
 
         setTime(el) { //计算起止时间
-
-
+            
             let track = el.parent()
             let timeS = $('#nowTime').attr('data-t') * 60 //时间轴总时间换算s
             let trackW = track.width()
@@ -1663,6 +1673,8 @@ function main() {
                     let html = ''
                     let timeA = $('#nowTime').attr('data-t') * 60
                     let IdIndex = (new Date()).getTime().toString()
+                    let trackW = $('.trackContent').width()
+                    
 
                     for (const item of data.params) {
                         item.layerList.forEach((it, index) => {
@@ -1675,7 +1687,7 @@ function main() {
                                 
 
                                 eleHtml += `
-                                <div class="silderBlock" data-s="${i.fileName}" data-l data-j=${JSON.stringify(i)} data-i=${nameId} data-t="${it.type}" data-begin="${i.beginTime}" data-end="${i.endTime}" style="left: ${beginL}%; width: ${width}px">
+                                <div class="silderBlock" data-s="${i.fileName}" data-l=${beginL * trackW} data-j=${JSON.stringify(i)} data-i=${nameId} data-t="${it.type}" data-begin="${i.beginTime}" data-end="${i.endTime}" style="left: ${beginL * 100}%; width: ${width}px">
                                     ${i.materialName}
                                 </div>
                                 `
@@ -1721,7 +1733,7 @@ function main() {
                         for (const i of $(item).children()) {
                             
                             let iLeft = calcTime($(i).attr('data-begin'))
-                            if(iLeft >= firstO.left) {
+                            if(iLeft <= firstO.left) {
                                 firstO = {
                                     left: iLeft,
                                     index: i
@@ -1732,7 +1744,8 @@ function main() {
                         let dataI = $(firstO.index).attr('data-i')
                         let data = JSON.parse($(firstO.index).attr('data-j'))
                         let trackData = JSON.parse($(firstO.index).parent().parent().attr('data-j'))
-                        console.log(data)
+                        console.log(firstO.index)
+
                         that.drawImg(data.fileName, dataI, trackData.xAxis, trackData.yAxis, $(firstO.index))
                     }
                 }
@@ -1852,7 +1865,7 @@ function main() {
         }
 
         formatSeconds(value) { //秒转化为00:00:00格式
-
+            
             var theTime = parseInt(value); // 秒
             var theTime1 = 0; // 分
             var theTime2 = 0; // 小时

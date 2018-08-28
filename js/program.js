@@ -36,7 +36,6 @@ function main() {
         }
 
         drawImg(imgPath, id, x, y, img) { //在画布上绘制元素
-            console.log(imgPath)
             let index = $('#canvas').children().length
 
             let html = ''
@@ -643,7 +642,7 @@ function main() {
                 let upE = function (e) {
                     e.stopPropagation()
                     e.preventDefault()
-                    debugger
+                    
                     for (const item of $('.track')) { //循环所有轨道 找到元素将移动的轨道
                         let copyId = $(thats).parent().attr('id')
                         let itemId = $(item).children().eq(1).attr('id')
@@ -654,11 +653,11 @@ function main() {
                         let eX = e.clientX //鼠标点击距离左边界距离
                         let thisX = parseFloat($(thats).offset().left) //元素距离左边界距离
                         let trackX = $(thats).parent().offset().left //轨道距离左边界距离
-
+                        
                         if (that.checkHover(e, $(item).find('.trackContent')) && (copyId != itemId)) { //切换轨道
 
                             if ($(thats).attr('data-t') != $(item).find('.trackController').attr('data-t')) { //判断类型元素类型不等于轨道类型报错
-                                alert('元素类型不相符')
+                                alert('元素类型与轨道不相符')
                                 $(thats).css({
                                     'position': 'absolute',
                                     'top': `0px`,
@@ -752,15 +751,16 @@ function main() {
                                 }
                             }
 
-                            // 这里 判断是否为最后一次循环
-                            for (const e of $('.track')) {
+                            //  判断是否为本轨道循环
+                            let flagI = false
+                            for (let el = 0; el < $('.track').length; el++) {
+                                const e = $('.track')[el];
                                 if(e == item) {
-
+                                    flagI = true
                                 }
                             }
-                            
 
-                            if (!flag) {
+                            if (!flag && flagI) {
 
                                 $(thats).attr('data-l', eX - trackX - eItemX)
                                 $(thats).css({
@@ -774,13 +774,24 @@ function main() {
 
                             break
                         } else { //移出轨道还原位置
-                            $(thats).css({
-                                'position': 'absolute',
-                                'top': `0px`,
-                                'left': `${$(thats).attr('data-l')}px`,
-                                'width': `${divW}px`,
-                                'z-index': 0
-                            })
+                            //  判断是否为本轨道循环
+                            let flagI = false
+                            for (let el = 0; el < $('.track').length; el++) {
+                                const e = $('.track')[el];
+                                if(item == e && el == $('.track').length-1) {
+                                    flagI = true
+                                }
+                            }
+
+                            if(flagI) {
+                                $(thats).css({
+                                    'position': 'absolute',
+                                    'top': `0px`,
+                                    'left': `${$(thats).attr('data-l')}px`,
+                                    'width': `${divW}px`,
+                                    'z-index': 0
+                                })
+                            }
 
 
                         }
@@ -1695,7 +1706,7 @@ function main() {
 
                             html += `
                             <div class="track clearfix" data-j=${JSON.stringify(it)}>
-                                <div class="trackController col-sm-2" data-t="1">
+                                <div class="trackController col-sm-2" data-t=${it.type}>
                                     <span>${that.typeIndex[it.type - 1]}</span>
                                     <span class="glyphicon glyphicon glyphicon-align-justify" aria-hidden="true"></span>
                                 </div>
@@ -1744,7 +1755,6 @@ function main() {
                         let dataI = $(firstO.index).attr('data-i')
                         let data = JSON.parse($(firstO.index).attr('data-j'))
                         let trackData = JSON.parse($(firstO.index).parent().parent().attr('data-j'))
-                        console.log(firstO.index)
 
                         that.drawImg(data.fileName, dataI, trackData.xAxis, trackData.yAxis, $(firstO.index))
                     }

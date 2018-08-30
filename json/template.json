@@ -15,12 +15,12 @@
             "beginTime": "00:00:00",
             "endTime": "00:00:00",
             "layerList": [{
-                "zAxis": 1,
+                "zAxis": 2,
                 "type": 1,
-                "yAxis": 0,
-                "xAxis": 0,
-                "width": 0,
-                "height": 0,
+                "yAxis": 100,
+                "xAxis": 100,
+                "width": 500,
+                "height": 500,
                 "imageList": [{
                     "index": 0,
                     "materialId": 1,
@@ -33,7 +33,7 @@
                 }, {
                     "index": 0,
                     "materialId": 1,
-                    "materialName": "sc2",
+                    "materialName": "sc1",
                     "fileName": "./img/2.jpg",
                     "beginTime": "00:10:00",
                     "endTime": "00:20:00",
@@ -51,14 +51,14 @@
             }, {
                 "zAxis": 1,
                 "type": 2,
-                "yAxis": 0,
-                "xAxis": 0,
+                "yAxis": 50,
+                "xAxis": 50,
                 "width": 0,
                 "height": 0,
                 "imageList": [{
                     "index": 0,
                     "materialId": 1,
-                    "materialName": "sc1",
+                    "materialName": "sc2",
                     "fileName": "./img/3.jpg",
                     "beginTime": "00:00:00",
                     "endTime": "00:10:01",
@@ -68,7 +68,7 @@
                 "videoList": [{
                     "index": 0,
                     "materialId": 1,
-                    "materialName": "sc1",
+                    "materialName": "sc2",
                     "fileName": "./img/3.jpg",
                     "beginTime": "00:00:00",
                     "endTime": "00:10:01",

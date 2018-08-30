@@ -27,6 +27,8 @@ function main() {
             this.btnBind() //按钮绑定
 
             this.templateInit() //模版初始化
+
+            this.save() //保存
         }
 
         //画布属性
@@ -35,22 +37,24 @@ function main() {
             this.drag()
         }
 
-        drawImg(imgPath, id, x, y, img) { //在画布上绘制元素
+        drawImg(imgPath, id, x, y, img, wid, hei) { //在画布上绘制元素
+            let width = wid || this.imgWidth
+            let height = hei || ''
             let index = $('#canvas').children().length
 
             let html = ''
             html += `
             <div class="canvasDiv" data-J='${img.attr('data-J')}' data-i="${id}" id="div${index}" style="top: ${y}px; left: ${x}px; position: absolute; overflow: hidden; width: auto; height: auto;">
-                <img src=${imgPath} class='canvasChild' style='width: ${this.imgWidth}px; '>
+                <img src=${imgPath} class='canvasChild' style='width: ${width}px; height: ${height}px '>
             </div>
             `
 
             if (imgPath == this.addImgPath) {
-                console.log('asd')
+
                 imgPath = this.seize + $('#itemIndex').find("option:selected").text()
                 html = `
                     <div class="canvasDiv" data-J='${img.attr('data-J')}' data-i="${id}" id="div${index}" style="top: ${y}px; left: ${x}px; position: absolute; overflow: hidden; width: auto; height: auto;">
-                        <img options=${imgPath} class='canvasChild placeholder' style='width: ${this.imgWidth}px; '>
+                        <img options=${imgPath} class='canvasChild placeholder' style='width: ${width}px; height: ${heigth}px '>
                     </div>
                 `
             }
@@ -642,7 +646,7 @@ function main() {
                 let upE = function (e) {
                     e.stopPropagation()
                     e.preventDefault()
-                    
+
                     for (const item of $('.track')) { //循环所有轨道 找到元素将移动的轨道
                         let copyId = $(thats).parent().attr('id')
                         let itemId = $(item).children().eq(1).attr('id')
@@ -653,7 +657,7 @@ function main() {
                         let eX = e.clientX //鼠标点击距离左边界距离
                         let thisX = parseFloat($(thats).offset().left) //元素距离左边界距离
                         let trackX = $(thats).parent().offset().left //轨道距离左边界距离
-                        
+
                         if (that.checkHover(e, $(item).find('.trackContent')) && (copyId != itemId)) { //切换轨道
 
                             if ($(thats).attr('data-t') != $(item).find('.trackController').attr('data-t')) { //判断类型元素类型不等于轨道类型报错
@@ -735,8 +739,8 @@ function main() {
                             let flag = false
 
                             let trackEle = $(thats).parent().children()
-                                // debugger
-                            for (const it of trackEle) {    //判断是否重合轨道内其他元素
+                            // debugger
+                            for (const it of trackEle) { //判断是否重合轨道内其他元素
                                 // debugger
                                 if (that.checkHoverDiv($(thats), $(it))) {
                                     $(thats).css({
@@ -755,7 +759,7 @@ function main() {
                             let flagI = false
                             for (let el = 0; el < $('.track').length; el++) {
                                 const e = $('.track')[el];
-                                if(e == item) {
+                                if (e == item) {
                                     flagI = true
                                 }
                             }
@@ -778,12 +782,12 @@ function main() {
                             let flagI = false
                             for (let el = 0; el < $('.track').length; el++) {
                                 const e = $('.track')[el];
-                                if(item == e && el == $('.track').length-1) {
+                                if (item == e && el == $('.track').length - 1) {
                                     flagI = true
                                 }
                             }
 
-                            if(flagI) {
+                            if (flagI) {
                                 $(thats).css({
                                     'position': 'absolute',
                                     'top': `0px`,
@@ -976,7 +980,6 @@ function main() {
                             }
 
                         } else { //左拉
-                            console.log(left)
                             if (nowX > trackL && nowX < trackL + trackW && nowW >= 10) {
                                 let followX = parseFloat($(parent).attr('data-l')) - parseFloat(left - nowX)
                                 $(parent).css({
@@ -1065,7 +1068,7 @@ function main() {
         }
 
         setTime(el) { //计算起止时间
-            
+
             let track = el.parent()
             let timeS = $('#nowTime').attr('data-t') * 60 //时间轴总时间换算s
             let trackW = track.width()
@@ -1685,19 +1688,23 @@ function main() {
                     let timeA = $('#nowTime').attr('data-t') * 60
                     let IdIndex = (new Date()).getTime().toString()
                     let trackW = $('.trackContent').width()
-                    
+
+                    $('#canvas').children().remove() //清空画布
+
 
                     for (const item of data.params) {
-                        item.layerList.forEach((it, index) => {
+                        let dataSort = item.layerList.sort(compare('zAxis')) // 对z轴进行排序
+
+                        dataSort.forEach((it, index) => {
                             let eleHtml = ''
                             for (const i of it[listIndex[it.type - 1]]) {
                                 let beginL = calcTime(i.beginTime) / timeA
                                 let endL = calcTime(i.endTime) / timeA
                                 let width = (endL - beginL) * $('.trackContent').width()
-                                let nameId = IdIndex ++
-                                
+                                let nameId = IdIndex++
 
-                                eleHtml += `
+
+                                    eleHtml += `
                                 <div class="silderBlock" data-s="${i.fileName}" data-l=${beginL * trackW} data-j=${JSON.stringify(i)} data-i=${nameId} data-t="${it.type}" data-begin="${i.beginTime}" data-end="${i.endTime}" style="left: ${beginL * 100}%; width: ${width}px">
                                     ${i.materialName}
                                 </div>
@@ -1717,7 +1724,7 @@ function main() {
                             `
                         })
 
-                        if (item.layerList.length < 4) {    //轨道不到四条 添加预留轨道
+                        if (item.layerList.length < 4) { //轨道不到四条 添加预留轨道
                             for (let i = 0; i < 4 - item.layerList.length; i++) {
                                 html += `
                                 <div class="trackSeize clearfix">
@@ -1734,7 +1741,7 @@ function main() {
 
                     $('.trackBox').html(html)
 
-                    
+
                     for (const item of $('.track .trackContent')) {
                         let firstO = {
                             left: 0,
@@ -1742,9 +1749,9 @@ function main() {
                         }
 
                         for (const i of $(item).children()) {
-                            
+
                             let iLeft = calcTime($(i).attr('data-begin'))
-                            if(iLeft <= firstO.left) {
+                            if (iLeft <= firstO.left) {
                                 firstO = {
                                     left: iLeft,
                                     index: i
@@ -1756,7 +1763,7 @@ function main() {
                         let data = JSON.parse($(firstO.index).attr('data-j'))
                         let trackData = JSON.parse($(firstO.index).parent().parent().attr('data-j'))
 
-                        that.drawImg(data.fileName, dataI, trackData.xAxis, trackData.yAxis, $(firstO.index))
+                        that.drawImg(data.fileName, dataI, trackData.xAxis, trackData.yAxis, $(firstO.index), trackData.width, trackData.height)
                     }
                 }
 
@@ -1772,6 +1779,76 @@ function main() {
                 let timeS = h * 60 + m * 60 + s
                 return timeS
             }
+
+            function compare(prop) { //数组对象排序
+                return function (obj1, obj2) {
+                    var val1 = obj1[prop];
+                    var val2 = obj2[prop];
+                    if (val1 < val2) {
+                        return -1;
+                    } else if (val1 > val2) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                }
+            }
+        }
+
+        //保存
+        save() {
+            let that = this
+            $('#save').on('click', function () {
+                $('#savePro').modal('show')
+
+                let data = {}
+                let form = $('#saveForm')
+
+                data.programName = form.find('input[name="programName"]').val()
+                data.note = form.find('input[name="note"]').val()
+                data.params = []
+
+                let parObj = {}
+                parObj.layerList = []
+                for (let i = 0; i < $('.track').length; i++) {
+                    const item = $('.track')[i];
+                    
+                    let beginTime = 0
+                    let endTime = 0
+
+                    // 保存各轨道元素参数
+                    let trackController = $(item).find('.trackController')
+                    let layer = {}
+                    layer.zAxis = i
+                    layer.type = trackController.attr('data-t')
+                    layer.yAxis = trackController.attr('data-i')
+
+
+                    for (let itIndex = 0; itIndex < $(item).find('.trackContent').children().length; itIndex++) {
+                        const it = $(item).find('.trackContent').children()[itIndex]
+                        
+                        // 筛选第一个和最后一个轨道元素
+                        let startT = that.formatToS($(it).attr('data-begin'))
+                        let endT = that.formatToS($(it).attr('data-end'))
+                        
+                        if(startT < beginTime) {
+                            beginTime = startT
+                        }
+                        if(endT > endTime) {
+                            endTime = endT
+                        }
+                        
+
+                    }
+
+
+                    parObj.beginTime = that.formatSeconds(beginTime)
+                    parObj.endTime = that.formatSeconds(endTime)
+                }
+
+                data.params.push(parObj)
+
+            })
         }
 
 
@@ -1875,7 +1952,7 @@ function main() {
         }
 
         formatSeconds(value) { //秒转化为00:00:00格式
-            
+
             var theTime = parseInt(value); // 秒
             var theTime1 = 0; // 分
             var theTime2 = 0; // 小时
@@ -1906,6 +1983,15 @@ function main() {
 
             return result;
 
+        }
+
+        formatToS(val) {  //时分秒转化为秒
+            let value = String(val)
+            let h = Number(value.slice(0, 2))
+            let m = Number(value.slice(3, 5))
+            let s = Number(value.slice(6, 8))
+
+            return h*60*60 + m*60 + s
         }
 
     }

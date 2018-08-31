@@ -29,6 +29,8 @@ function main() {
             this.templateInit() //模版初始化
 
             this.save() //保存
+
+            this.styleInit() //初始化样式
         }
 
         //画布属性
@@ -41,6 +43,7 @@ function main() {
             let width = wid || this.imgWidth
             let height = hei || ''
             let index = $('#canvas').children().length
+            
 
             let html = ''
             html += `
@@ -54,7 +57,7 @@ function main() {
                 imgPath = this.seize + $('#itemIndex').find("option:selected").text()
                 html = `
                     <div class="canvasDiv" data-J='${img.attr('data-J')}' data-i="${id}" id="div${index}" style="top: ${y}px; left: ${x}px; position: absolute; overflow: hidden; width: auto; height: auto;">
-                        <img options=${imgPath} class='canvasChild placeholder' style='width: ${width}px; height: ${heigth}px '>
+                        <img options=${imgPath} class='canvasChild placeholder' style='width: ${width}px; height: ${height}px '>
                     </div>
                 `
             }
@@ -1202,7 +1205,6 @@ function main() {
                 })
 
             this.abbrBind()
-            this.abbrCss()
         }
 
         abbrBind() { //绑定时间轴
@@ -1233,9 +1235,7 @@ function main() {
 
         }
 
-        abbrCss() { //时间轴样式
-            $('.timeLineBox').css('height', $('.timeLine').height() + 14)
-        }
+ 
 
 
         //素材仓库
@@ -1797,35 +1797,78 @@ function main() {
 
         //保存
         save() {
+            let elList = ['imageList', 'videoList', 'audioList', 'textList', 'respList', 'tableList', 'clockList', 'weatherList', 'htmlList']
             let that = this
             $('#save').on('click', function () {
                 $('#savePro').modal('show')
-
+            })
+            
+            $('#saveBtn').on('click', function() {
                 let data = {}
                 let form = $('#saveForm')
-
+    
                 data.programName = form.find('input[name="programName"]').val()
                 data.note = form.find('input[name="note"]').val()
+    
                 data.params = []
-
                 let parObj = {}
                 parObj.layerList = []
+                
+                for (let i = 0; i < $('.track').length; i++) {  //循环轨道
+                    let e = $('.track')[i];
+                    let track = $(e).find('.trackContent')
+                    let layerObj = {}
+                    layerObj.imageList = []
+                    layerObj.zAxis = i
+                    layerObj.type = $(e).find('.trackController').attr('data-t') - 1 
+
+                    for (const item of elList) {
+                        layerObj[item] = []
+                    }
+                    
+                    for (let it = 0; it < $(track).children().length; it++) {   //循环轨道元素
+                        let trackChildObj = {}
+                        let el = $(track).children()[it]
+                        
+                        trackChildObj = $(el).attr('data-p') == undefined ? JSON.parse($(el).attr('data-j')) : JSON.parse($(el).attr('data-p'))
+
+
+                        // 寻找轨道相关画布图片
+                        for (const ite of $('.canvasDiv')) {
+                            if($(ite).attr('data-i') == $(el).attr('data-i')) {
+                                let img = $(ite).find('img')
+                                console.log(parseInt($(ite).css('top')))
+                                layerObj.yAxis = parseInt($(ite).css('top'))
+                                layerObj.xAxis = parseInt($(ite).css('left'))
+                                layerObj.width = parseInt(img.css('width'))
+                                layerObj.height = parseInt(img.css('height'))
+                            }
+                        }
+
+                        layerObj[elList[layerObj.type]].push(trackChildObj)
+                    }
+
+                    parObj.layerList.push(layerObj)
+                }
+                
+    
                 for (let i = 0; i < $('.track').length; i++) {
                     const item = $('.track')[i];
                     
-                    let beginTime = 0
-                    let endTime = 0
-
+                    
                     // 保存各轨道元素参数
                     let trackController = $(item).find('.trackController')
                     let layer = {}
                     layer.zAxis = i
                     layer.type = trackController.attr('data-t')
                     layer.yAxis = trackController.attr('data-i')
-
-
-                    for (let itIndex = 0; itIndex < $(item).find('.trackContent').children().length; itIndex++) {
-                        const it = $(item).find('.trackContent').children()[itIndex]
+                    
+                    
+                    // 获取起止时间
+                    let beginTime = 0
+                    let endTime = 0
+                    for (let itIndex = 0; itIndex < $('.silderBlock').length; itIndex++) {
+                        const it = $('.silderBlock')[itIndex]
                         
                         // 筛选第一个和最后一个轨道元素
                         let startT = that.formatToS($(it).attr('data-begin'))
@@ -1838,15 +1881,16 @@ function main() {
                             endTime = endT
                         }
                         
-
+    
                     }
-
-
+    
                     parObj.beginTime = that.formatSeconds(beginTime)
                     parObj.endTime = that.formatSeconds(endTime)
                 }
-
+    
                 data.params.push(parObj)
+    
+                console.log(data)
 
             })
         }
@@ -1992,6 +2036,22 @@ function main() {
             let s = Number(value.slice(6, 8))
 
             return h*60*60 + m*60 + s
+        }
+
+        styleInit() { 
+            let clinenW = document.body.clientWidth
+            let clinenH = document.body.clientHeight
+
+            $('.timeLineBox').css('height', $('.timeLine').height() + 14)
+
+            $('.row-left').css({
+                'width': `${clinenW - $('.row-right').width()}`,
+                'height': `${clinenH - $('.timeLineBox').height()}`
+            })
+
+            $('.ef-ruler').css({
+                'height': `${$('#ruler').height()}`
+            })
         }
 
     }

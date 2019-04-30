@@ -6,8 +6,9 @@ body {
 #canvas {
     background-image: url(../img/display_min.jpg);
     background-repeat: repeat;
+    transform-origin: 0 0;
 }
-
+/* asd */
 .checkImg {
     border: 1px solid black;
 }
@@ -30,7 +31,7 @@ body {
 }
 
 .trackBox .clearfix:last-child .trackController {
-    border-bottom: 1px solid #ccc
+    border-bottom: 1px solid #ccc;
 }
 
 .trackController .glyphicon {
@@ -49,7 +50,7 @@ body {
 }
 
 .trackBox .clearfix:last-child .trackContent {
-    border-bottom: 1px solid #ccc
+    border-bottom: 1px solid #ccc;
 }
 
 .timeLine {
@@ -60,8 +61,8 @@ body {
 }
 
 .ui-widget-content .ui-slider-handle.ui-state-default {
-    background: #289B93;
-    border-color: #289B93;
+    background: #289b93;
+    border-color: #289b93;
     outline: none;
 }
 
@@ -79,7 +80,7 @@ body {
 }
 
 .ui-widget-header {
-    background: #289B93 50% 50% repeat-x;
+    background: #289b93 50% 50% repeat-x;
     color: #fff;
     font-weight: bold;
 }
@@ -89,7 +90,7 @@ body {
 }
 
 .sliderContainer {
-    margin-top: 10px
+    margin-top: 10px;
 }
 
 .row {
@@ -116,7 +117,7 @@ body {
 }
 
 .checkEle {
-    background: #289B93;
+    background: #289b93;
     color: white;
 }
 
@@ -145,10 +146,8 @@ body {
     right: 0;
     border: 1px solid #cbcfd2;
     padding: 0;
-    border-top: none
+    border-top: none;
 }
-
-
 
 #itemIndex {
     margin-bottom: 10px;
@@ -179,7 +178,7 @@ body {
     align-items: center;
 }
 
-.defaultAdd img{
+.defaultAdd img {
     width: 50px;
     height: 50px;
 }
@@ -190,9 +189,9 @@ body {
     padding: 12px 15px;
 }
 
-.breadcrumb a{
+.breadcrumb a {
     text-decoration: none;
-    cursor: pointer; 
+    cursor: pointer;
 }
 
 .timeLineBox {
@@ -230,8 +229,8 @@ body {
 }
 
 .inline-input {
-    display: inline-block ;
-    width: initial ;
+    display: inline-block;
+    width: initial;
 }
 
 .itemBox img {
@@ -265,7 +264,9 @@ body {
     transition-duration: 0.5s;
 }
 
-.hvr-bounce-in:hover, .hvr-bounce-in:focus, .hvr-bounce-in:active {
+.hvr-bounce-in:hover,
+.hvr-bounce-in:focus,
+.hvr-bounce-in:active {
     -webkit-transform: scale(1.2);
     transform: scale(1.2);
     -webkit-transition-timing-function: cubic-bezier(0.47, 2.02, 0.31, -0.36);
@@ -273,5 +274,33 @@ body {
 }
 
 .row-left {
+    /* overflow: auto; */
+    padding-top: 50px;
+    padding-left: 30px;
+}
+
+.ef-ruler {
     overflow: auto;
+}
+
+#addTrack {
+    padding-bottom: 5px;
+}
+
+.setBackground {
+    z-index: 100 !important;
+}
+
+.canvasNav {
+    position: fixed;
+    top: 0;
+    width: 200px;
+}
+
+#hiddenBox {
+    overflow: hidden;
+}
+
+.ctrlEle {
+    border: 1px solid #333;
 }

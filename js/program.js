@@ -1,20 +1,35 @@
 function main() {
-
     class Canvas {
-        constructor(canvas) {
+        constructor(canvas, proObj) {
             this.canvas = canvas
             this.width = canvas.width()
             this.height = canvas.height()
             this.imgWidth = 128
-            this.typeIndex = ['图片', '视频', '音频', '文本', 'rtsp', '表格', '时钟', '天气', '网页']
+            this.imgHeight = 80
+            this.typeIndex = [
+                '图片',
+                '视频',
+                '音频',
+                '文本',
+                'rtsp',
+                '表格',
+                '时钟',
+                '天气',
+                '网页',
+                '文档'
+            ]
             this.SceneDto = []
             this.addImgPath = 'img/add/add.png'
             this.seize = 'size=256x128&text='
             this.ImgPath = './img/'
+            this.areaId = proObj.areaId
+            this.proObj = proObj
+            this.constrain = [1, 2] //等比例缩放
         }
 
-        init() { //入口
-            $('#ruler').ruler()
+        init() {
+            //入口
+            // $('#ruler').ruler()
 
             this.initDraw() //画布
 
@@ -31,35 +46,76 @@ function main() {
             this.save() //保存
 
             this.styleInit() //初始化样式
+
+            this.setTransform() //初始化百分比缩放
+
+            this.setPlayLength() //回车设置播放时长
+
+            this.play() //播放预览
         }
 
         //画布属性
         initDraw() {
-            // this.initHolder()
             this.drag()
         }
 
-        drawImg(imgPath, id, x, y, img, wid, hei) { //在画布上绘制元素
+        //在画布上绘制元素
+        //绑定拖曳属性
+        //绑定x、y轴
+        drawImg(imgPath, id, x, y, img, wid, hei) {
+            let that = this
             let width = wid || this.imgWidth
-            let height = hei || ''
+            let height = hei || this.imgHeight
             let index = $('#canvas').children().length
-            
+
+            if ($('#itemIndex').val() == 3) {
+                return
+            }
 
             let html = ''
-            html += `
-            <div class="canvasDiv" data-J='${img.attr('data-J')}' data-i="${id}" id="div${index}" style="top: ${y}px; left: ${x}px; position: absolute; overflow: hidden; width: auto; height: auto;">
-                <img src=${imgPath} class='canvasChild' style='width: ${width}px; height: ${height}px '>
-            </div>
-            `
+            let cssText = ``
+            // let cssText = `width: ${width}px; height: ${height}px`
 
-            if (imgPath == this.addImgPath) {
-
-                imgPath = this.seize + $('#itemIndex').find("option:selected").text()
+            if ($('#itemIndex').val() == 4) {
+                //文字素材处理
                 html = `
-                    <div class="canvasDiv" data-J='${img.attr('data-J')}' data-i="${id}" id="div${index}" style="top: ${y}px; left: ${x}px; position: absolute; overflow: hidden; width: auto; height: auto;">
-                        <img options=${imgPath} class='canvasChild placeholder' style='width: ${width}px; height: ${height}px '>
+                    <div class="canvasDiv" data-J='${img.attr(
+                        'data-J'
+                    )}' data-i="${id}" id="div${index}" style="top: ${y}px; left: ${x}px; position: absolute; overflow: hidden; width: auto; height: auto;">
+                        <div class='canvasChild placeholder' style='width: ${width}px; height: ${height}px; background: white; word-wrap: break-word;'>
+                            
+                        </div>
                     </div>
                 `
+            } else {
+                //其他素材
+                if (imgPath == this.addImgPath) {
+                    imgPath =
+                        this.seize +
+                        $('#itemIndex')
+                            .find('option:selected')
+                            .text()
+                    html = `
+                        <div class="canvasDiv" data-J='${img.attr(
+                            'data-J'
+                        )}' data-i="${id}" id="div${index}" style="top: ${y}px; left: ${x}px; position: absolute; overflow: hidden; width: auto; height: auto;">
+                            <img options=${imgPath} class='canvasChild placeholder' style='${cssText} '>
+                        </div>
+                    `
+                } else {
+                    // 缩略图路径处理
+                    let thumbnail = JSON.parse(img.attr('data-j')).thumbnail
+                    let url = `img/${thumbnail}`
+                    // let url = `/images/thumbnail/material/${thumbnail}`
+
+                    html = `
+                        <div class="canvasDiv" data-J='${img.attr(
+                            'data-J'
+                        )}' data-i="${id}" id="div${index}" style="top: ${y}px; left: ${x}px; position: absolute; overflow: hidden; width: auto; height: auto;">
+                            <img src="${url}" class='canvasChild' style='${cssText} '>
+                        </div>
+                    `
+                }
             }
 
             this.canvas.append(html)
@@ -67,14 +123,33 @@ function main() {
             this.fixPosition(this, $(`#div${index}`).children()[0])
 
             //拖曳
-            $(`#div${index}`).Tdrag({
-                scope: "#canvas"
+            let divE = $(`#div${index}`)
+            divE.Tdrag({
+                scope: '#canvas',
+                cbMove(ele) {
+                    let form = $('#ediBox')
+                        .eq($('.checkEle').attr('data-l') - 1)
+                        .find('form')
+
+                    let inputX = form.find('input[name="location_x"]')
+                    let inputY = form.find('input[name="location_y"]')
+
+                    inputX.val(parseInt(divE.css('left')))
+                    inputY.val(parseInt(divE.css('top')))
+
+                    //同步轨道数据
+                    that.setDataJ(
+                        ['location_x', 'location_y'],
+                        [parseInt(divE.css('left')), parseInt(divE.css('top'))],
+                        $(ele).attr('data-i')
+                    )
+                }
             })
 
-            $('.ui-resizable-handle').on('mousedown', function () {
+            $('.ui-resizable-handle').on('mousedown', function() {
                 $.disable_cloose()
 
-                let upE = function () {
+                let upE = function() {
                     $.disable_open()
 
                     $(document).off('mouseup', upE)
@@ -85,17 +160,17 @@ function main() {
             this.showControl()
 
             placeholder.render()
-
         }
 
-        drag() { //拖动绘制属性
+        //拖动绘制属性
+        drag() {
             let top
             let left
             let flag = false
             let cloner
             let that
             let thats = this
-            $('#itemList').on('mousedown', 'img', function (e) {
+            $('#itemList').on('mousedown', 'img', function(e) {
                 e.preventDefault()
                 let clone = $(this).clone()
                 $(this).after(clone)
@@ -108,74 +183,110 @@ function main() {
                 left = $(this).offset().left
 
                 $(this).css({
-                    'position': 'fixed',
-                    'top': `${top}px`,
-                    'left': `${left}px`,
+                    position: 'fixed',
+                    top: `${top}px`,
+                    left: `${left}px`,
                     'z-index': '999'
                 })
 
                 that = $(this)
                 flag = true
 
-                let upE = function (e) {
-
+                let upE = function(e) {
                     e.preventDefault()
-                    let nameId = (new Date()).getTime().toString()
+                    let nameId = new Date().getTime().toString()
 
                     if (flag) {
                         that.remove()
                         cloner.show()
 
-                        if (thats.checkHover(e, $('#canvas'))) { //移动到画布进行绘制
+                        if (thats.checkHover(e, $('#hiddenBox'))) {
+                            //11.12修改绘制范围为hiddenBox
+                            //移动到画布进行绘制
 
                             let nowX = e.clientX
                             let nowY = e.clientY
 
-                            let canX = $('#canvas').offset().left
-                            let canY = $('#canvas').offset().top
+                            let canX = $('#hiddenBox').offset().left
+                            let canY = $('#hiddenBox').offset().top
 
                             let imgX = that.width()
                             let imgY = that.height()
 
-                            thats.drawImg(that.attr('src'), nameId, nowX - canX - imgX / 2, nowY - canY - imgY / 2, that)
+                            thats.drawImg(
+                                that.attr('src'),
+                                nameId,
+                                nowX - canX - imgX / 2,
+                                nowY - canY - imgY / 2,
+                                that
+                            )
                             thats.sliderEle(that, nameId)
 
                             $(document).off('mouseup', upE)
                             $(document).off('mousemove', moveE)
-
-                        } else if (thats.checkHover(e, $('.trackBox'))) { //移动到轨道上新增元素并绘制
+                        } else if (thats.checkHover(e, $('.trackBox'))) {
+                            //移动到轨道上新增元素并绘制
                             for (const item of $('.trackBox').children()) {
                                 if ($(item).hasClass('track')) {
                                     if (thats.checkHover(e, $(item))) {
-
                                         let filename
+                                        let trName //轨道名称
                                         let path = that[0].src
-                                        if (path.indexOf("/") > 0) //如果包含有"/"号 从最后一个"/"号+1的位置开始截取字符串
-                                        {
-                                            filename = path.substring(path.lastIndexOf("/") + 1, path.length);
+                                        if (path.indexOf('/') > 0) {
+                                            //如果包含有"/"号 从最后一个"/"号+1的位置开始截取字符串
+                                            filename = path.substring(
+                                                path.lastIndexOf('/') + 1,
+                                                path.length
+                                            )
+                                            trName = filename
                                         } else {
-                                            filename = path;
+                                            filename = path
+                                            trName = JSON.parse(
+                                                img.attr('data-j')
+                                            ).materialName
                                         }
 
-                                        let trackContent = $(item).find('.trackContent')
+                                        let trackContent = $(item).find(
+                                            '.trackContent'
+                                        )
                                         let leftAll = 0
-                                        for (const i of trackContent.children()) { //有元素 获取最后一个元素的x定位
-                                            let thisX = parseFloat($(i).css('left')) + $(i).width()
+                                        for (const i of trackContent.children()) {
+                                            //有元素 获取最后一个元素的x定位
+                                            let thisX =
+                                                parseFloat($(i).css('left')) +
+                                                $(i).width()
                                             if (thisX > leftAll) {
                                                 leftAll = thisX
                                             }
                                         }
 
                                         let html = `
-                                            <div class="silderBlock" data-s=${path} data-i=${nameId} data-J='${that.attr('data-J')}' data-l=${leftAll} data-t=${$('#itemIndex').val()} style='left: ${leftAll}px'>
-                                                ${filename}
+                                            <div class="silderBlock" data-s=${path} data-i=${nameId} data-J='${that.attr(
+                                            'data-J'
+                                        )}' data-l=${leftAll} data-t=${$(
+                                            '#itemIndex'
+                                        ).val()} style='left: ${leftAll}px'>
+                                                ${trName}
                                             </div>
                                         `
 
-                                        if (trackContent.children().length == 0) { //轨道为空 绘制图片
-                                            thats.drawImg(that.attr('src'), nameId, 0, 0, that)
-                                            $(item).find('.trackController').attr('data-t', $('#itemIndex').val())
-
+                                        if (
+                                            trackContent.children().length == 0
+                                        ) {
+                                            //轨道为空 绘制图片
+                                            thats.drawImg(
+                                                that.attr('src'),
+                                                nameId,
+                                                0,
+                                                0,
+                                                that
+                                            )
+                                            $(item)
+                                                .find('.trackController')
+                                                .attr(
+                                                    'data-t',
+                                                    $('#itemIndex').val()
+                                                )
                                         }
                                         trackContent.append(html)
                                     }
@@ -187,7 +298,7 @@ function main() {
                     }
                 }
 
-                let moveE = function (e) {
+                let moveE = function(e) {
                     e.preventDefault()
 
                     if (flag) {
@@ -198,8 +309,8 @@ function main() {
                         let nowY = e.clientY
 
                         that.css({
-                            'top': `${nowY - thisH/2}px`,
-                            'left': `${nowX - thisW/2}px`
+                            top: `${nowY - thisH / 2}px`,
+                            left: `${nowX - thisW / 2}px`
                         })
                     }
                 }
@@ -207,125 +318,176 @@ function main() {
                 $(document).on('mouseup', upE)
 
                 $(document).on('mousemove', moveE)
-
             })
-
-
         }
 
-        resize(oparent, handle, isleft, istop, lookx, looky) { //缩放属性
-
+        //缩放属性
+        resize(oparent, handle, isleft, istop, lookx, looky) {
             let that = this
-            let disX = 0;
+            let disX = 0
             let disY = 0
+            var nWidth = oparent.naturalWidth
+            var nHeight = oparent.naturalHeight
             let dragMinWidth = this.imgWidth
             let dragMinHeight = 'auto'
             let maxw = this.width
             let maxh = 'auto'
-            handle = handle || oDrag;
+            handle = handle || oDrag
 
-            handle.onmousedown = function (e) {
+            handle.onmousedown = function(e) {
                 e.stopPropagation()
 
-                e = e || event;
-                e.preventDefault();
-                disX = e.clientX - this.offsetLeft;
-                disY = e.clientY - this.offsetTop;
-                var iparenttop = oparent.parentElement.offsetTop;
-                var iparentleft = oparent.parentElement.offsetLeft;
-                var iparentwidth = oparent.offsetWidth;
-                var iparentheight = oparent.offsetHeight;
+                e = e || event
+                e.preventDefault()
+                disX = e.clientX - this.offsetLeft
+                disY = e.clientY - this.offsetTop
+                var iparenttop = oparent.parentElement.offsetTop
+                var iparentleft = oparent.parentElement.offsetLeft
+                var iparentwidth = oparent.offsetWidth
+                var iparentheight = oparent.offsetHeight
 
-                let moveE = function (e) {
 
-                    e = e || event;
-                    var iL = e.clientX - disX;
-                    var iT = e.clientY - disY;
+                let moveE = function(e) {
+                    e = e || event
+                    var iL = e.clientX - disX
+                    var iT = e.clientY - disY
                     // maxw = document.documentElement.clientWidth - oparent.offsetLeft - 2;
                     // maxh = document.documentElement.clientHeight - oparent.offsetTop - 2;
-                    var iw = isleft ? iparentwidth - iL : handle.offsetWidth + iL;
-                    var ih = istop ? iparentheight - iT : handle.offsetHeight + iT;
+                    var iw = isleft
+                        ? iparentwidth - iL
+                        : handle.offsetWidth + iL
+                    var ih = istop
+                        ? iparentheight - iT
+                        : handle.offsetHeight + iT
                     if (isleft) {
-
-                        oparent.parentElement.style.left = iparentleft + iL + 'px';
-                    };
+                        oparent.parentElement.style.left =
+                            iparentleft + iL + 'px'
+                    }
                     if (istop) {
-
-                        oparent.parentElement.style.top = iparenttop + iT + 'px';
-                    };
+                        oparent.parentElement.style.top = iparenttop + iT + 'px'
+                    }
                     if (iw < dragMinWidth) {
                         iw = dragMinWidth
                     } else if (iw > maxw) {
-                        iw = maxw;
-                    };
+                        iw = maxw
+                    }
                     if (lookx) {
-                        oparent.style.width = iw + 'px';
-                    };
+                        console.log('asdf')
+                        // TODO: 缩放
+                        // debugger
+                        //等比缩放
+                        oparent.style.width = iw + 'px'
+                        oparent.style.height = nHeight * (iw / nWidth)
+
+                        // let form = $('#ediBox')
+                        //     .eq($('.checkEle').attr('data-t') - 1)
+                        //     .find('form')
+
+                        let form = $('.activeEdi form')
+
+                        let transN = (iw / nWidth).toFixed(2) * 100
+                        // let transN = (iw / that.imgWidth).toFixed(2) * 100
+
+                        form.find('input[name="zoomInput"]').val(
+                            transN > 500 ? 500 : transN
+                        )
+                        // .change()
+
+                        $('.activeEdi .zoom .ui-slider-tip').text(transN)
+                        $('.activeEdi .zoom .ui-slider-handle').css(
+                            'left',
+                            `${(100 / 500) * transN}%`
+                        )
+                    }
                     if (ih < dragMinHeight) {
-                        ih = dragMinHeight;
+                        ih = dragMinHeight
                     } else if (ih > maxh) {
-                        ih = maxh;
-                    };
+                        ih = maxh
+                    }
 
                     if (looky) {
-                        oparent.style.height = ih + 'px';
-                    };
+                        //非等比缩放
+                        oparent.style.height = ih + 'px'
 
-                    if ((isleft && iw == dragMinWidth) || (istop && ih == dragMinHeight)) {
-                        document.onmousemove = null;
-                    };
+                        $('.activeEdi')
+                            .find('input[name="width"]')
+                            .val($('.checkCanvas .canvasChild').width())
+                        $('.activeEdi')
+                            .find('input[name="height"]')
+                            .val($('.checkCanvas .canvasChild').height())
+                    }
 
-                    if ((isleft && iw == dragMinWidth)) {
-                        document.onmousemove = null;
-                    };
-                    return false;
-                };
+                    if (
+                        (isleft && iw == dragMinWidth) ||
+                        (istop && ih == dragMinHeight)
+                    ) {
+                        document.onmousemove = null
+                    }
 
-                let upE = function () {
+                    if (isleft && iw == dragMinWidth) {
+                        document.onmousemove = null
+                    }
+                    return false
+                }
+
+                let upE = function() {
                     $(document).off('mousemove', moveE)
                     $(document).off('mouseup', upE)
                     let left = $(oparent).offset().left
                     let width = $(oparent).width()
-                    if ((left + width) > that.width) {
-                        $(oparent).parent().css('left', 0)
+                    if (left + width > that.width) {
+                        $(oparent)
+                            .parent()
+                            .css('left', 0)
                     }
                     that.fixPosition(that, oparent)
-                };
+                }
 
                 $(document).on('mousemove', moveE)
                 $(document).on('mouseup', upE)
-
             }
 
-            $(oparent).children('img').css({
-                'width': $(oparent).width(),
-                'height': $(oparent).height()
-            })
+            $(oparent)
+                .children('img')
+                .css({
+                    width: $(oparent).width(),
+                    height: $(oparent).height()
+                })
         }
 
-        fixPosition(that, oparent) { //超出边界修正位置
+        //超出边界修正位置
+        fixPosition(that, oparent) {
             let left = $(oparent).offset().left
             let top = $(oparent).offset().top
             let width = $(oparent).width()
             let height = $(oparent).height()
-            if ((left + width) > that.width) {
-                $(oparent).parent().css('left', that.width - width)
+            if (left + width > that.width) {
+                $(oparent)
+                    .parent()
+                    .css('left', that.width - width)
             }
-            if ((top + height) > that.height) {
-                $(oparent).parent().css('top', that.height - height)
+            if (top + height > that.height) {
+                $(oparent)
+                    .parent()
+                    .css('top', that.height - height)
             }
             if ($(oparent).offset().top < 0) {
-                $(oparent).parent().css('top', 0)
+                $(oparent)
+                    .parent()
+                    .css('top', 0)
             }
             if ($(oparent).offset().left < 0) {
-                $(oparent).parent().css('left', 0)
+                $(oparent)
+                    .parent()
+                    .css('left', 0)
             }
         }
 
-        showControl() { //点击图片 显示缩放按钮并绑定缩放属性
+        //点击图片 显示缩放按钮并绑定缩放属性
+        showControl() {
             // debugger
             let that = this
-            this.canvas.on('click', '.canvasDiv', function (e) {
+            this.canvas.on('click', '.canvasDiv', function(e) {
                 let thats = this
                 let index = $('#canvas').children().length
                 e.stopPropagation()
@@ -336,6 +498,12 @@ function main() {
                     // debugger
                     trackEle.click()
                 }
+
+                // 设置z-index
+                $('#canvas')
+                    .children()
+                    .css('zIndex', 1000)
+                $(thats).css('zIndex', 1040)
 
                 $('.flexBtn').remove()
                 if ($(this).children().length <= 2) {
@@ -350,103 +518,48 @@ function main() {
                     $('.checkCanvas').removeClass('checkCanvas')
                     $(this).addClass('checkCanvas')
 
-
                     let resizeRB = document.querySelector(`#resizeRB${index}`)
                     let resizeRT = document.querySelector(`#resizeRT${index}`)
                     let resizeLT = document.querySelector(`#resizeLT${index}`)
                     let resizeLB = document.querySelector(`#resizeLB${index}`)
 
-                    let img = $(this).children('img').get(0)
+                    let img = $(this)
+                        .children('.canvasChild')
+                        .get(0)
 
                     //四角放大
-                    if ($(this).attr('data-j') == 'undefined') {
-                        that.resize(img, resizeRB, false, false, true, true);
-                        that.resize(img, resizeRT, false, true, true, true);
-                        that.resize(img, resizeLT, true, true, true, true);
-                        that.resize(img, resizeLB, true, false, true, true);
+                    if (
+                        that.constrain.indexOf(
+                            Number($('.checkEle').attr('data-t'))
+                        ) == -1
+                    ) {
+                        that.resize(img, resizeRB, false, false, true, true)
+                        that.resize(img, resizeRT, false, true, true, true)
+                        that.resize(img, resizeLT, true, true, true, true)
+                        that.resize(img, resizeLB, true, false, true, true)
                     } else {
-                        that.resize(img, resizeRB, false, false, true, false);
-                        that.resize(img, resizeRT, false, true, true, false);
-                        that.resize(img, resizeLT, true, true, true, false);
-                        that.resize(img, resizeLB, true, false, true, false);
+                        that.resize(img, resizeRB, false, false, true, false)
+                        that.resize(img, resizeRT, false, true, true, false)
+                        that.resize(img, resizeLT, true, true, true, false)
+                        that.resize(img, resizeLB, true, false, true, false)
                     }
-
                 }
-
-
             })
         }
 
-        checkHover(e, div) { //判断是否在元素中
-            // debugger
-            div = div[0]
-
-            let window = div.getBoundingClientRect()
-            var x = e.clientX;
-            var y = e.clientY;
-            var divx1 = window.left
-            var divy1 = window.top
-            var divx2 = window.left + window.width
-            var divy2 = window.top + window.height
-            // var divx1 = div.offsetLeft;
-            // var divy1 = div.offsetTop;
-            // var divx2 = div.offsetLeft + div.offsetWidth;
-            // var divy2 = div.offsetTop + div.offsetHeight;
-            if (x < divx1 || x > divx2 || y < divy1 || y > divy2) {
-                return false
-            } else {
-                return true
-            };
-        }
-
-        checkHoverDiv(div1, div2) { //判断两个元素是否在x轴重合
-            // debugger
-            div1 = div1[0]
-            div2 = div2[0]
-
-            let window1 = div1.getBoundingClientRect()
-            let window2 = div2.getBoundingClientRect()
-
-            let div1L = window1.left
-            let div2L = window2.left
-
-            let div1R = window1.left + window1.width
-            let div2R = window2.left + window2.width
-
-            if ((div1L < div2L && div1R > div2L) ||
-                (div2L < div1L && div2R > div1L) ||
-                (div1L < div2L && div1R > div2R) ||
-                (div1L > div2L && div1R < div2R)) {
-                return true
-            } else {
-                return false
-            }
-
-        }
-
-        initHolder() {
-            Holder.addTheme("red", {
-                bg: "#F00",
-                fg: "#aaa",
-                size: 11,
-                font: "Monaco",
-                fontweight: "normal"
-            });
-        }
-
-
         //时间轴属性
-        slider() { //滑块初始化
-            $("#circles-slider")
+        //滑块初始化
+        slider() {
+            $('#circles-slider')
                 .slider({
                     min: 0,
                     max: 100,
-                    range: false,
+                    range: false
                 })
 
-                .slider("pips", {
-                    first: "pip",
-                    last: "pip"
+                .slider('pips', {
+                    first: 'pip',
+                    last: 'pip'
                 })
 
             let html = `
@@ -459,10 +572,11 @@ function main() {
             this.moveEle()
             this.moveTrack()
             this.flexEle()
-            this.trackTypeObserver($('.trackController')[0])
+            // this.trackTypeObserver($('.trackController')[0])
         }
 
-        alignment() { //滑块校准线、range、时间
+        //滑块校准线、range、时间
+        alignment() {
             let that = this
             let html = `
                 <div id="nowTimeLine" style="float:left; width: 1px; left: 0; height: 100px; background: #000; z-index: 99; top: 0; position: absolute"></div>
@@ -470,12 +584,15 @@ function main() {
 
             $('#circles-slider').append(html)
 
-            let boxHeight = $('.sliderContainer').height() - 16 + $('.trackBox').height()
-            let boxTop = $('#circles-slider').height() + parseFloat($('#circles-slider').css('marginBottom'))
+            let boxHeight =
+                $('.sliderContainer').height() - 16 + $('.trackBox').height()
+            let boxTop =
+                $('#circles-slider').height() +
+                parseFloat($('#circles-slider').css('marginBottom'))
 
             $('#nowTimeLine').css({
-                'height': boxHeight,
-                'top': boxTop
+                height: boxHeight,
+                top: boxTop
             })
 
             let el = $('.ui-slider-handle')[0]
@@ -490,37 +607,84 @@ function main() {
                 let totalTime = $('#nowTime').attr('data-t') * 60 //时间显示
                 let nowTime = Math.floor(totalTime * (change / 100))
 
-                let mo = String(Math.floor(nowTime / 60)).length == 1 ? `0${Math.floor(nowTime / 60)}` : Math.floor(nowTime / 60)
-                let yu = String(nowTime % 60).length == 1 ? `0${nowTime % 60}` : nowTime % 60
+                let mo =
+                    String(Math.floor(nowTime / 60)).length == 1
+                        ? `0${Math.floor(nowTime / 60)}`
+                        : Math.floor(nowTime / 60)
+                let yu =
+                    String(nowTime % 60).length == 1
+                        ? `0${nowTime % 60}`
+                        : nowTime % 60
 
                 $('.ui-slider-handle').attr('data-t', nowTime)
 
                 $('#nowTime').text(`${mo}:${yu}`)
+
+                //预览
+                that.preview()
             }
 
             that.observer(el, obs, ['style'])
-
         }
 
-        sliderEle(img, id) { //绑定元素绘制 并生成轨道
+        //预览
+        preview() {
+            let that = this
+            let line = $('#nowTimeLine')
 
+            $('#canvas')
+                .children()
+                .addClass('hidden')
+            // .remove()
+            //判断线与轨道元素在x轴是否重合
+            for (const item of $('.silderBlock')) {
+                if (that.checkHoverDiv(line, $(item))) {
+                    let dataP = JSON.parse($(item).attr('data-p'))
+                    let imgPath = $(item).attr('data-s')
+                    let nameId = $(item).attr('data-i')
+                    let showEle = $(`.canvasDiv[data-i='${nameId}'`)
+                    showEle.removeClass('hidden')
+                    // that.drawImg(
+                    //     imgPath,
+                    //     nameId,
+                    //     dataP.location_x,
+                    //     dataP.location_y,
+                    //     $(item),
+                    //     dataP.width,
+                    //     dataP.height
+                    // )
+                }
+            }
+        }
+
+        //绑定元素绘制 并生成轨道
+        sliderEle(img, id) {
             let filename
+            let trName
             let that = this
             let path = img[0].src
-            if (path.indexOf("/") > 0) //如果包含有"/"号 从最后一个"/"号+1的位置开始截取字符串
-            {
-                filename = path.substring(path.lastIndexOf("/") + 1, path.length);
+            if (path.indexOf('/') > 0) {
+                //如果包含有"/"号 从最后一个"/"号+1的位置开始截取字符串
+                filename = path.substring(
+                    path.lastIndexOf('/') + 1,
+                    path.length
+                )
+                trName = filename
             } else {
-                filename = path;
+                filename = path
+                trName = JSON.parse(img.attr('data-j')).materialName
             }
 
             let html = `
-                <div class="silderBlock" data-s=${path} data-l='0' data-J='${img.attr('data-J')}' data-i="${id}" data-t=${$('#itemIndex').val()}>
-                    ${filename}
+                <div class="silderBlock" data-s=${path} data-l='0' data-J='${img.attr(
+                'data-J'
+            )}' data-i="${id}" data-t=${$('#itemIndex').val()}>
+                    ${trName}
                 </div>
             `
 
             let lastTrack = $('.trackBox .track:last .trackContent')
+
             let index
             if (lastTrack.length != 0) {
                 index = lastTrack.attr('id').substr(5)
@@ -528,73 +692,127 @@ function main() {
                 index = 0
             }
 
+            recursion(index)
 
-            function recursion(index) { //递归查询空轨道
+            //递归查询空轨道并置入轨道
+            function recursion(index) {
                 // debugger
                 index = Number(index)
                 if (index == 1) {
                     if ($(`#track${index}`).children().length == 0) {
                         $(`#track${index}`).append(html)
-                        $(`#track${index}`).parent().find('.trackController').attr('data-t', $('#itemIndex').val())
+                        $(`#track${index}`)
+                            .parent()
+                            .find('.trackController')
+                            .attr('data-t', $('#itemIndex').val())
                         return
                     } else {
                         that.newTrack()
-                        $(`#track${index+1}`).append(html)
-                        $(`#track${index+1}`).parent().find('.trackController').attr('data-t', $('#itemIndex').val())
+                        $(`#track${index + 1}`).append(html)
+                        $(`#track${index + 1}`)
+                            .parent()
+                            .find('.trackController')
+                            .attr('data-t', $('#itemIndex').val())
                         return
                     }
                 } else if (index == 0) {
                     that.newTrack()
-                    $(`#track${index+1}`).append(html)
-                    $(`#track${index+1}`).parent().find('.trackController').attr('data-t', $('#itemIndex').val())
+                    $(`#track${index + 1}`).append(html)
+                    $(`#track${index + 1}`)
+                        .parent()
+                        .find('.trackController')
+                        .attr('data-t', $('#itemIndex').val())
                     return
                 }
 
                 if ($(`#track${index}`).children().length == 0) {
-                    if ($(`#track${index-1}`).children().length == 0) {
+                    if ($(`#track${index - 1}`).children().length == 0) {
                         recursion(index - 1)
                     } else {
                         $(`#track${index}`).append(html)
-                        $(`#track${index}`).parent().find('.trackController').attr('data-t', $('#itemIndex').val())
+                        $(`#track${index}`)
+                            .parent()
+                            .find('.trackController')
+                            .attr('data-t', $('#itemIndex').val())
                         return
                     }
                 } else {
                     that.newTrack()
-                    $(`#track${index+1}`).append(html)
-                    $(`#track${index+1}`).parent().find('.trackController').attr('data-t', $('#itemIndex').val())
+                    $(`#track${index + 1}`).append(html)
+                    $(`#track${index + 1}`)
+                        .parent()
+                        .find('.trackController')
+                        .attr('data-t', $('#itemIndex').val())
                     return
                 }
             }
 
-            recursion(index)
+            //11.21新增轨道元素并绑定画布元素属性
+            let canvasEle = $(`#canvas div[data-i="${id}"`)
+            let sliderEle = $(`.trackBox .trackContent div[data-i="${id}"]`)
 
+            sliderEle.attr(
+                'data-p',
+                JSON.stringify({
+                    width: canvasEle.find('img').width(),
+                    height: canvasEle.find('img').height(),
+                    location_x: parseInt(canvasEle.css('left')),
+                    location_y: parseInt(canvasEle.css('top'))
+                })
+            )
 
-
+            //12.4新增轨道元素获取起止时间
+            that.setTime(sliderEle)
         }
 
-        newTrack() { //新建轨道
-
-            let indexT = ($('.track').length) + 1
-
-            let typeIndex = $('#itemIndex').val()
-            let index = 1
-            for (const item of $('.track')) { //判断重复类型轨道
-                if ($(item).find('.trackController').attr('data-t') == typeIndex) {
-                    index++
+        //新建轨道
+        newTrack() {
+            // let indexT = $('.track').length +
+            // debugger
+            let indexT = 0
+            for (const item of $('.trackContent')) {
+                if (
+                    $(item)
+                        .attr('id')
+                        .slice(5) >= indexT
+                ) {
+                    indexT =
+                        Number(
+                            $(item)
+                                .attr('id')
+                                .slice(5)
+                        ) + 1
                 }
             }
 
+            let typeIndex = $('#itemIndex').val()
+            let index = 1
+            // for (const item of $('.track')) {
+            //     //判断重复类型轨道
+            //     if (
+            //         $(item)
+            //             .find('.trackController')
+            //             .attr('data-t') == typeIndex
+            //     ) {
+            //         index++
+            //     }
+            // }
+
+            // <div class="trackController col-sm-2" data-t=${typeIndex}>
+            // <span>${this.typeIndex[typeIndex - 1]}</span>
             let html = `
                 <div class="track clearfix">
-                    <div class="trackController col-sm-2" data-t=${typeIndex}>
-                        <span>${this.typeIndex[typeIndex - 1]}</span>
+                    <div class="trackController col-sm-2">
+                        <span>轨道</span>
                         <span class="glyphicon glyphicon glyphicon-align-justify" aria-hidden="true"></span>
                     </div>
                     <div id="track${indexT}" class="trackContent col-sm-10"></div>
                 </div>
             `
             if ($('.trackSeize').length != 0) {
-                $('.trackSeize').eq(0).remove()
+                $('.trackSeize')
+                    .eq(0)
+                    .remove()
             }
 
             if ($('.track').length != 0) {
@@ -608,12 +826,15 @@ function main() {
             //     $('.trackBox').prepend(html)
             // }
 
-            this.trackTypeObserver($(`#track${indexT}`).prev('.trackController')[0])
+            // this.trackTypeObserver(
+            //     $(`#track${indexT}`).prev('.trackController')[0]
+            // )
         }
 
-        moveEle() { //在轨道上移动元素
+        //在轨道上移动元素
+        moveEle() {
             let that = this
-            $('.trackBox').on('mousedown', '.silderBlock', function (e) {
+            $('.trackBox').on('mousedown', '.silderBlock', function(e) {
                 e.preventDefault()
                 e.stopPropagation()
                 let thats = this
@@ -627,61 +848,89 @@ function main() {
                 let eItemX = downX - left //鼠标距离元素左边界距离
 
                 $(this).css({
-                    'position': 'fixed',
-                    'top': `${top}px`,
-                    'left': `${left}px`,
-                    'width': `${divW}px`,
+                    position: 'fixed',
+                    top: `${top}px`,
+                    left: `${left}px`,
+                    width: `${divW}px`,
                     'z-index': 9999
                 })
 
-                let moveE = function (e) {
-
+                let moveE = function(e) {
                     let nowX = e.clientX
                     let nowY = e.clientY
 
                     $(thats).css({
-                        'top': `${nowY - divH/2}px`,
-                        'left': `${nowX - eItemX}px`
+                        top: `${nowY - divH / 2}px`,
+                        left: `${nowX - eItemX}px`
                     })
                 }
 
-
-                let upE = function (e) {
+                let upE = function(e) {
                     e.stopPropagation()
                     e.preventDefault()
 
-                    for (const item of $('.track')) { //循环所有轨道 找到元素将移动的轨道
-                        let copyId = $(thats).parent().attr('id')
-                        let itemId = $(item).children().eq(1).attr('id')
-                        let itemChildren = $(item).children().eq(1).children()
-                        let trackW = $(item).find('.trackContent').width() //轨道长度
-                        let track = $(thats).parent().parent()
+                    for (const item of $('.track')) {
+                        //循环所有轨道 找到元素将移动的轨道
+                        let copyId = $(thats)
+                            .parent()
+                            .attr('id')
+                        let itemId = $(item)
+                            .children()
+                            .eq(1)
+                            .attr('id')
+                        let itemChildren = $(item)
+                            .children()
+                            .eq(1)
+                            .children()
+                        let trackW = $(item)
+                            .find('.trackContent')
+                            .width() //轨道长度
+                        let track = $(thats)
+                            .parent()
+                            .parent()
 
                         let eX = e.clientX //鼠标点击距离左边界距离
                         let thisX = parseFloat($(thats).offset().left) //元素距离左边界距离
-                        let trackX = $(thats).parent().offset().left //轨道距离左边界距离
+                        let trackX = $(thats)
+                            .parent()
+                            .offset().left //轨道距离左边界距离
 
-                        if (that.checkHover(e, $(item).find('.trackContent')) && (copyId != itemId)) { //切换轨道
+                        if (
+                            that.checkHover(e, $(item).find('.trackContent')) &&
+                            copyId != itemId
+                        ) {
+                            //切换轨道
 
-                            if ($(thats).attr('data-t') != $(item).find('.trackController').attr('data-t')) { //判断类型元素类型不等于轨道类型报错
-                                alert('元素类型与轨道不相符')
-                                $(thats).css({
-                                    'position': 'absolute',
-                                    'top': `0px`,
-                                    'left': `${$(thats).attr('data-l')}px`,
-                                    'width': `${divW}px`,
-                                    'z-index': 0
-                                })
+                            //判断轨道类型
+                            // if (
+                            //     $(thats).attr('data-t') !=
+                            //     $(item)
+                            //         .find('.trackController')
+                            //         .attr('data-t')
+                            // ) {
+                            //     //判断类型元素类型不等于轨道类型报错
+                            //     alert('元素类型与轨道不相符')
+                            //     $(thats).css({
+                            //         position: 'absolute',
+                            //         top: `0px`,
+                            //         left: `${$(thats).attr('data-l')}px`,
+                            //         width: `${divW}px`,
+                            //         'z-index': 0
+                            //     })
 
-                                $(document).off('mousemove', moveE)
-                                $(document).off('mouseup', upE)
-                                return
-                            }
+                            //     $(document).off('mousemove', moveE)
+                            //     $(document).off('mouseup', upE)
+                            //     return
+                            // }
 
-                            if (itemChildren.length != 0) { //判断轨道内是否有元素
+                            if (itemChildren.length != 0) {
+                                //判断轨道内是否有元素
                                 let leftAll = 0
-                                for (const i of itemChildren) { //有元素 获取最后一个元素的x定位
-                                    let thisX = parseFloat($(i).css('left')) + $(i).width()
+                                for (const i of itemChildren) {
+                                    //有元素 获取最后一个元素的x定位
+                                    let thisX =
+                                        parseFloat($(i).css('left')) +
+                                        $(i).width()
                                     if (thisX > leftAll) {
                                         leftAll = thisX
                                     }
@@ -689,68 +938,94 @@ function main() {
 
                                 $(thats).attr('data-l', leftAll)
 
-                                $(item).children().eq(1).append($(thats))
+                                $(item)
+                                    .children()
+                                    .eq(1)
+                                    .append($(thats))
 
                                 $(thats).css({
-                                    'position': 'absolute',
-                                    'top': '0px',
-                                    'left': `${leftAll}px`,
-                                    'width': '5%',
+                                    position: 'absolute',
+                                    top: '0px',
+                                    left: `${leftAll}px`,
+                                    width: '5%',
                                     'z-index': '0'
                                 })
 
                                 that.removeTrack(track, thats)
+                            } else {
+                                //没元素 成为第一个元素
 
-
-                            } else { //没元素 成为第一个元素
-
-
-                                $(item).children().eq(1).append($(thats))
+                                $(item)
+                                    .children()
+                                    .eq(1)
+                                    .append($(thats))
 
                                 $(thats).attr('data-l', '0')
                                 $(thats).css({
-                                    'position': 'absolute',
-                                    'top': '0px',
-                                    'left': `0px`,
+                                    position: 'absolute',
+                                    top: '0px',
+                                    left: `0px`,
                                     'z-index': '0'
                                 })
 
                                 that.removeTrack(track, thats)
-                                that.drawImg($(thats).attr('data-s'), $(thats).attr('data-i'), 0, 0, $(thats))
+                                that.drawImg(
+                                    $(thats).attr('data-s'),
+                                    $(thats).attr('data-i'),
+                                    0,
+                                    0,
+                                    $(thats)
+                                )
 
-                                let tContent = $(thats).parent().prev('.trackController')
+                                let tContent = $(thats)
+                                    .parent()
+                                    .prev('.trackController')
                                 let thisType = $(thats).attr('data-t')
                                 if (thisType != tContent.attr('data-t')) {
-
                                     let index = 1
-                                    for (const item of $('.track')) { //判断重复类型轨道
-                                        if ($(item).find('.trackController').attr('data-t') == thisType) {
+                                    for (const item of $('.track')) {
+                                        //判断重复类型轨道
+                                        if (
+                                            $(item)
+                                                .find('.trackController')
+                                                .attr('data-t') == thisType
+                                        ) {
                                             index++
                                         }
                                     }
 
-                                    tContent.text(`${that.typeIndex[thisType - 1]}${index}`)
+                                    // tContent.text(
+                                    //     `${
+                                    //         that.typeIndex[thisType - 1]
+                                    //     }${index}`
+                                    // )
                                     tContent.attr('data-t', thisType)
                                 }
                             }
                             break
-                        } else if (that.checkHover(e, $(item).find('.trackContent')) &&
-                            (copyId == itemId) &&
+                        } else if (
+                            that.checkHover(e, $(item).find('.trackContent')) &&
+                            copyId == itemId &&
                             eX - trackX > eItemX &&
-                            trackW - (eX - trackX) > $(thats).width() - eItemX) { //轨道内移动
+                            trackW - (eX - trackX) > $(thats).width() - eItemX
+                        ) {
+                            //轨道内移动
 
                             let flag = false
 
-                            let trackEle = $(thats).parent().children()
+                            let trackEle = $(thats)
+                                .parent()
+                                .children()
                             // debugger
-                            for (const it of trackEle) { //判断是否重合轨道内其他元素
+                            for (const it of trackEle) {
+                                //判断是否重合轨道内其他元素
                                 // debugger
                                 if (that.checkHoverDiv($(thats), $(it))) {
                                     $(thats).css({
-                                        'position': 'absolute',
-                                        'top': `0px`,
-                                        'left': `${$(thats).attr('data-l')}px`,
-                                        'width': `${divW}px`,
+                                        position: 'absolute',
+                                        top: `0px`,
+                                        left: `${$(thats).attr('data-l')}px`,
+                                        width: `${divW}px`,
                                         'z-index': 0
                                     })
 
@@ -761,30 +1036,30 @@ function main() {
                             //  判断是否为本轨道循环
                             let flagI = false
                             for (let el = 0; el < $('.track').length; el++) {
-                                const e = $('.track')[el];
+                                const e = $('.track')[el]
                                 if (e == item) {
                                     flagI = true
                                 }
                             }
 
                             if (!flag && flagI) {
-
                                 $(thats).attr('data-l', eX - trackX - eItemX)
                                 $(thats).css({
-                                    'position': 'absolute',
-                                    'top': `0px`,
-                                    'left': `${$(thats).attr('data-l')}px`,
-                                    'width': `${divW}px`,
+                                    position: 'absolute',
+                                    top: `0px`,
+                                    left: `${$(thats).attr('data-l')}px`,
+                                    width: `${divW}px`,
                                     'z-index': 0
                                 })
                             }
 
                             break
-                        } else { //移出轨道还原位置
+                        } else {
+                            //移出轨道还原位置
                             //  判断是否为本轨道循环
                             let flagI = false
                             for (let el = 0; el < $('.track').length; el++) {
-                                const e = $('.track')[el];
+                                const e = $('.track')[el]
                                 if (item == e && el == $('.track').length - 1) {
                                     flagI = true
                                 }
@@ -792,15 +1067,13 @@ function main() {
 
                             if (flagI) {
                                 $(thats).css({
-                                    'position': 'absolute',
-                                    'top': `0px`,
-                                    'left': `${$(thats).attr('data-l')}px`,
-                                    'width': `${divW}px`,
+                                    position: 'absolute',
+                                    top: `0px`,
+                                    left: `${$(thats).attr('data-l')}px`,
+                                    width: `${divW}px`,
                                     'z-index': 0
                                 })
                             }
-
-
                         }
                     }
 
@@ -810,18 +1083,22 @@ function main() {
 
                 $(document).on('mouseup', upE)
                 $(document).on('mousemove', moveE)
-
-
             })
         }
 
-        moveTrack() { //移动轨道
+        //移动轨道
+        moveTrack() {
             let that = this
-            $('.trackBox').on('mousedown', '.glyphicon', function (e) {
+            $('.trackBox').on('mousedown', '.glyphicon', function(e) {
                 e.preventDefault()
                 e.stopPropagation()
-                let thats = $(this).parent().parent()
-                let copy = $(this).parent().parent().clone()
+                let thats = $(this)
+                    .parent()
+                    .parent()
+                let copy = $(this)
+                    .parent()
+                    .parent()
+                    .clone()
                 thats.after(copy)
 
                 let top = $(copy).offset().top
@@ -830,52 +1107,59 @@ function main() {
                 let divH = $(copy).height()
 
                 $(copy).css({
-                    'position': 'fixed',
-                    'top': `${top}px`,
-                    'left': `${left}px`,
-                    'width': `${divW}px`,
+                    position: 'fixed',
+                    top: `${top}px`,
+                    left: `${left}px`,
+                    width: `${divW}px`,
                     'z-index': 9999,
                     'box-shadow': '5px 5px 5px #888888'
                 })
 
-                let moveE = function (e) {
-
+                let moveE = function(e) {
                     let nowX = e.clientX
                     let nowY = e.clientY
 
                     $(copy).css({
-                        'top': `${nowY - divH/2}px`,
-                        'left': `${nowX - divW/6}px`
+                        top: `${nowY - divH / 2}px`,
+                        left: `${nowX - divW / 6}px`
                     })
                 }
 
-
-
-                let upE = function (e) {
+                let upE = function(e) {
                     e.stopPropagation()
                     e.preventDefault()
                     for (const item of $('.track')) {
                         // debugger
-                        let copyId = thats.children().eq(1).attr('id')
-                        let itemId = $(item).children().eq(1).attr('id')
+                        let copyId = thats
+                            .children()
+                            .eq(1)
+                            .attr('id')
+                        let itemId = $(item)
+                            .children()
+                            .eq(1)
+                            .attr('id')
 
-                        if (that.checkHover(e, $(item)) && (copyId != itemId)) { //轨道拉到其他轨道上释放 将插入其下方
+                        if (that.checkHover(e, $(item)) && copyId != itemId) {
+                            //轨道拉到其他轨道上释放 将插入其下方
 
                             $(item).after($(thats))
                             $(thats).css({
-                                'position': 'initial',
+                                position: 'initial'
                             })
                             $(copy).remove()
-                        } else if (that.checkHover(e, $('.sliderContainer'))) { //将轨道拉到时间线置顶
-                            $('.trackBox').children().eq(0).before($(thats))
+                        } else if (that.checkHover(e, $('.sliderContainer'))) {
+                            //将轨道拉到时间线置顶
+                            $('.trackBox')
+                                .children()
+                                .eq(0)
+                                .before($(thats))
                             $(thats).css({
-                                'position': 'initial',
+                                position: 'initial'
                             })
                             $(copy).remove()
                         } else {
                             $(copy).remove()
                         }
-
                     }
 
                     $(document).off('mousemove', moveE)
@@ -884,25 +1168,31 @@ function main() {
 
                 $(document).on('mouseup', upE)
                 $(document).on('mousemove', moveE)
-
-
             })
         }
 
-        flexEle() { //轨道元素点击事件 添加伸缩属性 读取元素信息
+        //轨道元素点击事件 添加伸缩属性 读取元素信息
+        flexEle() {
             let that = this
 
-
-            $('#showBox').on('click', function () {
+            $('#showBox').on('click', function() {
                 $('#ediBox').addClass('hidden')
-                $('#ediBox').children().addClass('hidden')
-                $('#breadcrumb').find('.active').remove()
+                $('#ediBox')
+                    .children()
+                    .addClass('hidden')
+                $('#breadcrumb')
+                    .find('.active')
+                    .remove()
             })
 
-            $('.trackBox').on('click', '.silderBlock', function () {
+            $('.trackBox').on('click', '.silderBlock', function(e) {
                 let parent = this
-                let trackL = $(this).parent().offset().left
-                let trackW = $(this).parent().width()
+                let trackL = $(this)
+                    .parent()
+                    .offset().left
+                let trackW = $(this)
+                    .parent()
+                    .width()
                 let divW = $(this).width()
                 let divH = $(this).height()
                 let thisT = $(this).attr('data-t')
@@ -923,20 +1213,35 @@ function main() {
                 }
 
                 $('#ediBox').removeClass('hidden') //显示素材仓库
-                $('#ediBox').children().addClass('hidden')
-                $('#ediBox').children().eq(thisT - 1).removeClass('hidden')
+                $('#ediBox')
+                    .children()
+                    .addClass('hidden')
+                    .removeClass('activeEdi')
+                $('#ediBox')
+                    .children()
+                    .eq(thisT - 1)
+                    .removeClass('hidden')
+                    .addClass('activeEdi')
 
                 //填充起止时间
                 // debugger
-                $('#ediBox').children().eq(thisT - 1).find('input[name="startTime"]').val($('.checkEle').attr('data-begin'))
-                $('#ediBox').children().eq(thisT - 1).find('input[name="endTime"]').val($('.checkEle').attr('data-end'))
+                $('#ediBox')
+                    .children()
+                    .eq(thisT - 1)
+                    .find('input[name="startTime"]')
+                    .val($('.checkEle').attr('data-begin'))
+                $('#ediBox')
+                    .children()
+                    .eq(thisT - 1)
+                    .find('input[name="endTime"]')
+                    .val($('.checkEle').attr('data-end'))
 
-
-                $('#breadcrumb').find('.active').remove() //显示仓库索引
+                $('#breadcrumb')
+                    .find('.active')
+                    .remove() //显示仓库索引
                 $('#breadcrumb').append(`
                     <li class="active">${that.typeIndex[thisT - 1]}</li>
                 `)
-
 
                 let dataId = $(this).attr('data-i')
                 let trackEle = $('#canvas').find(`div[data-i=${dataId}]`)
@@ -944,7 +1249,8 @@ function main() {
 
                 that.setInput()
 
-                $(this).on('mousedown', '.eleWidth', function (e) { //轨道元素拉伸属性
+                $(this).on('mousedown', '.eleWidth', function(e) {
+                    //轨道元素拉伸属性
                     e.preventDefault()
                     e.stopPropagation()
 
@@ -954,16 +1260,16 @@ function main() {
                     let width = $(parent).width()
                     let left = $(eleW).offset().left
 
-                    let moveE = function (e) {
-
+                    let moveE = function(e) {
                         e.preventDefault()
                         e.stopPropagation()
 
                         let nowX = e.clientX
                         let flag = true
 
-                        let trackE = $(parent).parent().find('.silderBlock')
-
+                        let trackE = $(parent)
+                            .parent()
+                            .find('.silderBlock')
 
                         for (const item of trackE) {
                             if (that.checkHover(e, $(item)) && item != parent) {
@@ -974,73 +1280,120 @@ function main() {
 
                         let nowW = parseFloat($(parent).css('width'))
 
-                        if ($(eleW).hasClass('eleWidthR')) { //右拉
+                        if ($(eleW).hasClass('eleWidthR')) {
+                            //右拉
 
-                            if (nowX > trackL && nowX < trackL + trackW && nowW >= 10) {
+                            if (
+                                nowX > trackL &&
+                                nowX < trackL + trackW &&
+                                nowW >= 10
+                            ) {
                                 $(parent).css({
-                                    'width': `${(width + (nowX - left)) < 10 ? 10 : width + (nowX - left)}`
+                                    width: `${
+                                        width + (nowX - left) < 10
+                                            ? 10
+                                            : width + (nowX - left)
+                                    }`
                                 })
                             }
-
-                        } else { //左拉
-                            if (nowX > trackL && nowX < trackL + trackW && nowW >= 10) {
-                                let followX = parseFloat($(parent).attr('data-l')) - parseFloat(left - nowX)
+                        } else {
+                            //左拉
+                            if (
+                                nowX > trackL &&
+                                nowX < trackL + trackW &&
+                                nowW >= 10
+                            ) {
+                                let followX =
+                                    parseFloat($(parent).attr('data-l')) -
+                                    parseFloat(left - nowX)
                                 $(parent).css({
-                                    'width': `${(width + (left - nowX)) < 10 ? 10 : width + (left - nowX)}`,
-                                    'left': `${followX}px`
+                                    width: `${
+                                        width + (left - nowX) < 10
+                                            ? 10
+                                            : width + (left - nowX)
+                                    }`,
+                                    left: `${followX}px`
                                 })
                             }
                         }
-
-
                     }
 
-                    let upE = function (e) {
+                    let upE = function(e) {
                         e.preventDefault()
                         e.stopPropagation()
 
                         let nowX = e.clientX
 
                         $(parent).css({
-                            'width': `${$(parent).width()}`
+                            width: `${$(parent).width()}`
                         })
 
                         $(document).off('mousemove', moveE)
                         $(document).off('mouseup', upE)
                     }
 
-
                     $(document).on('mouseup', upE)
                     $(document).on('mousemove', moveE)
-
                 })
+
+                //添加多选设置
+                if (e.ctrlKey) {
+                    if ($(this).hasClass('ctrlEle')) {
+                        $(this).removeClass('ctrlEle')
+                    } else {
+                        $(this).addClass('ctrlEle')
+                    }
+                }
             })
+
+        }
+        
+        //计算起止时间
+        setTime(el) {
+            let that = this
+            let track = el.parent()
+            let timeS = $('#nowTime').attr('data-t') * 60 //时间轴总时间换算s
+            let trackW = track.width()
+            let elL = parseFloat(el.attr('data-l'))
+            let elR = parseFloat(el.width()) + elL //元素左右长度
+
+            let beginT = parseInt((elL / trackW) * timeS)
+            let endT = parseInt((elR / trackW) * timeS)
+
+            el.attr('data-begin', that.formatSeconds(beginT))
+            el.attr('data-end', that.formatSeconds(endT))
         }
 
-        trackTypeObserver(el) { //监听轨道类型变化
+        //监听轨道类型变化
+        trackTypeObserver(el) {
             // debugger
             let that = this
-            var observer = new MutationObserver(function (mutations, observer) {
-                mutations.forEach(function (mutation) {
+            var observer = new MutationObserver(function(mutations, observer) {
+                mutations.forEach(function(mutation) {
                     let target = $(mutation.target)
                     let change = target.attr('data-t')
                     let index = 0
                     for (const item of $('.track')) {
-                        if ($(item).find('.trackController').attr('data-t') == change) {
+                        if (
+                            $(item)
+                                .find('.trackController')
+                                .attr('data-t') == change
+                        ) {
                             index++
                         }
                     }
 
                     // target.children().eq(0).text(`${that.typeIndex[change - 1]}${index}`)
-                    target.children().eq(0).text(`${that.typeIndex[change - 1]}`)
+                    target
+                        .children()
+                        .eq(0)
+                        .text(`${that.typeIndex[change - 1]}`)
                 })
             })
             var config = {
                 attributes: true,
                 attributeOldValue: true,
-                attributeFilter: [
-                    'data-t'
-                ]
+                attributeFilter: ['data-t']
             }
 
             // let el = $('.trackController')[0]
@@ -1048,13 +1401,16 @@ function main() {
             observer.observe(el, config)
         }
 
-        removeTrack(ele, item) { //当轨道内没有元素时 删除轨道
-
+        //当轨道内没有元素时 删除轨道
+        removeTrack(ele, item) {
             if (ele.find('.trackContent').children().length == 0) {
                 ele.remove()
 
                 let id = $(item).attr('data-i')
-                $('#canvas').find(`div[data-i=${id}]`).remove()
+                $('#canvas')
+                    .find(`div[data-i=${id}]`)
+                    .addClass('hidden')
+                // .remove()
             }
 
             if ($('.trackBox').children().length < 4) {
@@ -1070,32 +1426,16 @@ function main() {
             }
         }
 
-        setTime(el) { //计算起止时间
-
-            let track = el.parent()
-            let timeS = $('#nowTime').attr('data-t') * 60 //时间轴总时间换算s
-            let trackW = track.width()
-            let elL = parseFloat(el.attr('data-l'))
-            let elR = parseFloat(el.width()) + elL //元素左右长度
-
-            let beginT = parseInt((elL / trackW) * timeS)
-            let endT = parseInt((elR / trackW) * timeS)
-
-            el.attr('data-begin', this.formatSeconds(beginT))
-            el.attr('data-end', this.formatSeconds(endT))
-
-
-
-        }
-
-        setInput() { //点击图片或轨道读取信息填充到素材仓库中
+        //点击图片或轨道读取信息填充到素材仓库中
+        setInput() {
+            let that = this
             let flag = false
             let data
             if (!($('.checkEle').attr('data-p') == undefined)) {
                 flag = true
                 data = JSON.parse($('.checkEle').attr('data-p'))
             }
-
+            
             let index = $('.checkEle').attr('data-t')
             let allEdi = $('#ediBox').children()
             let nowEdi
@@ -1105,16 +1445,60 @@ function main() {
                 }
             }
 
+            const checkImg = $('#canvas').find(`[data-i=${$('.checkEle').attr('data-i')}]`).find('img')
+
+            //点击获取x、y数据并填充
+            // nowEdi
+            //     .find('input[name="location_x"]')
+            //     .val(parseInt($('.checkCanvas').css('left')))
+            // nowEdi
+            //     .find('input[name="location_y"]')
+            //     .val(parseInt($('.checkCanvas').css('top')))
+            nowEdi.find('input[name="location_x"]').val(data.location_x)
+            nowEdi.find('input[name="location_y"]').val(data.location_y)
+
+            //点击获取缩放并填充设置
+            // let trans =
+            //     (
+            //         $('.checkCanvas .canvasChild').width() / that.imgWidth
+            //     ).toFixed(2) * 100
+            let trans = (data.width / checkImg[0].naturalWidth).toFixed(2) * 100
+            nowEdi.find('input[name="zoomInput"]').val(trans)
+            // .change()
+
+            // TODO: 更改缩放比
+            $('.activeEdi .zoom .ui-slider-tip').text(trans)
+            $('.activeEdi .zoom .ui-slider-handle').css(
+                'left',
+                `${(100 / 500) * trans}%`
+            )
+
+            //点击获取宽、高数据并填充
+            // nowEdi
+            //     .find('input[name="width"]')
+            //     .val(parseInt($('.checkCanvas .canvasChild').width()))
+            // nowEdi
+            //     .find('input[name="height"]')
+            //     .val(parseInt($('.checkCanvas .canvasChild').height()))
+            nowEdi.find('input[name="width"]').val(data.width)
+            nowEdi.find('input[name="height"]').val(data.height)
+
             if (flag) {
                 if (index == 1) {
-                    nowEdi.find('select[name="transition"]').val(data.transition)
+                    nowEdi
+                        .find('select[name="transition"]')
+                        .val(data.transition)
                     nowEdi.find('select[name="animation"]').val(data.animation)
                 } else if (index == 2) {
                     $('#video-video-check').bootstrapSwitch('state', data.video)
                     $('#video-audio-check').bootstrapSwitch('state', data.audio)
 
-                    nowEdi.find('#video-vol-slider .ui-slider-handle').css('left', `${data.volume}%`)
-                    nowEdi.find('#video-vol-slider .ui-slider-tip').text(data.volume)
+                    nowEdi
+                        .find('#video-vol-slider .ui-slider-handle')
+                        .css('left', `${data.volume}%`)
+                    nowEdi
+                        .find('#video-vol-slider .ui-slider-tip')
+                        .text(data.volume)
 
                     nowEdi.find('input[name="startPlay"]').val(data.inTime)
                     nowEdi.find('input[name="endPlay"]').val(data.outTime)
@@ -1122,31 +1506,52 @@ function main() {
                     nowEdi.find('input[name="startPlay"]').blur()
                     nowEdi.find('input[name="endPlay"]').blur()
                 } else if (index == 3) {
-                    nowEdi.find('#audio-vol-slider .ui-slider-handle').css('left', `${data.volume}%`)
-                    nowEdi.find('#audio-vol-slider .ui-slider-tip').text(data.volume)
+                    nowEdi
+                        .find('#audio-vol-slider .ui-slider-handle')
+                        .css('left', `${data.volume}%`)
+                    nowEdi
+                        .find('#audio-vol-slider .ui-slider-tip')
+                        .text(data.volume)
 
                     nowEdi.find('input[name="startPlay"]').val(data.inTime)
                     nowEdi.find('input[name="endPlay"]').val(data.outTime)
 
                     nowEdi.find('input[name="startPlay"]').blur()
                     nowEdi.find('input[name="endPlay"]').blur()
-
                 } else if (index == 4) {
                     nowEdi.find('textarea').val(data.text)
                     nowEdi.find('select[name="alignment"]').val(data.alignment)
-                    nowEdi.find('#text-multiline-check').bootstrapSwitch('state', data.multiline)
+                    nowEdi
+                        .find('#text-multiline-check')
+                        .bootstrapSwitch('state', data.multiline)
                     nowEdi.find('select[name="rolling"]').val(data.rolling)
                     nowEdi.find('select[name="font"]').val(data.font)
                     nowEdi.find('select[name="size"]').val(data.size)
                     nowEdi.find('input[name="color"]').val(data.color)
-                    nowEdi.find('input[name="backgroundcolor"]').val(data.backgroundcolor)
-                    nowEdi.find('#text-transparency-slider .ui-slider-handle').css('left', `${data.transparency}%`)
-                    nowEdi.find('#text-transparency-slider .ui-slider-tip').text(data.transparency)
-                    nowEdi.find('#text-border-check').bootstrapSwitch('state', data.bold)
-                    nowEdi.find('#text-italic-check').bootstrapSwitch('state', data.italic)
-                    nowEdi.find('select[name="playbackspeed"]').val(data.playbackspeed)
-                    nowEdi.find('input[name="residencetime"]').val(data.residencetime)
-                    nowEdi.find('select[name="transition"]').val(data.transition)
+                    nowEdi
+                        .find('input[name="backgroundcolor"]')
+                        .val(data.backgroundcolor)
+                    nowEdi
+                        .find('#text-transparency-slider .ui-slider-handle')
+                        .css('left', `${data.transparency}%`)
+                    nowEdi
+                        .find('#text-transparency-slider .ui-slider-tip')
+                        .text(data.transparency)
+                    nowEdi
+                        .find('#text-border-check')
+                        .bootstrapSwitch('state', data.bold)
+                    nowEdi
+                        .find('#text-italic-check')
+                        .bootstrapSwitch('state', data.italic)
+                    nowEdi
+                        .find('select[name="playbackspeed"]')
+                        .val(data.playbackspeed)
+                    nowEdi
+                        .find('input[name="residencetime"]')
+                        .val(data.residencetime)
+                    nowEdi
+                        .find('select[name="transition"]')
+                        .val(data.transition)
                     nowEdi.find('select[name="animation"]').val(data.animation)
                 } else if (index == 5) {
                     nowEdi.find('input[name="address"]').val(data.adress)
@@ -1182,38 +1587,46 @@ function main() {
                     nowEdi.find('select[name="overflow"]').val(data.overflow)
                     nowEdi.find('input[name="url"]').val(data.url)
 
-                    nowEdi.find('#transparent-range .ui-slider-handle').css('left', `${data.transparency}%`)
-                    nowEdi.find('#transparent-range .ui-slider-tip').text(data.transparency)
+                    nowEdi
+                        .find('#transparent-range .ui-slider-handle')
+                        .css('left', `${data.transparency}%`)
+                    nowEdi
+                        .find('#transparent-range .ui-slider-tip')
+                        .text(data.transparency)
                 }
             }
         }
 
-
         //缩略时间轴
-        abbrTrack() { //初始化滑块
-            $("#abbr-slider")
+        //初始化滑块
+        abbrTrack() {
+            $('#abbr-slider')
                 .slider({
                     min: 0,
                     max: 100,
-                    range: false,
+                    range: false
                 })
 
-                .slider("pips", {
-                    first: "pip",
-                    last: "pip",
+                .slider('pips', {
+                    first: 'pip',
+                    last: 'pip',
                     rest: false
                 })
 
             this.abbrBind()
+            this.abbrSet()
         }
 
-        abbrBind() { //绑定时间轴
-
-            $('#abbr-slider').find('.ui-slider-handle').css('left', '10%')
+        //绑定时间轴
+        abbrBind() {
+            $('#abbr-slider')
+                .find('.ui-slider-handle')
+                .css('left', '10%')
 
             var el = $('#abbr-slider').find('.ui-slider-handle')[0]
 
-            function obs(mutation) { //监听缩略时间轴变化
+            function obs(mutation) {
+                //监听缩略时间轴变化
 
                 let change = parseFloat(mutation.target.style.left) / (100 / 24)
 
@@ -1223,33 +1636,60 @@ function main() {
 
                 let times = $('#nowTime').attr('data-t')
                 let timeNow = $('#nowTime').text()
-                let timeArr = $('#nowTime').text().split(':')
+                let timeArr = $('#nowTime')
+                    .text()
+                    .split(':')
                 let timeS = timeArr[0] * 60 + timeArr[1]
                 let timePer = timeS / (times * 60)
 
-                $('#circles-slider .ui-slider-handle').css('left', `${timePer <= 100 ? timePer : 100}%`)
-
+                $('#circles-slider .ui-slider-handle').css(
+                    'left',
+                    `${timePer <= 100 ? timePer : 100}%`
+                )
             }
 
             this.observer(el, obs, ['style'])
-
         }
 
- 
+        //实时监听当前时间
+        abbrSet() {
+            $('#nowTime').on('click', function() {
+                let val = $('#nowTime').attr('data-t')
+                let html = `
+                    <input id="setAbbr" type="text" class="form-control" style="position: absolute;top: -12px;width: 100px;height: 34px;">
+                `
 
+                $(this).after(html)
+                $('#setAbbr').val(`${val}`)
+
+                $('#setAbbr').on('blur', function() {
+                    $('#nowTime').attr('data-t', $(this).val())
+                    $('#circles-slider .ui-slider-handle').css('left', '100%')
+
+                    $('#nowTime').text(`${$(this).val()}:00`)
+
+                    $(this).remove()
+                })
+            })
+        }
 
         //素材仓库
-        repertory() { //素材仓库初始化
+        //素材仓库初始化
+        repertory() {
             let bodyH = document.body.clientHeight
             // let height = bodyH - $('#myTab').height()
-            let top = $('#myTab').height() + $('.breadcrumb').height() + parseFloat($('.breadcrumb').css('padding-top')) + parseFloat($('.breadcrumb').css('padding-bottom'))
+            let top =
+                $('#myTab').height() +
+                $('.breadcrumb').height() +
+                parseFloat($('.breadcrumb').css('padding-top')) +
+                parseFloat($('.breadcrumb').css('padding-bottom'))
             let height = bodyH - top
             let contentH = bodyH - $('#myTab').height()
 
             $('#myTabContent').css('height', contentH)
             $('#ediBox').css({
-                'height': height,
-                'top': top
+                height: height,
+                top: top
             })
 
             $('.checkInit').bootstrapSwitch()
@@ -1262,62 +1702,518 @@ function main() {
             this.textEdiInit()
             this.tableEdiInit()
             this.htmlEdiInit()
+            this.ediInit()
+        }
+
+        ediInit() {
+            let that = this
+            //通用初始化
+            $('.zoom')
+                .slider({
+                    min: 1,
+                    max: 500,
+                    range: false
+                })
+                .slider('pips', {
+                    rest: false
+                })
+                .slider('float')
+
+            //关联缩放
+            !(function() {
+                let el = $('.zoom').find('.ui-slider-handle')
+
+                el.parent()
+                    .next()
+                    .find('input[name="zoomInput"]')
+                    .val(100)
+                el.css('left', `${(100 / 500) * 100}%`)
+                el.find('.ui-slider-tip').text(100)
+
+                for (const item of el) {
+                    // debugger
+                    el = item
+
+                    function obs(mutation) {
+                        el = mutation.target
+                        let canvasCheck = $(
+                            `.canvasDiv[data-i='${$('.checkCanvas').attr(
+                                'data-i'
+                            )}'`
+                        ).find('.canvasChild')
+
+                        //关联宽高框
+                        $('.activeEdi')
+                            .find('input[name="width"]')
+                            .val(parseInt(canvasCheck.width()))
+                        $('.activeEdi')
+                            .find('input[name="height"]')
+                            .val(parseInt(canvasCheck.height()))
+
+                        if (
+                            that.constrain.indexOf(
+                                $('.checkEle').attr('data-t')
+                            ) != -1
+                        ) {
+                            return
+                        }
+
+                        let textV = $(el)
+                            .find('.ui-slider-tip')
+                            .text()
+
+                        $(el)
+                            .parent()
+                            .next()
+                            .find('input[name="zoomInput"]')
+                            .val(textV)
+
+                        let trans = textV / 100
+                        let nWidth = canvasCheck[0].naturalWidth
+                        let nHeight = canvasCheck[0].naturalHeight
+
+                        canvasCheck.css({
+                            width: nWidth * trans,
+                            height: nHeight * trans
+                        })
+
+                        that.setDataJ(
+                            ['width', 'height', 'scalingRatio'],
+                            [nWidth * trans, nHeight * trans, textV]
+                        )
+                    }
+
+                    // for (const item of el) {
+
+                    that.observer(el, obs, ['style'])
+                    // }
+
+                    $(el)
+                        .parent()
+                        .next()
+                        .find('input[name="zoomInput"]')
+                        .on('change', function() {
+                            let canvasCheck = $(
+                                `.canvasDiv[data-i='${$('.checkCanvas').attr(
+                                    'data-i'
+                                )}'`
+                            ).find('.canvasChild')
+                            let inputV = $(this).val()
+                            let trans = inputV / 100
+                            if (inputV < 1) {
+                                $(this).val(1)
+                            } else if (inputV > 500) {
+                                $(this).val(500)
+                            }
+                            let slider = $(this)
+                                .parent()
+                                .prev()
+                            slider
+                                .find('.ui-slider-tip')
+                                .text(parseInt($(this).val()))
+                            slider
+                                .find('.ui-slider-handle')
+                                .css('left', `${(inputV / 500) * 100}%`)
+
+                            // $('.checkCanvas').css('transform', `scale(${trans}, ${trans})`)
+
+                            let nWidth = canvasCheck[0].naturalWidth
+                            let nHeight = canvasCheck[0].naturalHeight
+
+                            let tHeight = nHeight * (that.imgWidth / nWidth)
+
+                            canvasCheck.css({
+                                width: that.imgWidth * trans,
+                                height: tHeight * trans
+                            })
+
+                            //关联宽高框
+                            $('.activeEdi')
+                                .find('input[name="width"]')
+                                .val(parseInt($('.checkCanvas').width()))
+                            $('.activeEdi')
+                                .find('input[name="height"]')
+                                .val(parseInt($('.checkCanvas').height()))
+                        })
+                }
+            })()
+
+            //关联x、y变更
+            !(function() {
+                $('input[name="location_x"]').on('change', function() {
+                    let thisV = $(this).val()
+                    let imgE = $(
+                        `.canvasDiv[data-i='${$('.checkCanvas').attr(
+                            'data-i'
+                        )}'`
+                    ).find('.canvasChild')
+                    let trueW = that.width - imgE.width()
+
+                    if (thisV < 0) {
+                        thisV = 0
+                        $(this).val(0)
+                    } else if (thisV > trueW) {
+                        thisV = trueW
+                        $(this).val(trueW)
+                    }
+
+                    $('.checkCanvas').css('left', thisV)
+
+                    that.setDataJ(['location_x'], [thisV])
+                })
+
+                $('input[name="location_y"]').on('change', function() {
+                    let thisV = $(this).val()
+                    let imgE = $(
+                        `.canvasDiv[data-i='${$('.checkCanvas').attr(
+                            'data-i'
+                        )}'`
+                    ).find('.canvasChild')
+                    let trueH = that.height - imgE.height()
+
+                    if (thisV < 0) {
+                        thisV = 0
+                        $(this).val(0)
+                    } else if (thisV > trueH) {
+                        thisV = trueH
+                        $(this).val(trueH)
+                    }
+
+                    $('.checkCanvas').css('top', $(this).val())
+
+                    that.setDataJ(['location_y'], [$(this).val()])
+                })
+            })()
+
+            //关联宽高设置
+            !(function() {
+                $('input[name="width"]').on('change', function() {
+                    let thisV = $(this).val()
+                    let imgE = $(
+                        `.canvasDiv[data-i='${$('.checkCanvas').attr(
+                            'data-i'
+                        )}'`
+                    ).find('.canvasChild')
+                    let trans = imgE[0].naturalWidth / imgE[0].naturalHeight
+
+                    if (thisV < 0) {
+                        thisV = 0
+                        $(this).val(0)
+                    } else if (thisV > that.imgWidth * 5) {
+                        thisV = that.imgWidth * 5
+                        $(this).val(that.imgWidth * 5)
+                    }
+
+                    let heightV
+                    if (
+                        that.constrain.indexOf($('.checkEle').attr('data-t')) !=
+                        -1
+                    ) {
+                        heightV = parseInt(thisV / trans)
+                    } else {
+                        heightV = imgE.height()
+                    }
+
+                    imgE.css({
+                        width: thisV,
+                        height: heightV
+                    })
+
+                    $(this)
+                        .parent()
+                        .parent()
+                        .next()
+                        .find('input[name="height"]')
+                        .val(heightV)
+
+                    $('.activeEdi')
+                        .find('input[name="zoomInput"]')
+                        .val((thisV / that.imgWidth).toFixed(2) * 100)
+                    // .change()
+
+                    let transN = (thisV / that.imgWidth).toFixed(2) * 100
+
+                    $('.activeEdi .zoom .ui-slider-tip').text(transN)
+                    $('.activeEdi .zoom .ui-slider-handle').css(
+                        'left',
+                        `${(100 / 500) * transN}%`
+                    )
+
+                    that.setDataJ(['width', 'height', 'scalingRatio'], [thisV, heightV, transN])
+                })
+
+                $('input[name="height"]').on('change', function() {
+                    let thisV = $(this).val()
+                    let imgE = $(
+                        `.canvasDiv[data-i='${$('.checkCanvas').attr(
+                            'data-i'
+                        )}'`
+                    ).find('.canvasChild')
+                    let trans = imgE[0].naturalWidth / imgE[0].naturalHeight
+                    let transH = that.imgWidth / trans
+
+                    if (thisV < 0) {
+                        thisV = 0
+                        $(this).val(0)
+                    } else if (thisV > that.imgWidth * 5) {
+                        thisV = that.imgWidth * 5
+                        $(this).val(that.imgWidth * 5)
+                    }
+
+                    let widthV
+                    if (
+                        that.constrain.indexOf($('.checkEle').attr('data-t')) !=
+                        -1
+                    ) {
+                        widthV = parseInt(thisV / trans)
+                    } else {
+                        widthV = imgE.width()
+                    }
+
+                    imgE.css({
+                        width: widthV,
+                        height: thisV
+                    })
+
+                    $(this)
+                        .parent()
+                        .parent()
+                        .prev()
+                        .find('input[name="width"]')
+                        .val(widthV)
+
+                    $('.activeEdi')
+                        .find('input[name="zoomInput"]')
+                        .val((thisV / transH).toFixed(2) * 100)
+                    // .change()
+
+                    let transN = (thisV / transH).toFixed(2) * 100
+
+                    $('.activeEdi .zoom .ui-slider-tip').text(transN)
+                    $('.activeEdi .zoom .ui-slider-handle').css(
+                        'left',
+                        `${(100 / 500) * transN}%`
+                    )
+
+                    that.setDataJ(['width', 'height', 'scalingRatio'], [widthV, thisV, transN])
+                })
+            })()
+        }
+
+        //同步设置选中轨道元素data-j值
+        setDataJ(keys, vals, id) {
+            let checkEle =
+                id == undefined
+                    ? $('.checkEle')
+                    : $('.trackBox').find(`div[data-i=${id}]`)
+
+            let dataJ =
+                checkEle.attr('data-p') == undefined
+                    ? {}
+                    : JSON.parse(checkEle.attr('data-p'))
+
+            keys.forEach((item, i) => {
+                dataJ[item] = vals[i]
+            })
+
+            checkEle.attr('data-p', JSON.stringify(dataJ))
         }
 
         videoEdiInit() {
-            $('#video-slider').slider({
-                min: 0,
-                max: 100,
-                range: true,
-            }).slider("pips", {
-                rest: false
-            })
+            $('#video-slider')
+                .slider({
+                    min: 0,
+                    max: 100,
+                    range: true
+                })
+                .slider('pips', {
+                    rest: false
+                })
 
-            $('#video-vol-slider').slider({
-                min: 0,
-                max: 100,
-                range: false,
-            }).slider("pips", {
-                rest: false
-            }).slider("float")
-
+            $('#video-vol-slider')
+                .slider({
+                    min: 0,
+                    max: 100,
+                    range: false
+                })
+                .slider('pips', {
+                    rest: false
+                })
+                .slider('float')
 
             $('#video-video-check').bootstrapSwitch()
             $('#video-audio-check').bootstrapSwitch()
         }
 
         audioEdiInit() {
-            $('#audio-slider').slider({
-                min: 0,
-                max: 100,
-                range: true,
-            }).slider("pips", {
-                rest: false
-            })
+            $('#audio-slider')
+                .slider({
+                    min: 0,
+                    max: 100,
+                    range: true
+                })
+                .slider('pips', {
+                    rest: false
+                })
 
-            $('#audio-vol-slider').slider({
-                min: 0,
-                max: 100,
-                range: false,
-            }).slider("pips", {
-                rest: false
-            }).slider("float")
+            $('#audio-vol-slider')
+                .slider({
+                    min: 0,
+                    max: 100,
+                    range: false
+                })
+                .slider('pips', {
+                    rest: false
+                })
+                .slider('float')
         }
 
         textEdiInit() {
+            let that = this
+            let form = $('#textEdi form')
 
-            $('#text-transparency-slider').slider({
-                min: 0,
-                max: 100,
-                range: false,
-            }).slider("pips", {
-                rest: false
-            }).slider("float")
+            $('#text-transparency-slider')
+                .slider({
+                    min: 0,
+                    max: 100,
+                    range: false
+                })
+                .slider('pips', {
+                    rest: false
+                })
+                .slider('float')
 
+            $('#text-verticalcheck')
+                .parent()
+                .on('switch-change', function(e, data) {
+                    console.log('ok')
+                })
+
+            //设置文字内容
+            form.find('textarea').on('input', function() {
+                $('.checkCanvas .canvasChild').text($(this).val())
+            })
+
+            //设置文字对齐
+            form.find('select[name="alignment"]').on('change', function() {
+                let data = ['left', 'center', 'right']
+                $('.checkCanvas .canvasChild').css(
+                    'text-align',
+                    data[$(this).val()]
+                )
+            })
+
+            //设置文字字号
+            form.find('input[name="size"]').on('change', function() {
+                let font = parseInt($(this).val())
+
+                if (font < 12) {
+                    font = 12
+                    $(this).val(12)
+                }
+
+                $('.checkCanvas .canvasChild').css('font-size', font)
+            })
+
+            //设置文字字体
+            form.find('select[name="font"]').on('change', function() {
+                $('.checkCanvas .canvasChild').css('font-family', $(this).val())
+            })
+
+            //设置字体颜色
+            form.find('input[name="color"]').on('change', function() {
+                $('.checkCanvas .canvasChild').css('color', $(this).val())
+            })
+
+            //设置背景颜色
+            form.find('input[name="backgroundcolor"]').on('change', function() {
+                $('.checkCanvas .canvasChild').css('background', $(this).val())
+            })
+
+            //设置粗体
+            form.find('[name="bold"]').bootstrapSwitch({
+                onText: 'Yes',
+                offText: 'No',
+                onColor: 'success',
+                offColor: 'info',
+                setState: false,
+                onSwitchChange: function(event, state) {
+                    if (state == true) {
+                        console.log('1111')
+                        $('.checkCanvas .canvasChild').css(
+                            'font-weight',
+                            'bold'
+                        )
+                    } else {
+                        console.log('22222')
+                        $('.checkCanvas .canvasChild').css(
+                            'font-weight',
+                            'normal'
+                        )
+                    }
+                }
+            })
+
+            //设置斜体
+            form.find('[name="italic"]').bootstrapSwitch({
+                onText: 'Yes',
+                offText: 'No',
+                onColor: 'success',
+                offColor: 'info',
+                setState: false,
+                onSwitchChange: function(event, state) {
+                    if (state == true) {
+                        $('.checkCanvas .canvasChild').css(
+                            'font-style',
+                            'italic'
+                        )
+                    } else {
+                        $('.checkCanvas .canvasChild').css(
+                            'font-style',
+                            'normal'
+                        )
+                    }
+                }
+            })
+
+            //设置多行
+            form.find('[name="multiline"]').bootstrapSwitch({
+                onText: 'Yes',
+                offText: 'No',
+                onColor: 'success',
+                offColor: 'info',
+                setState: false,
+                onSwitchChange: function(event, state) {
+                    if (state == true) {
+                        $('.checkCanvas .canvasChild').css(
+                            'white-space',
+                            'normal'
+                        )
+                    } else {
+                        $('.checkCanvas .canvasChild').css(
+                            'white-space',
+                            'nowrap'
+                        )
+                    }
+                }
+            })
+
+            //设置字间距
+            form.find('[name="wordSpace"]').on('change', function() {
+                $('.checkCanvas .canvasChild').css(
+                    'letter-spacing',
+                    $(this).val()
+                )
+            })
+
+            //设置行间距
+            form.find('[name="rowSpace"]').on('change', function() {
+                $('.checkCanvas .canvasChild').css('line-height', $(this).val())
+            })
         }
 
         tableEdiInit() {
-            $('#addTableRow').on('click', function () {
+            $('#addTableRow').on('click', function() {
                 let html = `
                 <tr>
                     <td>
@@ -1330,213 +2226,367 @@ function main() {
                 `
 
                 $('#rowDataTable tbody').append(html)
-
             })
         }
 
         htmlEdiInit() {
-            $('#transparent-range').slider({
-                min: 0,
-                max: 100,
-                range: false,
-            }).slider("pips", {
-                rest: false
-            }).slider("float")
+            $('.transparent-range')
+                .slider({
+                    min: 0,
+                    max: 10,
+                    range: false
+                })
+                .slider('pips', {
+                    rest: false
+                })
+                .slider('float')
         }
 
-        saveEdi() { //设置保存参数
+        //设置保存参数
+        saveEdi() {
             function getTime(obj, id) {
+                let checkEle = $('.checkEle')
+                let checkData = JSON.parse(checkEle.attr('data-p'))
+
+                obj.width = checkData.width
+                obj.height = checkData.height
+                obj.location_x = checkData.location_x
+                obj.location_y = checkData.location_y
+
                 obj.beginTime = id.find('input[name="startTime"]').val()
                 obj.endTime = id.find('input[name="endTime"]').val()
+
+                Object.assign(obj, JSON.parse($('.checkEle').attr('data-j')))
             }
 
-            $('#imgEdi').find('.saveEdi button').on('click', function (e) { //图片
-                e.preventDefault()
-                let edi = $('#imgEdi')
-                let ele = $('.checkEle')
-                let data = {}
+            $('#imgEdi')
+                .find('.saveEdi button')
+                .on('click', function(e) {
+                    //图片
+                    e.preventDefault()
+                    let edi = $('#imgEdi')
+                    let ele = $('.checkEle')
+                    let data = {}
 
-                getTime(data, edi)
-                data.transition = edi.find('input[name="url"]').val()
-                data.animation = edi.find('select[name="animation"]').val()
+                    getTime(data, edi)
+                    console.log(data)
+                    data.transition = edi.find('select[name="animation"]').val()
+                    // data.animation = edi.find('select[name="animation"]').val()
+                    data.scalingRatio = edi
+                        .find('input[name="zoomInput"]')
+                        .val()
+                    
+                    console.log(data)
 
-                let str = JSON.stringify(data)
-                ele.attr('data-p', str)
-            })
+                    let str = JSON.stringify(data)
+                    ele.attr('data-p', str)
 
-            $('#videoEdi').find('.saveEdi button').on('click', function (e) { //视频
-                e.preventDefault()
-                let edi = $('#videoEdi')
-                let ele = $('.checkEle')
-                let data = {}
+                    if (edi.find('input[name="setBack"]').is(':checked')) {
+                        $('.checkCanvas').addClass('setBackground')
+                    }
+                })
 
-                getTime(data, edi)
-                data.video = edi.find('#video-video-check').bootstrapSwitch('state')
-                data.audio = edi.find('#video-audio-check').bootstrapSwitch('state')
-                data.volume = edi.find('#video-vol-slider .ui-slider-tip').text()
+            $('#videoEdi')
+                .find('.saveEdi button')
+                .on('click', function(e) {
+                    //视频
+                    e.preventDefault()
+                    let edi = $('#videoEdi')
+                    let ele = $('.checkEle')
+                    let data = {}
 
-                data.inTime = edi.find('input[name="startPlay"]').val()
-                data.outTime = edi.find('input[name="endPlay"]').val()
+                    getTime(data, edi)
+                    data.video = edi
+                        .find('#video-video-check')
+                        .bootstrapSwitch('state')
+                    data.audio = edi
+                        .find('#video-audio-check')
+                        .bootstrapSwitch('state')
+                    data.volume = edi
+                        .find('#video-vol-slider .ui-slider-tip')
+                        .text()
 
-                let str = JSON.stringify(data)
-                ele.attr('data-p', str)
-            })
+                    data.inTime = edi.find('input[name="startPlay"]').val()
+                    data.outTime = edi.find('input[name="endPlay"]').val()
 
-            $('#audioEdi').find('.saveEdi button').on('click', function (e) { //音频
-                e.preventDefault()
-                let edi = $('#audioEdi')
-                let ele = $('.checkEle')
-                let data = {}
+                    data.transition = edi.find('input[name="animation"]').val()
+                    data.scalingRatio = edi
+                        .find('input[name="zoomInput"]')
+                        .val()
 
-                getTime(data, edi)
-                data.volume = edi.find('#audio-vol-slider .ui-slider-tip').text()
+                    let str = JSON.stringify(data)
+                    ele.attr('data-p', str)
+                })
 
-                data.inTime = edi.find('input[name="startPlay"]').val()
-                data.outTime = edi.find('input[name="endPlay"]').val()
+            $('#audioEdi')
+                .find('.saveEdi button')
+                .on('click', function(e) {
+                    //音频
+                    e.preventDefault()
+                    let edi = $('#audioEdi')
+                    let ele = $('.checkEle')
+                    let data = {}
 
-                let str = JSON.stringify(data)
-                ele.attr('data-p', str)
-            })
+                    getTime(data, edi)
+                    data.volume = edi
+                        .find('#audio-vol-slider .ui-slider-tip')
+                        .text()
 
-            $('#textEdi').find('.saveEdi button').on('click', function (e) { //文字
-                e.preventDefault()
-                let edi = $('#textEdi')
-                let ele = $('.checkEle')
-                let data = {}
+                    data.inTime = edi.find('input[name="startPlay"]').val()
+                    data.outTime = edi.find('input[name="endPlay"]').val()
 
-                getTime(data, edi)
-                data.text = edi.find('textarea').val()
-                data.alignment = edi.find('select[name="alignment"]').val()
-                data.multiline = edi.find('#text-multiline-check').bootstrapSwitch('state')
-                data.rolling = edi.find('select[name="rolling"]').val()
-                data.font = edi.find('select[name="font"]').val()
-                data.size = edi.find('select[name="size"]').val()
-                data.color = edi.find('input[name="color"]').val()
-                data.backgroundcolor = edi.find('input[name="backgroundcolor"]').val()
-                data.transparency = edi.find('#text-transparency-slider .ui-slider-tip').text()
-                data.bold = edi.find('#text-border-check').bootstrapSwitch('state')
-                data.italic = edi.find('#text-italic-check').bootstrapSwitch('state')
-                data.playbackspeed = edi.find('select[name="playbackspeed"]').val()
-                data.residencetime = edi.find('input[name="residencetime"]').val()
-                data.transition = edi.find('select[name="transition"]').val()
-                data.animation = edi.find('select[name="animation"]').val()
+                    let str = JSON.stringify(data)
+                    ele.attr('data-p', str)
+                })
 
-                let str = JSON.stringify(data)
-                ele.attr('data-p', str)
-            })
+            $('#textEdi')
+                .find('.saveEdi button')
+                .on('click', function(e) {
+                    //文字
+                    e.preventDefault()
+                    let edi = $('#textEdi')
+                    let ele = $('.checkEle')
+                    let data = {}
 
-            $('#rtspEdi').find('.saveEdi button').on('click', function (e) { //RTSP
-                e.preventDefault()
-                let edi = $('#rtspEdi')
-                let ele = $('.checkEle')
-                let data = {}
+                    getTime(data, edi)
+                    data.text = edi.find('textarea').val()
+                    data.alignment = edi.find('select[name="alignment"]').val()
+                    data.multiline = edi
+                        .find('#text-multiline-check')
+                        .bootstrapSwitch('state')
+                    data.rolling = edi.find('select[name="rolling"]').val()
+                    data.font = edi.find('select[name="font"]').val()
+                    data.size = edi.find('select[name="size"]').val()
+                    data.color = edi.find('input[name="color"]').val()
+                    data.backgroundcolor = edi
+                        .find('input[name="backgroundcolor"]')
+                        .val()
+                    data.transparency = edi
+                        .find('#text-transparency-slider .ui-slider-tip')
+                        .text()
+                    data.bold = edi
+                        .find('#text-border-check')
+                        .bootstrapSwitch('state')
+                    data.italic = edi
+                        .find('#text-italic-check')
+                        .bootstrapSwitch('state')
+                    data.playbackspeed = edi
+                        .find('select[name="playbackspeed"]')
+                        .val()
+                    data.residencetime = edi
+                        .find('input[name="residencetime"]')
+                        .val()
+                    data.wordSpace = edi.find('input[name="wordSpace"]').val()
+                    data.rowSpace = edi.find('input[name="rowSpace"]').val()
 
-                getTime(data, edi)
-                data.adress = edi.find('input[name="address"]').val()
-                data.protocol = edi.find('select[name="protocol"]').val()
+                    // data.transition = edi
+                    //     .find('select[name="transition"]')
+                    //     .val()
+                    // data.animation = edi.find('select[name="animation"]').val()
 
-                let str = JSON.stringify(data)
-                ele.attr('data-p', str)
-            })
+                    let str = JSON.stringify(data)
+                    ele.attr('data-p', str)
+                })
 
-            $('#tabelEdi').find('.saveEdi button').on('click', function (e) { //表格
-                e.preventDefault()
-                let edi = $('#tabelEdi')
-                let ele = $('.checkEle')
-                let imgEle = $('.checkCanvas')
-                let data = {}
+            $('#rtspEdi')
+                .find('.saveEdi button')
+                .on('click', function(e) {
+                    //RTSP
+                    e.preventDefault()
+                    let edi = $('#rtspEdi')
+                    let ele = $('.checkEle')
+                    let data = {}
 
-                getTime(data, edi)
-                data.height = imgEle.height()
-                data.width = imgEle.width()
-                data.mqAddress = edi.find('input[name="mqAddress"]').val()
-                data.queueName = edi.find('input[name="queueName"]').val()
-                data.styleId = edi.find('select[name="styleId"]').val()
+                    getTime(data, edi)
+                    data.adress = edi.find('input[name="address"]').val()
+                    data.protocol = edi.find('select[name="protocol"]').val()
 
-                let rowList = []
-                let dataColumnList = []
-                for (const item of $('#rowDataTable tbody tr')) {
-                    let ele = $(item)
-                    rowList.push(ele.find('input[name="rowList"]').val())
-                    dataColumnList.push(ele.find('input[name="dataColumnList"]').val())
-                }
-                data.rowList = rowList
-                data.dataColumnList = dataColumnList
+                    let str = JSON.stringify(data)
+                    ele.attr('data-p', str)
+                })
 
-                let str = JSON.stringify(data)
-                ele.attr('data-p', str)
-            })
+            $('#tabelEdi')
+                .find('.saveEdi button')
+                .on('click', function(e) {
+                    //表格
+                    e.preventDefault()
+                    let edi = $('#tabelEdi')
+                    let ele = $('.checkEle')
+                    let imgEle = $('.checkCanvas')
+                    let data = {}
 
-            $('#clockEdi').find('.saveEdi button').on('click', function (e) { //时钟
-                e.preventDefault()
-                let edi = $('#clockEdi')
-                let ele = $('.checkEle')
-                let data = {}
+                    getTime(data, edi)
+                    data.height = imgEle.height()
+                    data.width = imgEle.width()
+                    data.mqAddress = edi.find('input[name="mqAddress"]').val()
+                    data.queueName = edi.find('input[name="queueName"]').val()
+                    data.styleId = edi.find('select[name="styleId"]').val()
 
-                getTime(data, edi)
-                data.styleId = edi.find('select[name="styleId"]').val()
+                    let rowList = []
+                    let dataColumnList = []
+                    for (const item of $('#rowDataTable tbody tr')) {
+                        let ele = $(item)
+                        rowList.push(ele.find('input[name="rowList"]').val())
+                        dataColumnList.push(
+                            ele.find('input[name="dataColumnList"]').val()
+                        )
+                    }
+                    data.rowList = rowList
+                    data.dataColumnList = dataColumnList
 
-                let str = JSON.stringify(data)
-                ele.attr('data-p', str)
-            })
+                    let str = JSON.stringify(data)
+                    ele.attr('data-p', str)
+                })
 
-            $('#weatherEdi').find('.saveEdi button').on('click', function (e) { //天气
-                e.preventDefault()
-                let edi = $('#weatherEdi')
-                let ele = $('.checkEle')
-                let data = {}
+            $('#clockEdi')
+                .find('.saveEdi button')
+                .on('click', function(e) {
+                    //时钟
+                    e.preventDefault()
+                    let edi = $('#clockEdi')
+                    let ele = $('.checkEle')
+                    let data = {}
 
-                getTime(data, edi)
-                data.styleId = edi.find('select[name="styleId"]').val()
+                    getTime(data, edi)
+                    data.styleId = edi.find('select[name="styleId"]').val()
+                    data.font = edi.find('select[name="font"]').val()
+                    data.size = edi.find('select[name="size"]').val()
+                    data.color = edi.find('input[name="color"]').val()
+                    data.backgroundcolor = edi
+                        .find('input[name="backgroundcolor"]')
+                        .val()
+                    data.transparency = edi
+                        .find('#clock-transparency-slider .ui-slider-tip')
+                        .text()
+                    data.bold = edi
+                        .find('#clock-border-check')
+                        .bootstrapSwitch('state')
+                    data.italic = edi
+                        .find('#clock-italic-check')
+                        .bootstrapSwitch('state')
+                    data.alignment = edi.find('select[name="alignment"]').val()
 
-                let str = JSON.stringify(data)
-                ele.attr('data-p', str)
-            })
+                    let str = JSON.stringify(data)
+                    ele.attr('data-p', str)
+                })
 
-            $('#htmlEdi').find('.saveEdi button').on('click', function (e) { //Html
-                e.preventDefault()
-                let edi = $('#htmlEdi')
-                let ele = $('.checkEle')
-                let data = {}
+            $('#weatherEdi')
+                .find('.saveEdi button')
+                .on('click', function(e) {
+                    //天气
+                    e.preventDefault()
+                    let edi = $('#weatherEdi')
+                    let ele = $('.checkEle')
+                    let data = {}
 
-                getTime(data, edi)
-                data.overflow = edi.find('select[name="overflow"]').val()
-                data.url = edi.find('input[name="url"]').val()
-                data.transparency = edi.find('#transparent-range .ui-slider-tip').text()
+                    getTime(data, edi)
+                    data.styleId = edi.find('select[name="styleId"]').val()
 
-                let str = JSON.stringify(data)
-                ele.attr('data-p', str)
-            })
+                    data.font = edi.find('select[name="font"]').val()
+                    data.size = edi.find('select[name="size"]').val()
+                    data.color = edi.find('input[name="color"]').val()
+                    data.bold = edi
+                        .find('#clock-border-check')
+                        .bootstrapSwitch('state')
+                    data.italic = edi
+                        .find('#clock-italic-check')
+                        .bootstrapSwitch('state')
+                    data.alignment = edi.find('select[name="alignment"]').val()
 
+                    data.city = edi.find('input[name="city"]').val()
+                    data.data = edi.find('select[name="data"]').val()
+                    data.weather = edi
+                        .find('#weather-show-weather')
+                        .bootstrapSwitch('state')
+                    data.temperature = edi
+                        .find('#weather-show-temperature')
+                        .bootstrapSwitch('state')
+                    data.windPower = edi
+                        .find('#weather-show-windPower')
+                        .bootstrapSwitch('state')
 
+                    let str = JSON.stringify(data)
+                    ele.attr('data-p', str)
+                })
+
+            $('#htmlEdi')
+                .find('.saveEdi button')
+                .on('click', function(e) {
+                    //Html
+                    e.preventDefault()
+                    let edi = $('#htmlEdi')
+                    let ele = $('.checkEle')
+                    let data = {}
+
+                    getTime(data, edi)
+                    data.overflow = edi.find('select[name="overflow"]').val()
+                    data.url = edi.find('input[name="url"]').val()
+                    data.transparency = edi
+                        .find('#transparent-range .ui-slider-tip')
+                        .text()
+
+                    let str = JSON.stringify(data)
+                    ele.attr('data-p', str)
+                })
+
+            $('#documentEdi')
+                .find('.saveEdi button')
+                .on('click', function(e) {
+                    //文档
+                    e.preventDefault()
+                    let edi = $('#htmlEdi')
+                    let ele = $('.checkEle')
+                    let data = {}
+
+                    getTime(data, edi)
+                    data.transition = edi.find('input[name="transition"]').val()
+                    data.scalingRatio = edi
+                        .find('input[name="zoomInput"]')
+                        .val()
+
+                    data.residencetime = edi
+                        .find('input[name="residencetime"]')
+                        .val()
+
+                    let str = JSON.stringify(data)
+                    ele.attr('data-p', str)
+                })
         }
 
-        setPlayTime() { //监听video进度设置
+        //监听video进度设置
+        setPlayTime() {
             let that = this
             setPlay($('#videoEdi'), '#video-slider')
             setPlay($('#audioEdi'), '#audio-slider')
 
             function setPlay(form, id) {
-
                 let el = form.find(id).find('.ui-slider-range')[0]
 
                 function obs(mutation) {
-                    let timeL = parseFloat(JSON.parse($('.checkEle').attr('data-J')).note.timeLine)
+                    let timeL = parseFloat(
+                        JSON.parse($('.checkEle').attr('data-J')).note.timeLine
+                    )
                     let style = mutation.target.style
                     let left = parseInt(style.left)
                     let right = parseInt(style.left) + parseInt(style.width)
 
-                    let startT = timeL * left / 100
-                    let endT = timeL * right / 100
+                    let startT = (timeL * left) / 100
+                    let endT = (timeL * right) / 100
 
-                    form.find('.videoPlayTime').eq(0).val(that.formatSeconds(startT))
-                    form.find('.videoPlayTime').eq(1).val(that.formatSeconds(endT))
+                    form.find('.videoPlayTime')
+                        .eq(0)
+                        .val(that.formatSeconds(startT))
+                    form.find('.videoPlayTime')
+                        .eq(1)
+                        .val(that.formatSeconds(endT))
                 }
 
                 that.observer(el, obs, ['style'])
 
-                form.find('.videoPlayTime').on('blur', function () {
-                    let str = $(this).val().trim()
+                form.find('.videoPlayTime').on('blur', function() {
+                    let str = $(this)
+                        .val()
+                        .trim()
 
                     let reg = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/
                     if (!reg.test(str)) {
@@ -1567,130 +2617,185 @@ function main() {
 
                         let timeS = h * 60 + m * 60 + s
 
-                        let timeA = JSON.parse($('.checkEle').attr('data-J')).note.timeLine
+                        let timeA = JSON.parse($('.checkEle').attr('data-J'))
+                            .note.timeLine
                         if ($(this).attr('name') == 'startPlay') {
                             let timeSe = timeS / timeA
 
-                            ele.eq(0).css('left', `${timeSe*100}%`)
+                            ele.eq(0).css('left', `${timeSe * 100}%`)
                             range.css({
-                                'left': `${timeSe*100}%`,
-                                'width': `${(parseFloat(ele.eq(1).css('left')) / $(id).width() - timeSe) * 100}%`
+                                left: `${timeSe * 100}%`,
+                                width: `${(parseFloat(ele.eq(1).css('left')) /
+                                    $(id).width() -
+                                    timeSe) *
+                                    100}%`
                             })
                         } else {
-
                             let timeSe = timeS / timeA
 
-                            ele.eq(1).css('left', `${timeSe*100}%`)
+                            ele.eq(1).css('left', `${timeSe * 100}%`)
                             range.css({
-                                'width': `${(timeSe - parseFloat(ele.eq(0).css('left')) / $(id).width()) * 100}%`
+                                width: `${(timeSe -
+                                    parseFloat(ele.eq(0).css('left')) /
+                                        $(id).width()) *
+                                    100}%`
                             })
                         }
                     }
                 })
-
             }
         }
 
-        getMaterial() { //获取素材并分类
+        //获取素材并分类
+        getMaterial() {
+            let that = this
+
             function getMate() {
                 let thats = $('#itemIndex')
                 $.ajax({
                     type: 'post',
                     dataType: 'json',
-                    url: './json/material.json', //idm/template/getmaterial.do
+                    url: './json/material.json',
+                    // url: '/idm/template/getmaterial.do', //idm/template/getmaterial.do   //./json/material.json
                     data: {
-                        areaId: '',
+                        areaId: that.areaId,
                         materialType: thats.val(),
-                        searchValue: '',
+                        searchValue: ''
                     },
                     success(res) {
                         if (res.success) {
                             let html = ''
                             let thisVal = thats.val()
-                            if (thisVal == 4 || thisVal == 5 || thisVal == 6 || thisVal == 7 || thisVal == 8 || thisVal == 9) {
+                            if (
+                                thisVal == 4 ||
+                                thisVal == 5 ||
+                                thisVal == 6 ||
+                                thisVal == 7 ||
+                                thisVal == 8 ||
+                                thisVal == 9
+                            ) {
                                 html += `
                                     <img class="material defaultAdd " src="img/add/add.png">
                                 `
-
                             }
 
-                            for (const item of res.materialList) {
+                            if (res.materialList.length != 0) {
+                                console.log(res.materialList)
+                                for (const item of res.materialList) {
+                                    if (item.thumbnail == null) {
+                                        html += `
+                                        <img options='text=${
+                                            item.materialName
+                                        }' class='material placeholder'  data-J='${JSON.stringify(
+                                            item
+                                        )}'>
+                                        `
+                                    } else {
+                                        // 缩略图路径处理
+                                        let url = `img/${
+                                            item.thumbnail
+                                        }`
+                                        // let url = `/images/thumbnail/material/${
+                                        //     item.thumbnail
+                                        // }`
 
-                                html += `
-                                <img src=${item.fileName} class="material" data-J='${JSON.stringify(item)}'>
-                                `
+                                        html += `
+                                        <img src="${url}" class="material" data-J='${JSON.stringify(
+                                            item
+                                        )}'>
+                                        `
+                                    }
+                                }
                             }
 
-                            $('#itemList').children().hide()
+                            $('#itemList')
+                                .children()
+                                .hide()
                             $('#itemList').append(html)
-                            $('#itemList').find(`img[data-t=${thisVal}]`).show()
-
+                            $('#itemList')
+                                .find(`img[data-t=${thisVal}]`)
+                                .show()
+                            placeholder.render()
                         } else {
-                            wade.libs.alert(res.msg)
+                            alert(res.msg)
                         }
                     }
                 })
             }
 
-            $('#itemIndex').on('change', function () {
+            $('#itemIndex').on('change', function() {
                 let thats = $(this)
                 getMate()
-
             })
 
             getMate()
         }
 
-
         //模版
+        //模版初始化
         templateInit() {
             this.getTemplate()
             this.readTemplate()
         }
 
-        getTemplate() { //获取模版
+        //获取模版
+        getTemplate() {
+            let that = this
             $.ajax({
                 type: 'post',
                 dataType: 'json',
-                url: './json/template.json', //template/gettemplate.do
+                url: './json/template.json',
+                // url: '/idm/template/gettemplates.do', //idm/template/gettemplate.do  //./json/template.json
                 data: {
-                    areaId: '',
-                    searchValue: '',
+                    areaId: that.areaId,
+                    searchValue: ''
                 },
                 success(res) {
-                    if (res.success) {
-                        let html = ''
+                    let html = ''
 
-                        for (const item of res.programList) {
+                    for (const item of res.templateList) {
+                        // 缩略图路径处理
+                        let url = `/images/thumbnail/template/${item.thumbnail}`
 
-                            html += `
-                            <img src=${item.thumbnail} class="material" data-J='${JSON.stringify(item)}'>
+                        html += `
+                            <img src="${url}" class="material" data-J='${JSON.stringify(
+                            item
+                        )}'>
                             `
-                        }
-
-                        $('#templateList').append(html)
-
-                    } else {
-                        wade.libs.alert(res.msg)
                     }
+
+                    $('#templateList').append(html)
                 }
             })
         }
 
-        readTemplate() { //读取模版
+        //读取模版
+        readTemplate() {
             let that = this
-            $('#templateList').on('click', 'img', function () {
-                var r = confirm("确定读取该模版？");
+            $('#templateList').on('click', 'img', function() {
+                var r = confirm('确定读取该模版？')
                 if (r == true) {
                     let data = JSON.parse($(this).attr('data-j'))
-                    let listIndex = ['imageList', 'videoList', 'audioList', 'textList', 'respList', 'tableList', 'clockList', 'weatherList', 'htmlList']
+                    let listIndex = [
+                        'imageList',
+                        'videoList',
+                        'audioList',
+                        'textList',
+                        'rtspList',
+                        'tableList',
+                        'clockList',
+                        'weatherList',
+                        'htmlList',
+                        'documentList'
+                    ]
                     let html = ''
                     let timeA = $('#nowTime').attr('data-t') * 60
-                    let IdIndex = (new Date()).getTime().toString()
+                    let IdIndex = new Date().getTime().toString()
                     let trackW = $('.trackContent').width()
 
-                    $('#canvas').children().remove() //清空画布
-
+                    $('#canvas')
+                        .children()
+                        .remove() //清空画布
 
                     for (const item of data.params) {
                         let dataSort = item.layerList.sort(compare('zAxis')) // 对z轴进行排序
@@ -1700,32 +2805,52 @@ function main() {
                             for (const i of it[listIndex[it.type - 1]]) {
                                 let beginL = calcTime(i.beginTime) / timeA
                                 let endL = calcTime(i.endTime) / timeA
-                                let width = (endL - beginL) * $('.trackContent').width()
+                                let width =
+                                    (endL - beginL) * $('.trackContent').width()
                                 let nameId = IdIndex++
 
-
-                                    eleHtml += `
-                                <div class="silderBlock" data-s="${i.fileName}" data-l=${beginL * trackW} data-j=${JSON.stringify(i)} data-i=${nameId} data-t="${it.type}" data-begin="${i.beginTime}" data-end="${i.endTime}" style="left: ${beginL * 100}%; width: ${width}px">
+                                eleHtml += `
+                                <div class="silderBlock" data-s="${
+                                    i.fileName
+                                }" data-l=${beginL *
+                                    trackW} data-j=${JSON.stringify(
+                                    i
+                                )} data-i=${nameId} data-t="${
+                                    it.type
+                                }" data-begin="${i.beginTime}" data-end="${
+                                    i.endTime
+                                }" style="left: ${beginL *
+                                    100}%; width: ${width}px">
                                     ${i.materialName}
                                 </div>
                                 `
                             }
 
                             html += `
-                            <div class="track clearfix" data-j=${JSON.stringify(it)}>
-                                <div class="trackController col-sm-2" data-t=${it.type}>
+                            <div class="track clearfix" data-j=${JSON.stringify(
+                                it
+                            )}>
+                                <div class="trackController col-sm-2" data-t=${
+                                    it.type
+                                }>
                                     <span>${that.typeIndex[it.type - 1]}</span>
                                     <span class="glyphicon glyphicon glyphicon-align-justify" aria-hidden="true"></span>
                                 </div>
-                                <div id="track${index + 1}" class="trackContent col-sm-10">
+                                <div id="track${index +
+                                    1}" class="trackContent col-sm-10">
                                     ${eleHtml}
                                 </div>
                             </div>
                             `
                         })
 
-                        if (item.layerList.length < 4) { //轨道不到四条 添加预留轨道
-                            for (let i = 0; i < 4 - item.layerList.length; i++) {
+                        if (item.layerList.length < 4) {
+                            //轨道不到四条 添加预留轨道
+                            for (
+                                let i = 0;
+                                i < 4 - item.layerList.length;
+                                i++
+                            ) {
                                 html += `
                                 <div class="trackSeize clearfix">
                                     <div class="trackController col-sm-2">
@@ -1741,7 +2866,6 @@ function main() {
 
                     $('.trackBox').html(html)
 
-
                     for (const item of $('.track .trackContent')) {
                         let firstO = {
                             left: 0,
@@ -1749,7 +2873,6 @@ function main() {
                         }
 
                         for (const i of $(item).children()) {
-
                             let iLeft = calcTime($(i).attr('data-begin'))
                             if (iLeft <= firstO.left) {
                                 firstO = {
@@ -1761,12 +2884,24 @@ function main() {
 
                         let dataI = $(firstO.index).attr('data-i')
                         let data = JSON.parse($(firstO.index).attr('data-j'))
-                        let trackData = JSON.parse($(firstO.index).parent().parent().attr('data-j'))
+                        let trackData = JSON.parse(
+                            $(firstO.index)
+                                .parent()
+                                .parent()
+                                .attr('data-j')
+                        )
 
-                        that.drawImg(data.fileName, dataI, trackData.xAxis, trackData.yAxis, $(firstO.index), trackData.width, trackData.height)
+                        that.drawImg(
+                            data.fileName,
+                            dataI,
+                            trackData.location_x,
+                            trackData.location_y,
+                            $(firstO.index),
+                            trackData.width,
+                            trackData.height
+                        )
                     }
                 }
-
             })
 
             function calcTime(thisV) {
@@ -1780,134 +2915,288 @@ function main() {
                 return timeS
             }
 
-            function compare(prop) { //数组对象排序
-                return function (obj1, obj2) {
-                    var val1 = obj1[prop];
-                    var val2 = obj2[prop];
+            function compare(prop) {
+                //数组对象排序
+                return function(obj1, obj2) {
+                    var val1 = obj1[prop]
+                    var val2 = obj2[prop]
                     if (val1 < val2) {
-                        return -1;
+                        return -1
                     } else if (val1 > val2) {
-                        return 1;
+                        return 1
                     } else {
-                        return 0;
+                        return 0
                     }
                 }
             }
         }
 
         //保存
+        // 保存初始化
         save() {
-            let elList = ['imageList', 'videoList', 'audioList', 'textList', 'respList', 'tableList', 'clockList', 'weatherList', 'htmlList']
             let that = this
-            $('#save').on('click', function () {
+            $('#save').on('click', function() {
                 $('#savePro').modal('show')
             })
-            
-            $('#saveBtn').on('click', function() {
-                let data = {}
-                let form = $('#saveForm')
-    
-                data.programName = form.find('input[name="programName"]').val()
-                data.note = form.find('input[name="note"]').val()
-    
-                data.params = []
-                let parObj = {}
-                parObj.layerList = []
-                
-                for (let i = 0; i < $('.track').length; i++) {  //循环轨道
-                    let e = $('.track')[i];
-                    let track = $(e).find('.trackContent')
-                    let layerObj = {}
-                    layerObj.imageList = []
-                    layerObj.zAxis = i
-                    layerObj.type = $(e).find('.trackController').attr('data-t') - 1 
 
-                    for (const item of elList) {
-                        layerObj[item] = []
-                    }
-                    
-                    for (let it = 0; it < $(track).children().length; it++) {   //循环轨道元素
-                        let trackChildObj = {}
-                        let el = $(track).children()[it]
-                        
-                        trackChildObj = $(el).attr('data-p') == undefined ? JSON.parse($(el).attr('data-j')) : JSON.parse($(el).attr('data-p'))
+            $('#saveBtnPro').on('click', function() {
+                //保存为节目
+                if (
+                    $('#saveForm')
+                        .find('.required')
+                        .val() == ''
+                ) {
+                    alert('请填写名称')
+                    return
+                }
 
+                let data = that.getParams('pro')
+                data.programName = $('#saveForm')
+                    .find('input[name="programName"]')
+                    .val()
+                data.note = $('#saveForm')
+                    .find('input[name="note"]')
+                    .val()
 
-                        // 寻找轨道相关画布图片
-                        for (const ite of $('.canvasDiv')) {
-                            if($(ite).attr('data-i') == $(el).attr('data-i')) {
-                                let img = $(ite).find('img')
-                                console.log(parseInt($(ite).css('top')))
-                                layerObj.yAxis = parseInt($(ite).css('top'))
-                                layerObj.xAxis = parseInt($(ite).css('left'))
-                                layerObj.width = parseInt(img.css('width'))
-                                layerObj.height = parseInt(img.css('height'))
+                html2canvas($('#canvas'), {
+                    height: $('#canvas').outerHeight() + 20,
+                    width: $('#canvas').outerWidth() + 20,
+                    onrendered: function(canvas) {
+                        data.photo = canvas.toDataURL()
+
+                        $.ajax({
+                            url: '/idm/program/saveprogram.do',
+                            type: 'POST',
+                            dataType: 'json',
+                            data,
+                            success(res) {
+                                if (res.success) {
+                                    alert('成功')
+                                } else {
+                                    alert(res.msg)
+                                }
                             }
-                        }
-
-                        layerObj[elList[layerObj.type]].push(trackChildObj)
+                        })
                     }
+                })
+            })
 
-                    parObj.layerList.push(layerObj)
+            $('#saveBtnTem').on('click', function() {
+                //保存为模版
+                if (
+                    $('#saveForm')
+                        .find('.required')
+                        .val() == ''
+                ) {
+                    alert('请填写名称')
+                    return
                 }
-                
-    
-                for (let i = 0; i < $('.track').length; i++) {
-                    const item = $('.track')[i];
-                    
-                    
-                    // 保存各轨道元素参数
-                    let trackController = $(item).find('.trackController')
-                    let layer = {}
-                    layer.zAxis = i
-                    layer.type = trackController.attr('data-t')
-                    layer.yAxis = trackController.attr('data-i')
-                    
-                    
-                    // 获取起止时间
-                    let beginTime = 0
-                    let endTime = 0
-                    for (let itIndex = 0; itIndex < $('.silderBlock').length; itIndex++) {
-                        const it = $('.silderBlock')[itIndex]
-                        
-                        // 筛选第一个和最后一个轨道元素
-                        let startT = that.formatToS($(it).attr('data-begin'))
-                        let endT = that.formatToS($(it).attr('data-end'))
-                        
-                        if(startT < beginTime) {
-                            beginTime = startT
-                        }
-                        if(endT > endTime) {
-                            endTime = endT
-                        }
-                        
-    
+
+                let data = that.getParams('tem')
+                data.templateName = $('#saveForm')
+                    .find('input[name="programName"]')
+                    .val()
+                data.note = $('#saveForm')
+                    .find('input[name="note"]')
+                    .val()
+
+                html2canvas($('#canvas'), {
+                    height: $('#canvas').outerHeight() + 20,
+                    width: $('#canvas').outerWidth() + 20,
+                    onrendered: function(canvas) {
+                        data.photo = canvas.toDataURL()
+
+                        $.ajax({
+                            url: '/idm/template/savetemplate.do',
+                            type: 'POST',
+                            dataType: 'json',
+                            data,
+                            success(res) {
+                                if (res.success) {
+                                    alert('成功')
+                                } else {
+                                    alert(res.msg)
+                                }
+                            }
+                        })
                     }
-    
-                    parObj.beginTime = that.formatSeconds(beginTime)
-                    parObj.endTime = that.formatSeconds(endTime)
-                }
-    
-                data.params.push(parObj)
-    
-                console.log(data)
-
+                })
             })
         }
 
-
-        //其他方法
-        btnBind() { //按钮绑定事件
+        //序列化素材参数
+        getParams(type) {
+            let elList = [
+                'imageList',
+                'videoList',
+                'audioList',
+                'textList',
+                'respList',
+                'tableList',
+                'clockList',
+                'weatherList',
+                'htmlList',
+                'documentList'
+            ]
             let that = this
 
-            $('#addTrack').on('click', function () { //添加轨道按钮
+            let data = {}
+            let form = $('#saveForm')
+
+            data.programName = form.find('input[name="programName"]').val()
+            data.note = form.find('input[name="note"]').val()
+
+            data.duration
+            data.params = []
+            
+            for (let i = 0; i < $('.track').length; i++) {
+                let parObj = {}
+                parObj.elementList = []
+                let durFlag = 0
+                //循环轨道
+                let e = $('.track')[i]
+                let track = $(e).find('.trackContent')
+                // layerObj.imageList = []
+                // layerObj.zAxis = i
+                
+                // for (const item of elList) {
+                    //     layerObj[item] = []
+                    // }
+                    
+                for (let it = 0; it < $(track).children().length; it++) {
+
+                    let layerObj = {}
+                    
+                    //循环轨道元素
+                    let trackChildObj = {}
+                    let el = $(track).children()[it]
+                    layerObj.elementType = $(el)
+                        .attr('data-t')
+
+                    trackChildObj =
+                        $(el).attr('data-p') == undefined
+                            ? JSON.parse($(el).attr('data-j'))
+                            : JSON.parse($(el).attr('data-p'))
+
+                    // 寻找轨道相关画布图片
+                    for (const ite of $('.canvasDiv')) {
+                        if ($(ite).attr('data-i') == $(el).attr('data-i')) {
+                            let img = $(ite).find('img')
+                            let checkEle = $(
+                                `.trackContent [data-i="${$(ite).attr('data-i')}"]`
+                            )
+
+                            layerObj.location_y = parseInt($(ite).css('top'))
+                            layerObj.location_x = parseInt($(ite).css('left'))
+                            layerObj.width = parseInt(img.css('width'))
+                            layerObj.height = parseInt(img.css('height'))
+                            layerObj.beginTime = checkEle.attr('data-begin')
+                            layerObj.endTime = checkEle.attr('data-end')
+                            layerObj.index = it
+                        }
+                    }
+                    
+                    // layerObj[elList[layerObj.type]].push(trackChildObj)
+                    Object.assign(layerObj, trackChildObj)
+
+                    // 获取持续时间
+                    if (
+                        parseFloat($(el).css('left')) +
+                            parseFloat($(el).css('width')) >
+                        durFlag
+                    ) {
+                        durFlag =
+                            parseFloat($(el).css('left')) +
+                            parseFloat($(el).css('width'))
+
+                        let allTime = $('#nowTime').attr('data-t') * 60
+                        let allLength = $('.trackContent').width()
+
+                        data.duration = that.formatSeconds(
+                            allTime * (durFlag / allLength)
+                        )
+                    }
+
+                    parObj.elementList.push(layerObj)
+                }
+
+                parObj.trackName = `轨道${i}`
+                parObj.index = i
+
+                data.params.push(parObj)
+            }
+
+            // for (let i = 0; i < $('.track').length; i++) {
+            //     const item = $('.track')[i]
+
+            //     // 保存各轨道元素参数
+            //     let trackController = $(item).find('.trackController')
+            //     let layer = {}
+            //     layer.zAxis = i
+            //     layer.type = trackController.attr('data-t')
+            //     layer.location_y = trackController.attr('data-i')
+
+            //     // 获取起止时间
+            //     let beginTime = 0
+            //     let endTime = 0
+            //     for (
+            //         let itIndex = 0;
+            //         itIndex < $('.silderBlock').length;
+            //         itIndex++
+            //     ) {
+            //         const it = $('.silderBlock')[itIndex]
+
+            //         // 筛选第一个和最后一个轨道元素
+            //         let startT = that.formatToS($(it).attr('data-begin'))
+            //         let endT = that.formatToS($(it).attr('data-end'))
+
+            //         if (startT < beginTime) {
+            //             beginTime = startT
+            //         }
+            //         if (endT > endTime) {
+            //             endTime = endT
+            //         }
+            //     }
+
+            //     // parObj.beginTime = that.formatSeconds(beginTime)
+            //     // parObj.endTime = that.formatSeconds(endTime)
+            // }
+
+            
+            // data.params = JSON.stringify(data.params)
+
+            Object.assign(data, that.proObj)
+
+            if (type == 'pro') {
+                data.programCode = $('#saveForm')
+                    .find('input[name="code"]')
+                    .val()
+            } else {
+                data.templateCode = $('#saveForm')
+                    .find('input[name="code"]')
+                    .val()
+            }
+
+            return data
+        }
+
+        //其他方法
+        btnBind() {
+            //按钮绑定事件
+            let that = this
+
+            $('#addTrack').on('click', function() {
+                //添加轨道按钮
                 that.newTrack()
             })
 
-            $(document).on('keydown', function (e) { //监听del键盘事件
+            $(document).on('keydown', function(e) {
+                //监听del键盘事件
                 var code = e.keyCode
                 if (46 == code) {
-                    let track = $('.checkEle').parent().parent()
+                    let track = $('.checkEle')
+                        .parent()
+                        .parent()
 
                     $('.checkEle').remove()
                     $('#showBox').click()
@@ -1916,28 +3205,32 @@ function main() {
                     if (trackEle.length == 0) {
                         $('.checkCanvas').remove()
                     } else {
-
                         let firstL = 999999999
                         let firstE
                         for (const item of trackEle) {
                             let length = $(item).attr('data-l')
-                            if (parseFloat(length) < (firstL)) {
+                            if (parseFloat(length) < firstL) {
                                 firstL = length
                                 firstE = item
                             }
                         }
 
-                        $('.checkCanvas').find('img').attr('src', $(firstE).attr('data-s'))
+                        $('.checkCanvas')
+                            .find('img')
+                            .attr('src', $(firstE).attr('data-s'))
                     }
 
                     that.removeTrack(track, $('.checkEle')[0])
                 }
-
             })
 
-            $('#ediBox input[name="startTime"], #ediBox input[name="endTime"]').on('blur', function (e) { //时间格式验证
-                let str = $(this).val().trim()
-
+            $(
+                '#ediBox input[name="startTime"], #ediBox input[name="endTime"]'
+            ).on('blur', function(e) {
+                //时间格式验证
+                let str = $(this)
+                    .val()
+                    .trim()
 
                 let reg = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/
                 if (!reg.test(str)) {
@@ -1970,19 +3263,124 @@ function main() {
                     if ($(this).attr('name') == 'startTime') {
                         let timeSe = timeS / (timeA * 60)
                         $('.checkEle').css('left', `${timeSe * 100}%`)
+                        $('.checkEle').attr('data-begin', thisV)
                     } else {
                         let timeSe = timeS / (timeA * 60)
-                        $('.checkEle').css('width', `${timeSe * parseFloat($('.trackContent').width()) - parseFloat($('.checkEle').css('left'))}px`)
+                        $('.checkEle').css(
+                            'width',
+                            `${timeSe * parseFloat($('.trackContent').width()) -
+                                parseFloat($('.checkEle').css('left'))}px`
+                        )
+                        $('.checkEle').attr('data-end', thisV)
+                    }
+                }
+            })
+        }
+
+        //设置canvas缩放
+        setTransform() {
+            let clinenW = document.body.clientWidth
+            let clinenH = document.body.clientHeight
+
+            let width = clinenW - $('.row-right').width()
+            let ratio =
+                (width / this.width).toFixed(1) < 1
+                    ? (width / this.width).toFixed(1) * 10
+                    : 10
+
+            console.log(ratio)
+
+            $('#canvas').css(
+                'transform',
+                `scale(${0.1 * ratio}, ${0.1 * ratio})`
+            )
+            $('#transformCanvas').val(ratio)
+
+            $('#transformCanvas').on('change', function() {
+                $('#canvas').css(
+                    'transform',
+                    `scale(${0.1 * $(this).val()}, ${0.1 * $(this).val()})`
+                )
+            })
+        }
+
+        //计算div宽高
+        styleInit() {
+            let clinenW = document.body.clientWidth
+            let clinenH = document.body.clientHeight
+
+            $('.timeLineBox').css('height', $('.timeLine').height() + 14)
+
+            // $('.row-left').css({
+            //     width: `${clinenW - $('.row-right').width()}`,
+            //     height: `${clinenH - $('.timeLineBox').height()}`
+            // })
+
+            $('.ef-ruler').css({
+                height: `${$('#ruler').height() + 25}`
+            })
+
+            //计算hiddenBox宽高
+
+            $('#hiddenBox').css({
+                width: `${clinenW - $('.row-right').width() - 60}`,
+                height: `${clinenH -
+                    $('.timeLineBox').height() -
+                    parseInt($('.row-left').css('paddingTop')) -
+                    30}`
+            })
+        }
+
+        //批量设置长度
+        setPlayLength() {
+            let that = this
+
+            $(document).keyup(function(event) {
+                if (event.keyCode == 13) {
+                    $('#addTime').val('')
+                    let ctrlEle = $('.ctrlEle')
+                    $('#setPlayLength').modal('show')
+                }
+            })
+
+            $('#setPlayBtn').on('click', function() {
+                let ctrlEle = $('.ctrlEle')
+                let addTime = $('#addTime').val()
+                let timeTotal = $('#nowTime').attr('data-t') * 60
+                let addLength =
+                    (addTime / timeTotal) * $('.trackContent').width()
+
+                ctrlEle.width(addLength)
+                for (const item of ctrlEle) {
+                    let track = $(item).parent()
+                    let div = $(item)
+
+                    for (const i of track.children()) {
+                        let item1 = $(i)
+                        if (item1.attr('data-i') != div.attr('data-i')) {
+                            if (that.checkHoverDiv(div, item1)) {
+                                let divWidth =
+                                    parseFloat(div.css('left')) -
+                                    parseFloat(item1.css('left'))
+                                if (divWidth < 0) {
+                                    div.width(divWidth * -1)
+                                } else {
+                                    item1.width(divWidth)
+                                }
+                            }
+                        }
                     }
                 }
 
+                $('#setPlayLength').modal('hide')
             })
-
         }
 
-        observer(el, func, filter) { //监听属性变化观察者
-            var observer = new MutationObserver(function (mutations, observer) {
-                mutations.forEach(function (mutation) {
+        //通用方法
+        //监听属性变化观察者
+        observer(el, func, filter) {
+            var observer = new MutationObserver(function(mutations, observer) {
+                mutations.forEach(function(mutation) {
                     func(mutation)
                 })
             })
@@ -1993,21 +3391,30 @@ function main() {
             }
 
             observer.observe(el, config)
+
+            // let obj = {}
+            // obj.obs = el.style
+            // Object.defineProperty(obj, 'obs', {
+            //     set(val) {
+            //         console.log(val)
+            //         func(val)
+            //     }
+            // })
         }
 
-        formatSeconds(value) { //秒转化为00:00:00格式
-
-            var theTime = parseInt(value); // 秒
-            var theTime1 = 0; // 分
-            var theTime2 = 0; // 小时
+        //秒转化为00:00:00格式
+        formatSeconds(value) {
+            var theTime = parseInt(value) // 秒
+            var theTime1 = 0 // 分
+            var theTime2 = 0 // 小时
 
             if (theTime > 60) {
-                theTime1 = parseInt(theTime / 60);
-                theTime = parseInt(theTime % 60);
+                theTime1 = parseInt(theTime / 60)
+                theTime = parseInt(theTime % 60)
 
                 if (theTime1 > 60) {
-                    theTime2 = parseInt(theTime1 / 60);
-                    theTime1 = parseInt(theTime1 % 60);
+                    theTime2 = parseInt(theTime1 / 60)
+                    theTime1 = parseInt(theTime1 % 60)
                 }
             }
 
@@ -2025,50 +3432,101 @@ function main() {
                 result = `${theTime2}:${theTime1}:${theTime}`
             }
 
-            return result;
-
+            return result
         }
 
-        formatToS(val) {  //时分秒转化为秒
+        //时分秒转化为秒
+        formatToS(val) {
             let value = String(val)
             let h = Number(value.slice(0, 2))
             let m = Number(value.slice(3, 5))
             let s = Number(value.slice(6, 8))
 
-            return h*60*60 + m*60 + s
+            return h * 60 * 60 + m * 60 + s
         }
 
-        styleInit() { 
-            let clinenW = document.body.clientWidth
-            let clinenH = document.body.clientHeight
+        //判断是否在元素中
+        checkHover(e, div) {
+            // debugger
+            div = div[0]
 
-            $('.timeLineBox').css('height', $('.timeLine').height() + 14)
-
-            $('.row-left').css({
-                'width': `${clinenW - $('.row-right').width()}`,
-                'height': `${clinenH - $('.timeLineBox').height()}`
-            })
-
-            $('.ef-ruler').css({
-                'height': `${$('#ruler').height()}`
-            })
+            let window = div.getBoundingClientRect()
+            var x = e.clientX
+            var y = e.clientY
+            var divx1 = window.left
+            var divy1 = window.top
+            var divx2 = window.left + window.width
+            var divy2 = window.top + window.height
+            // var divx1 = div.offsetLeft;
+            // var divy1 = div.offsetTop;
+            // var divx2 = div.offsetLeft + div.offsetWidth;
+            // var divy2 = div.offsetTop + div.offsetHeight;
+            if (x < divx1 || x > divx2 || y < divy1 || y > divy2) {
+                return false
+            } else {
+                return true
+            }
         }
 
+        //判断两个元素是否在x轴重合
+        checkHoverDiv(div1, div2) {
+            // debugger
+            div1 = div1[0]
+            div2 = div2[0]
+
+            let window1 = div1.getBoundingClientRect()
+            let window2 = div2.getBoundingClientRect()
+
+            let div1L = window1.left
+            let div2L = window2.left
+
+            let div1R = window1.left + window1.width
+            let div2R = window2.left + window2.width
+
+            if (
+                (div1L < div2L && div1R > div2L) ||
+                (div2L < div1L && div2R > div1L) ||
+                (div1L < div2L && div1R > div2R) ||
+                (div1L > div2L && div1R < div2R)
+            ) {
+                return true
+            } else {
+                return false
+            }
+        }
+
+        //播放预览
+        play() {
+            let that = this
+            $('#play').on('click', () => {
+                let params = that.getParams('pro')
+                console.log(params)
+                let data = JSON.stringify(params)
+                console.log(data)
+
+                window.sessionStorage['playParams'] = data
+
+                window.open('/pages/idm/program/makePro/jsp/player.jsp')
+            })
+        }
     }
-
 
     function initCanvas() {
-        let canvas_node = $('#canvas')
-        let canvas = new Canvas(canvas_node)
+        let getObj = JSON.parse(window.localStorage.getProgram)
+        // console.log(getObj)
 
+        let canvas_node = $('#canvas')
+        canvas_node.css({
+            width: getObj.width,
+            height: getObj.height
+        })
+
+        let canvas = new Canvas(canvas_node, getObj)
 
         canvas.init()
-
     }
 
-
     initCanvas()
-
 }
 
 main()

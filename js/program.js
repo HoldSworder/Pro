@@ -3506,7 +3506,7 @@ function main() {
 
                 window.sessionStorage['playParams'] = data
 
-                window.open('/pages/idm/program/makePro/jsp/player.jsp')
+                window.open('../Pro/play/player.html')
             })
         }
     }

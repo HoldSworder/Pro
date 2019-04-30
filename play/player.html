@@ -1,0 +1,52 @@
+
+<style>
+    #playerPane {
+        height: 450px;
+        background-color: black
+    }
+    
+     #player{
+    	 margin:0 auto;
+     }
+</style>
+<link rel="stylesheet" href="../plugins/jquery.limarquee-master/css/liMarquee.css">
+<link rel="stylesheet" href="./player.css">
+
+ <div class="modal open" id="playerModal">
+        <div class="modal-dialog" role="document" style="width:800px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close player-close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">节目预览</h4>
+                </div>
+                <div class="modal-body" >
+                		<div id="playerPane">
+                			<div id="player" >
+                			
+                			</div>
+                		</div>
+                		<div id="playerControl">
+                			<label id="time">00:00:00</label>
+                		    <button id="start">开始</button>
+              				<button id="stop">停止</button>
+              				<input type="text" id="setValue" value="00:01:00"/>   
+              				<button id="set">设置</button>
+                		</div>
+
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default player-close" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
+    <script src="../plugins/jquery.limarquee-master/js/jquery.liMarquee.js"></script>
+    <script src="./player.js"></script>
+
+    
+    

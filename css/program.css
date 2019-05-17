@@ -298,7 +298,7 @@ body {
 }
 
 #hiddenBox {
-    overflow: hidden;
+    overflow: auto;
 }
 
 .ctrlEle {

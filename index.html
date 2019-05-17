@@ -23,7 +23,6 @@
 <link rel="stylesheet" href="css/program.css">
 
 
-
 <div class="content-wrapper">
     <section class="content">
         <div class="box">
@@ -154,18 +153,21 @@
                                         </li>
 
                                     </ol>
-                                    <select id="itemIndex" class="form-control">
-                                        <option value="1">图片</option>
-                                        <option value="2">视频</option>
-                                        <option value="3">音频</option>
-                                        <option value="4">文本</option>
-                                        <option value="5">rtsp</option>
-                                        <option value="6">表格</option>
-                                        <option value="7">时钟</option>
-                                        <option value="8">天气</option>
-                                        <option value="9">网页</option>
-                                        <option value="10">文档</option>
-                                    </select>
+                                    <div class="row" style="margin: 0">
+                                        <select id="groupIndex" class="form-control col-sm-6" style="width: 50%"></select>
+                                        <select id="itemIndex" class="form-control col-sm-6" style="width: 50%">
+                                            <option value="1">图片</option>
+                                            <option value="2">视频</option>
+                                            <option value="3">音频</option>
+                                            <option value="4">文本</option>
+                                            <option value="5">rtsp</option>
+                                            <option value="6">表格</option>
+                                            <option value="7">时钟</option>
+                                            <option value="8">天气</option>
+                                            <option value="9">网页</option>
+                                            <option value="10">文档</option>
+                                        </select>
+                                    </div>
                                     <div id="itemList" class="itemBox">
                                         <!-- 时钟默认样式 -->
                                         <!-- <img src="./img/clock/clock1.png" data-t="7" alt="">

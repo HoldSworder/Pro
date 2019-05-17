@@ -1,4 +1,101 @@
 function main() {
+
+    class Tool {
+        static observer(el, func, filter) {
+            var observer = new MutationObserver(function (mutations, observer) {
+                mutations.forEach(function (mutation) {
+                    func(mutation)
+                })
+            })
+            var config = {
+                attributes: true,
+                attributeOldValue: true,
+                attributeFilter: filter
+            }
+
+            observer.observe(el, config)
+        }
+    }
+
+    class Element {
+        constructor(data, id) {
+            this.id = id
+            this.divDom = $('#canvas').find(`div[data-i=${this.id}]`)
+            this.img = $('#canvas').find(`div[data-i=${this.id}]`).find('img')
+            this.checkEle = $('.trackBox').find(`div[data-i=${this.id}]`)
+            this.observe = {
+                data: data,
+                width: this.img.width(),
+                height: this.img.height(),
+                x: this.divDom.css('left'),
+                y: this.divDom.css('top'),
+                start: '00:00:00',
+                end: '00:00:00'
+            }
+            this.proxyObj
+
+            this.proxy()
+            this.observer()
+        }
+
+        observer() {
+            const THAT = this
+            const proxyObj = this.proxyObj
+
+            Tool.observer(this.img[0], mutation => {
+                let cWidth = parseFloat(mutation.target.style.width)
+                let cHeight = parseFloat(mutation.target.style.width)
+
+                proxyObj.width = cWidth
+                proxyObj.height = cHeight
+            }, ['style'])
+
+            Tool.observer(this.divDom[0], mutation => {
+                let cX = parseFloat(mutation.target.style.top)
+                let cY = parseFloat(mutation.target.style.left)
+                proxyObj.x = cX
+                proxyObj.y = cY
+            }, ['style'])
+        }
+
+        proxy() {
+            const THAT = this
+            this.proxyObj = new Proxy(this.observe, {
+                get: function (target, key, receiver) {
+                    if (key == 'data') {
+                        return JSON.parse(target[key])
+                    }
+                    return Reflect.get(target, key, receiver);
+                },
+                set: function (target, key, value, receiver) {
+                    if (key == 'data') {
+                        target[key] = JSON.stringify(value)
+                    } else if (key == 'width') {
+                        THAT.widthChange()
+                    } else if (key == 'height') {
+                        console.log('height')
+                    } else if (key == 'x') {
+                        console.log('x')
+                    } else if (key == 'y') {
+                        console.log('y')
+                    }
+
+                    return Reflect.set(target, key, value, receiver);
+                }
+            })
+        }
+
+        widthChange() {
+            $('.activeEdi')
+                .find('input[name="width"]')
+                .val($('.checkCanvas .canvasChild').width())
+            $('.activeEdi')
+                .find('input[name="height"]')
+                .val($('.checkCanvas .canvasChild').height())
+            console.log('width')
+        }
+    }
+
     class Canvas {
         constructor(canvas, proObj) {
             this.canvas = canvas
@@ -25,7 +122,24 @@ function main() {
             this.areaId = proObj.areaId
             this.proObj = proObj
             this.constrain = [1, 2] //等比例缩放
+            this.api = {
+                //素材
+                material: './json/material.json',
+                // material: '/idm/template/getmaterial.do', //idm/template/getmaterial.do   //./json/material.json
+                //模版
+                template: './json/template.json',
+                // template: '/idm/template/gettemplates.do', //idm/template/gettemplate.do  //./json/template.json
+                //保存
+                save: '/idm/program/saveprogram.do',
+                //保存为模版
+                savetemplate: '/idm/template/savetemplate.do',
+                //获取素材组
+                // getGroup: '/idm/material/groupname'
+                getGroup: './json/group.json'
+            }
+            this.mapElement = new Map()
         }
+
 
         init() {
             //入口
@@ -52,6 +166,8 @@ function main() {
             this.setPlayLength() //回车设置播放时长
 
             this.play() //播放预览
+
+            this.getGroup() //获取素材组
         }
 
         //画布属性
@@ -93,8 +209,8 @@ function main() {
                     imgPath =
                         this.seize +
                         $('#itemIndex')
-                            .find('option:selected')
-                            .text()
+                        .find('option:selected')
+                        .text()
                     html = `
                         <div class="canvasDiv" data-J='${img.attr(
                             'data-J'
@@ -119,6 +235,8 @@ function main() {
             }
 
             this.canvas.append(html)
+            const elementObj = new Element(img.attr('data-J'), id)
+            this.mapElement.set(id, elementObj)
 
             this.fixPosition(this, $(`#div${index}`).children()[0])
 
@@ -146,10 +264,10 @@ function main() {
                 }
             })
 
-            $('.ui-resizable-handle').on('mousedown', function() {
+            $('.ui-resizable-handle').on('mousedown', function () {
                 $.disable_cloose()
 
-                let upE = function() {
+                let upE = function () {
                     $.disable_open()
 
                     $(document).off('mouseup', upE)
@@ -170,7 +288,7 @@ function main() {
             let cloner
             let that
             let thats = this
-            $('#itemList').on('mousedown', 'img', function(e) {
+            $('#itemList').on('mousedown', 'img', function (e) {
                 e.preventDefault()
                 let clone = $(this).clone()
                 $(this).after(clone)
@@ -192,9 +310,10 @@ function main() {
                 that = $(this)
                 flag = true
 
-                let upE = function(e) {
+                let upE = function (e) {
                     e.preventDefault()
                     let nameId = new Date().getTime().toString()
+                    // const nameId = Symbol()
 
                     if (flag) {
                         that.remove()
@@ -298,7 +417,7 @@ function main() {
                     }
                 }
 
-                let moveE = function(e) {
+                let moveE = function (e) {
                     e.preventDefault()
 
                     if (flag) {
@@ -331,10 +450,10 @@ function main() {
             let dragMinWidth = this.imgWidth
             let dragMinHeight = 'auto'
             let maxw = this.width
-            let maxh = 'auto'
+            let maxh = this.height
             handle = handle || oDrag
 
-            handle.onmousedown = function(e) {
+            handle.onmousedown = function (e) {
                 e.stopPropagation()
 
                 e = e || event
@@ -347,18 +466,18 @@ function main() {
                 var iparentheight = oparent.offsetHeight
 
 
-                let moveE = function(e) {
+                let moveE = function (e) {
                     e = e || event
                     var iL = e.clientX - disX
                     var iT = e.clientY - disY
                     // maxw = document.documentElement.clientWidth - oparent.offsetLeft - 2;
                     // maxh = document.documentElement.clientHeight - oparent.offsetTop - 2;
-                    var iw = isleft
-                        ? iparentwidth - iL
-                        : handle.offsetWidth + iL
-                    var ih = istop
-                        ? iparentheight - iT
-                        : handle.offsetHeight + iT
+                    var iw = isleft ?
+                        iparentwidth - iL :
+                        handle.offsetWidth + iL
+                    var ih = istop ?
+                        iparentheight - iT :
+                        handle.offsetHeight + iT
                     if (isleft) {
                         oparent.parentElement.style.left =
                             iparentleft + iL + 'px'
@@ -366,15 +485,22 @@ function main() {
                     if (istop) {
                         oparent.parentElement.style.top = iparenttop + iT + 'px'
                     }
+
+                    //TODO: 锁定最大缩放
                     if (iw < dragMinWidth) {
                         iw = dragMinWidth
                     } else if (iw > maxw) {
                         iw = maxw
                     }
+
+                    if (ih < dragMinHeight) {
+                        ih = dragMinHeight
+                    } else if (ih > maxh) {
+                        ih = maxh
+                        return
+                    }
+
                     if (lookx) {
-                        console.log('asdf')
-                        // TODO: 缩放
-                        // debugger
                         //等比缩放
                         oparent.style.width = iw + 'px'
                         oparent.style.height = nHeight * (iw / nWidth)
@@ -399,11 +525,7 @@ function main() {
                             `${(100 / 500) * transN}%`
                         )
                     }
-                    if (ih < dragMinHeight) {
-                        ih = dragMinHeight
-                    } else if (ih > maxh) {
-                        ih = maxh
-                    }
+
 
                     if (looky) {
                         //非等比缩放
@@ -430,7 +552,7 @@ function main() {
                     return false
                 }
 
-                let upE = function() {
+                let upE = function () {
                     $(document).off('mousemove', moveE)
                     $(document).off('mouseup', upE)
                     let left = $(oparent).offset().left
@@ -487,7 +609,7 @@ function main() {
         showControl() {
             // debugger
             let that = this
-            this.canvas.on('click', '.canvasDiv', function(e) {
+            this.canvas.on('click', '.canvasDiv', function (e) {
                 let thats = this
                 let index = $('#canvas').children().length
                 e.stopPropagation()
@@ -608,13 +730,13 @@ function main() {
                 let nowTime = Math.floor(totalTime * (change / 100))
 
                 let mo =
-                    String(Math.floor(nowTime / 60)).length == 1
-                        ? `0${Math.floor(nowTime / 60)}`
-                        : Math.floor(nowTime / 60)
+                    String(Math.floor(nowTime / 60)).length == 1 ?
+                    `0${Math.floor(nowTime / 60)}` :
+                    Math.floor(nowTime / 60)
                 let yu =
-                    String(nowTime % 60).length == 1
-                        ? `0${nowTime % 60}`
-                        : nowTime % 60
+                    String(nowTime % 60).length == 1 ?
+                    `0${nowTime % 60}` :
+                    nowTime % 60
 
                 $('.ui-slider-handle').attr('data-t', nowTime)
 
@@ -773,14 +895,14 @@ function main() {
             for (const item of $('.trackContent')) {
                 if (
                     $(item)
-                        .attr('id')
-                        .slice(5) >= indexT
+                    .attr('id')
+                    .slice(5) >= indexT
                 ) {
                     indexT =
                         Number(
                             $(item)
-                                .attr('id')
-                                .slice(5)
+                            .attr('id')
+                            .slice(5)
                         ) + 1
                 }
             }
@@ -834,7 +956,7 @@ function main() {
         //在轨道上移动元素
         moveEle() {
             let that = this
-            $('.trackBox').on('mousedown', '.silderBlock', function(e) {
+            $('.trackBox').on('mousedown', '.silderBlock', function (e) {
                 e.preventDefault()
                 e.stopPropagation()
                 let thats = this
@@ -855,7 +977,7 @@ function main() {
                     'z-index': 9999
                 })
 
-                let moveE = function(e) {
+                let moveE = function (e) {
                     let nowX = e.clientX
                     let nowY = e.clientY
 
@@ -865,7 +987,7 @@ function main() {
                     })
                 }
 
-                let upE = function(e) {
+                let upE = function (e) {
                     e.stopPropagation()
                     e.preventDefault()
 
@@ -987,8 +1109,8 @@ function main() {
                                         //判断重复类型轨道
                                         if (
                                             $(item)
-                                                .find('.trackController')
-                                                .attr('data-t') == thisType
+                                            .find('.trackController')
+                                            .attr('data-t') == thisType
                                         ) {
                                             index++
                                         }
@@ -1089,7 +1211,7 @@ function main() {
         //移动轨道
         moveTrack() {
             let that = this
-            $('.trackBox').on('mousedown', '.glyphicon', function(e) {
+            $('.trackBox').on('mousedown', '.glyphicon', function (e) {
                 e.preventDefault()
                 e.stopPropagation()
                 let thats = $(this)
@@ -1115,7 +1237,7 @@ function main() {
                     'box-shadow': '5px 5px 5px #888888'
                 })
 
-                let moveE = function(e) {
+                let moveE = function (e) {
                     let nowX = e.clientX
                     let nowY = e.clientY
 
@@ -1125,7 +1247,7 @@ function main() {
                     })
                 }
 
-                let upE = function(e) {
+                let upE = function (e) {
                     e.stopPropagation()
                     e.preventDefault()
                     for (const item of $('.track')) {
@@ -1175,7 +1297,7 @@ function main() {
         flexEle() {
             let that = this
 
-            $('#showBox').on('click', function() {
+            $('#showBox').on('click', function () {
                 $('#ediBox').addClass('hidden')
                 $('#ediBox')
                     .children()
@@ -1185,7 +1307,7 @@ function main() {
                     .remove()
             })
 
-            $('.trackBox').on('click', '.silderBlock', function(e) {
+            $('.trackBox').on('click', '.silderBlock', function (e) {
                 let parent = this
                 let trackL = $(this)
                     .parent()
@@ -1249,7 +1371,7 @@ function main() {
 
                 that.setInput()
 
-                $(this).on('mousedown', '.eleWidth', function(e) {
+                $(this).on('mousedown', '.eleWidth', function (e) {
                     //轨道元素拉伸属性
                     e.preventDefault()
                     e.stopPropagation()
@@ -1260,7 +1382,7 @@ function main() {
                     let width = $(parent).width()
                     let left = $(eleW).offset().left
 
-                    let moveE = function(e) {
+                    let moveE = function (e) {
                         e.preventDefault()
                         e.stopPropagation()
 
@@ -1318,7 +1440,7 @@ function main() {
                         }
                     }
 
-                    let upE = function(e) {
+                    let upE = function (e) {
                         e.preventDefault()
                         e.stopPropagation()
 
@@ -1347,7 +1469,7 @@ function main() {
             })
 
         }
-        
+
         //计算起止时间
         setTime(el) {
             let that = this
@@ -1368,16 +1490,16 @@ function main() {
         trackTypeObserver(el) {
             // debugger
             let that = this
-            var observer = new MutationObserver(function(mutations, observer) {
-                mutations.forEach(function(mutation) {
+            var observer = new MutationObserver(function (mutations, observer) {
+                mutations.forEach(function (mutation) {
                     let target = $(mutation.target)
                     let change = target.attr('data-t')
                     let index = 0
                     for (const item of $('.track')) {
                         if (
                             $(item)
-                                .find('.trackController')
-                                .attr('data-t') == change
+                            .find('.trackController')
+                            .attr('data-t') == change
                         ) {
                             index++
                         }
@@ -1435,7 +1557,7 @@ function main() {
                 flag = true
                 data = JSON.parse($('.checkEle').attr('data-p'))
             }
-            
+
             let index = $('.checkEle').attr('data-t')
             let allEdi = $('#ediBox').children()
             let nowEdi
@@ -1653,7 +1775,7 @@ function main() {
 
         //实时监听当前时间
         abbrSet() {
-            $('#nowTime').on('click', function() {
+            $('#nowTime').on('click', function () {
                 let val = $('#nowTime').attr('data-t')
                 let html = `
                     <input id="setAbbr" type="text" class="form-control" style="position: absolute;top: -12px;width: 100px;height: 34px;">
@@ -1662,7 +1784,7 @@ function main() {
                 $(this).after(html)
                 $('#setAbbr').val(`${val}`)
 
-                $('#setAbbr').on('blur', function() {
+                $('#setAbbr').on('blur', function () {
                     $('#nowTime').attr('data-t', $(this).val())
                     $('#circles-slider .ui-slider-handle').css('left', '100%')
 
@@ -1698,7 +1820,7 @@ function main() {
             this.audioEdiInit()
             this.saveEdi()
             this.setPlayTime()
-            this.getMaterial()
+
             this.textEdiInit()
             this.tableEdiInit()
             this.htmlEdiInit()
@@ -1719,298 +1841,306 @@ function main() {
                 })
                 .slider('float')
 
-            //关联缩放
-            !(function() {
-                let el = $('.zoom').find('.ui-slider-handle')
+                //关联缩放
+                !(function () {
+                    let el = $('.zoom').find('.ui-slider-handle')
 
-                el.parent()
-                    .next()
-                    .find('input[name="zoomInput"]')
-                    .val(100)
-                el.css('left', `${(100 / 500) * 100}%`)
-                el.find('.ui-slider-tip').text(100)
+                    el.parent()
+                        .next()
+                        .find('input[name="zoomInput"]')
+                        .val(100)
+                    el.css('left', `${(100 / 500) * 100}%`)
+                    el.find('.ui-slider-tip').text(100)
 
-                for (const item of el) {
-                    // debugger
-                    el = item
+                    for (const item of el) {
+                        // debugger
+                        el = item
 
-                    function obs(mutation) {
-                        el = mutation.target
-                        let canvasCheck = $(
-                            `.canvasDiv[data-i='${$('.checkCanvas').attr(
+                        function obs(mutation) {
+
+                            el = mutation.target
+                            let canvasCheck = $(
+                                `.canvasDiv[data-i='${$('.checkCanvas').attr(
                                 'data-i'
                             )}'`
-                        ).find('.canvasChild')
+                            ).find('.canvasChild')
 
-                        //关联宽高框
-                        $('.activeEdi')
-                            .find('input[name="width"]')
-                            .val(parseInt(canvasCheck.width()))
-                        $('.activeEdi')
-                            .find('input[name="height"]')
-                            .val(parseInt(canvasCheck.height()))
+                            //关联宽高框
+                            $('.activeEdi')
+                                .find('input[name="width"]')
+                                .val(parseInt(canvasCheck.width()))
+                            $('.activeEdi')
+                                .find('input[name="height"]')
+                                .val(parseInt(canvasCheck.height()))
 
-                        if (
-                            that.constrain.indexOf(
-                                $('.checkEle').attr('data-t')
-                            ) != -1
-                        ) {
-                            return
+                            if (
+                                that.constrain.indexOf(
+                                    $('.checkEle').attr('data-t')
+                                ) != -1
+                            ) {
+                                return
+                            }
+
+                            let textV = $(el)
+                                .find('.ui-slider-tip')
+                                .text()
+
+                            $(el)
+                                .parent()
+                                .next()
+                                .find('input[name="zoomInput"]')
+                                .val(textV)
+
+                            let trans = textV / 100
+                            let nWidth = canvasCheck[0].naturalWidth
+                            let nHeight = canvasCheck[0].naturalHeight
+
+                            //TODO：锁定缩放最大值
+                            if (nWidth * trans >= that.width) {
+                                return
+                            } else if (nHeight * trans >= that.height) {
+                                return
+                            }
+
+                            canvasCheck.css({
+                                width: nWidth * trans,
+                                height: nHeight * trans
+                            })
+
+                            that.setDataJ(
+                                ['width', 'height', 'scalingRatio'],
+                                [nWidth * trans, nHeight * trans, textV]
+                            )
                         }
 
-                        let textV = $(el)
-                            .find('.ui-slider-tip')
-                            .text()
+                        // for (const item of el) {
+
+                        that.observer(el, obs, ['style'])
+                        // }
 
                         $(el)
                             .parent()
                             .next()
                             .find('input[name="zoomInput"]')
-                            .val(textV)
+                            .on('change', function () {
 
-                        let trans = textV / 100
-                        let nWidth = canvasCheck[0].naturalWidth
-                        let nHeight = canvasCheck[0].naturalHeight
-
-                        canvasCheck.css({
-                            width: nWidth * trans,
-                            height: nHeight * trans
-                        })
-
-                        that.setDataJ(
-                            ['width', 'height', 'scalingRatio'],
-                            [nWidth * trans, nHeight * trans, textV]
-                        )
-                    }
-
-                    // for (const item of el) {
-
-                    that.observer(el, obs, ['style'])
-                    // }
-
-                    $(el)
-                        .parent()
-                        .next()
-                        .find('input[name="zoomInput"]')
-                        .on('change', function() {
-                            let canvasCheck = $(
-                                `.canvasDiv[data-i='${$('.checkCanvas').attr(
+                                let canvasCheck = $(
+                                    `.canvasDiv[data-i='${$('.checkCanvas').attr(
                                     'data-i'
                                 )}'`
-                            ).find('.canvasChild')
-                            let inputV = $(this).val()
-                            let trans = inputV / 100
-                            if (inputV < 1) {
-                                $(this).val(1)
-                            } else if (inputV > 500) {
-                                $(this).val(500)
-                            }
-                            let slider = $(this)
-                                .parent()
-                                .prev()
-                            slider
-                                .find('.ui-slider-tip')
-                                .text(parseInt($(this).val()))
-                            slider
-                                .find('.ui-slider-handle')
-                                .css('left', `${(inputV / 500) * 100}%`)
+                                ).find('.canvasChild')
+                                let inputV = $(this).val()
+                                let trans = inputV / 100
+                                if (inputV < 1) {
+                                    $(this).val(1)
+                                } else if (inputV > 500) {
+                                    $(this).val(500)
+                                }
+                                let slider = $(this)
+                                    .parent()
+                                    .prev()
+                                slider
+                                    .find('.ui-slider-tip')
+                                    .text(parseInt($(this).val()))
+                                slider
+                                    .find('.ui-slider-handle')
+                                    .css('left', `${(inputV / 500) * 100}%`)
 
-                            // $('.checkCanvas').css('transform', `scale(${trans}, ${trans})`)
+                                // $('.checkCanvas').css('transform', `scale(${trans}, ${trans})`)
 
-                            let nWidth = canvasCheck[0].naturalWidth
-                            let nHeight = canvasCheck[0].naturalHeight
+                                let nWidth = canvasCheck[0].naturalWidth
+                                let nHeight = canvasCheck[0].naturalHeight
 
-                            let tHeight = nHeight * (that.imgWidth / nWidth)
+                                let tHeight = nHeight * (that.imgWidth / nWidth)
 
-                            canvasCheck.css({
-                                width: that.imgWidth * trans,
-                                height: tHeight * trans
+                                canvasCheck.css({
+                                    width: that.imgWidth * trans,
+                                    height: tHeight * trans
+                                })
+
+                                //关联宽高框
+                                $('.activeEdi')
+                                    .find('input[name="width"]')
+                                    .val(parseInt($('.checkCanvas').width()))
+                                $('.activeEdi')
+                                    .find('input[name="height"]')
+                                    .val(parseInt($('.checkCanvas').height()))
                             })
+                    }
+                })()
 
-                            //关联宽高框
-                            $('.activeEdi')
-                                .find('input[name="width"]')
-                                .val(parseInt($('.checkCanvas').width()))
-                            $('.activeEdi')
-                                .find('input[name="height"]')
-                                .val(parseInt($('.checkCanvas').height()))
+                //关联x、y变更
+                !(function () {
+                    $('input[name="location_x"]').on('change', function () {
+                        let thisV = $(this).val()
+                        let imgE = $(
+                            `.canvasDiv[data-i='${$('.checkCanvas').attr(
+                            'data-i'
+                        )}'`
+                        ).find('.canvasChild')
+                        let trueW = that.width - imgE.width()
+
+                        if (thisV < 0) {
+                            thisV = 0
+                            $(this).val(0)
+                        } else if (thisV > trueW) {
+                            thisV = trueW
+                            $(this).val(trueW)
+                        }
+
+                        $('.checkCanvas').css('left', thisV)
+
+                        that.setDataJ(['location_x'], [thisV])
+                    })
+
+                    $('input[name="location_y"]').on('change', function () {
+                        let thisV = $(this).val()
+                        let imgE = $(
+                            `.canvasDiv[data-i='${$('.checkCanvas').attr(
+                            'data-i'
+                        )}'`
+                        ).find('.canvasChild')
+                        let trueH = that.height - imgE.height()
+
+                        if (thisV < 0) {
+                            thisV = 0
+                            $(this).val(0)
+                        } else if (thisV > trueH) {
+                            thisV = trueH
+                            $(this).val(trueH)
+                        }
+
+                        $('.checkCanvas').css('top', $(this).val())
+
+                        that.setDataJ(['location_y'], [$(this).val()])
+                    })
+                })()
+
+                //关联宽高设置
+                !(function () {
+                    $('input[name="width"]').on('change', function () {
+                        let thisV = $(this).val()
+                        let imgE = $(
+                            `.canvasDiv[data-i='${$('.checkCanvas').attr(
+                            'data-i'
+                        )}'`
+                        ).find('.canvasChild')
+                        let trans = imgE[0].naturalWidth / imgE[0].naturalHeight
+
+                        if (thisV < 0) {
+                            thisV = 0
+                            $(this).val(0)
+                        } else if (thisV > that.imgWidth * 5) {
+                            thisV = that.imgWidth * 5
+                            $(this).val(that.imgWidth * 5)
+                        }
+
+                        let heightV
+                        if (
+                            that.constrain.indexOf($('.checkEle').attr('data-t')) !=
+                            -1
+                        ) {
+                            heightV = parseInt(thisV / trans)
+                        } else {
+                            heightV = imgE.height()
+                        }
+
+                        imgE.css({
+                            width: thisV,
+                            height: heightV
                         })
-                }
-            })()
 
-            //关联x、y变更
-            !(function() {
-                $('input[name="location_x"]').on('change', function() {
-                    let thisV = $(this).val()
-                    let imgE = $(
-                        `.canvasDiv[data-i='${$('.checkCanvas').attr(
-                            'data-i'
-                        )}'`
-                    ).find('.canvasChild')
-                    let trueW = that.width - imgE.width()
+                        $(this)
+                            .parent()
+                            .parent()
+                            .next()
+                            .find('input[name="height"]')
+                            .val(heightV)
 
-                    if (thisV < 0) {
-                        thisV = 0
-                        $(this).val(0)
-                    } else if (thisV > trueW) {
-                        thisV = trueW
-                        $(this).val(trueW)
-                    }
+                        $('.activeEdi')
+                            .find('input[name="zoomInput"]')
+                            .val((thisV / that.imgWidth).toFixed(2) * 100)
+                        // .change()
 
-                    $('.checkCanvas').css('left', thisV)
+                        let transN = (thisV / that.imgWidth).toFixed(2) * 100
 
-                    that.setDataJ(['location_x'], [thisV])
-                })
+                        $('.activeEdi .zoom .ui-slider-tip').text(transN)
+                        $('.activeEdi .zoom .ui-slider-handle').css(
+                            'left',
+                            `${(100 / 500) * transN}%`
+                        )
 
-                $('input[name="location_y"]').on('change', function() {
-                    let thisV = $(this).val()
-                    let imgE = $(
-                        `.canvasDiv[data-i='${$('.checkCanvas').attr(
-                            'data-i'
-                        )}'`
-                    ).find('.canvasChild')
-                    let trueH = that.height - imgE.height()
-
-                    if (thisV < 0) {
-                        thisV = 0
-                        $(this).val(0)
-                    } else if (thisV > trueH) {
-                        thisV = trueH
-                        $(this).val(trueH)
-                    }
-
-                    $('.checkCanvas').css('top', $(this).val())
-
-                    that.setDataJ(['location_y'], [$(this).val()])
-                })
-            })()
-
-            //关联宽高设置
-            !(function() {
-                $('input[name="width"]').on('change', function() {
-                    let thisV = $(this).val()
-                    let imgE = $(
-                        `.canvasDiv[data-i='${$('.checkCanvas').attr(
-                            'data-i'
-                        )}'`
-                    ).find('.canvasChild')
-                    let trans = imgE[0].naturalWidth / imgE[0].naturalHeight
-
-                    if (thisV < 0) {
-                        thisV = 0
-                        $(this).val(0)
-                    } else if (thisV > that.imgWidth * 5) {
-                        thisV = that.imgWidth * 5
-                        $(this).val(that.imgWidth * 5)
-                    }
-
-                    let heightV
-                    if (
-                        that.constrain.indexOf($('.checkEle').attr('data-t')) !=
-                        -1
-                    ) {
-                        heightV = parseInt(thisV / trans)
-                    } else {
-                        heightV = imgE.height()
-                    }
-
-                    imgE.css({
-                        width: thisV,
-                        height: heightV
+                        that.setDataJ(['width', 'height', 'scalingRatio'], [thisV, heightV, transN])
                     })
 
-                    $(this)
-                        .parent()
-                        .parent()
-                        .next()
-                        .find('input[name="height"]')
-                        .val(heightV)
-
-                    $('.activeEdi')
-                        .find('input[name="zoomInput"]')
-                        .val((thisV / that.imgWidth).toFixed(2) * 100)
-                    // .change()
-
-                    let transN = (thisV / that.imgWidth).toFixed(2) * 100
-
-                    $('.activeEdi .zoom .ui-slider-tip').text(transN)
-                    $('.activeEdi .zoom .ui-slider-handle').css(
-                        'left',
-                        `${(100 / 500) * transN}%`
-                    )
-
-                    that.setDataJ(['width', 'height', 'scalingRatio'], [thisV, heightV, transN])
-                })
-
-                $('input[name="height"]').on('change', function() {
-                    let thisV = $(this).val()
-                    let imgE = $(
-                        `.canvasDiv[data-i='${$('.checkCanvas').attr(
+                    $('input[name="height"]').on('change', function () {
+                        let thisV = $(this).val()
+                        let imgE = $(
+                            `.canvasDiv[data-i='${$('.checkCanvas').attr(
                             'data-i'
                         )}'`
-                    ).find('.canvasChild')
-                    let trans = imgE[0].naturalWidth / imgE[0].naturalHeight
-                    let transH = that.imgWidth / trans
+                        ).find('.canvasChild')
+                        let trans = imgE[0].naturalWidth / imgE[0].naturalHeight
+                        let transH = that.imgWidth / trans
 
-                    if (thisV < 0) {
-                        thisV = 0
-                        $(this).val(0)
-                    } else if (thisV > that.imgWidth * 5) {
-                        thisV = that.imgWidth * 5
-                        $(this).val(that.imgWidth * 5)
-                    }
+                        if (thisV < 0) {
+                            thisV = 0
+                            $(this).val(0)
+                        } else if (thisV > that.imgWidth * 5) {
+                            thisV = that.imgWidth * 5
+                            $(this).val(that.imgWidth * 5)
+                        }
 
-                    let widthV
-                    if (
-                        that.constrain.indexOf($('.checkEle').attr('data-t')) !=
-                        -1
-                    ) {
-                        widthV = parseInt(thisV / trans)
-                    } else {
-                        widthV = imgE.width()
-                    }
+                        let widthV
+                        if (
+                            that.constrain.indexOf($('.checkEle').attr('data-t')) !=
+                            -1
+                        ) {
+                            widthV = parseInt(thisV / trans)
+                        } else {
+                            widthV = imgE.width()
+                        }
 
-                    imgE.css({
-                        width: widthV,
-                        height: thisV
+                        imgE.css({
+                            width: widthV,
+                            height: thisV
+                        })
+
+                        $(this)
+                            .parent()
+                            .parent()
+                            .prev()
+                            .find('input[name="width"]')
+                            .val(widthV)
+
+                        $('.activeEdi')
+                            .find('input[name="zoomInput"]')
+                            .val((thisV / transH).toFixed(2) * 100)
+                        // .change()
+
+                        let transN = (thisV / transH).toFixed(2) * 100
+
+                        $('.activeEdi .zoom .ui-slider-tip').text(transN)
+                        $('.activeEdi .zoom .ui-slider-handle').css(
+                            'left',
+                            `${(100 / 500) * transN}%`
+                        )
+
+                        that.setDataJ(['width', 'height', 'scalingRatio'], [widthV, thisV, transN])
                     })
-
-                    $(this)
-                        .parent()
-                        .parent()
-                        .prev()
-                        .find('input[name="width"]')
-                        .val(widthV)
-
-                    $('.activeEdi')
-                        .find('input[name="zoomInput"]')
-                        .val((thisV / transH).toFixed(2) * 100)
-                    // .change()
-
-                    let transN = (thisV / transH).toFixed(2) * 100
-
-                    $('.activeEdi .zoom .ui-slider-tip').text(transN)
-                    $('.activeEdi .zoom .ui-slider-handle').css(
-                        'left',
-                        `${(100 / 500) * transN}%`
-                    )
-
-                    that.setDataJ(['width', 'height', 'scalingRatio'], [widthV, thisV, transN])
-                })
-            })()
+                })()
         }
 
         //同步设置选中轨道元素data-j值
         setDataJ(keys, vals, id) {
             let checkEle =
-                id == undefined
-                    ? $('.checkEle')
-                    : $('.trackBox').find(`div[data-i=${id}]`)
+                id == undefined ?
+                $('.checkEle') :
+                $('.trackBox').find(`div[data-i=${id}]`)
 
             let dataJ =
-                checkEle.attr('data-p') == undefined
-                    ? {}
-                    : JSON.parse(checkEle.attr('data-p'))
+                checkEle.attr('data-p') == undefined ? {} :
+                JSON.parse(checkEle.attr('data-p'))
 
             keys.forEach((item, i) => {
                 dataJ[item] = vals[i]
@@ -2085,17 +2215,17 @@ function main() {
 
             $('#text-verticalcheck')
                 .parent()
-                .on('switch-change', function(e, data) {
+                .on('switch-change', function (e, data) {
                     console.log('ok')
                 })
 
             //设置文字内容
-            form.find('textarea').on('input', function() {
+            form.find('textarea').on('input', function () {
                 $('.checkCanvas .canvasChild').text($(this).val())
             })
 
             //设置文字对齐
-            form.find('select[name="alignment"]').on('change', function() {
+            form.find('select[name="alignment"]').on('change', function () {
                 let data = ['left', 'center', 'right']
                 $('.checkCanvas .canvasChild').css(
                     'text-align',
@@ -2104,7 +2234,7 @@ function main() {
             })
 
             //设置文字字号
-            form.find('input[name="size"]').on('change', function() {
+            form.find('input[name="size"]').on('change', function () {
                 let font = parseInt($(this).val())
 
                 if (font < 12) {
@@ -2116,17 +2246,17 @@ function main() {
             })
 
             //设置文字字体
-            form.find('select[name="font"]').on('change', function() {
+            form.find('select[name="font"]').on('change', function () {
                 $('.checkCanvas .canvasChild').css('font-family', $(this).val())
             })
 
             //设置字体颜色
-            form.find('input[name="color"]').on('change', function() {
+            form.find('input[name="color"]').on('change', function () {
                 $('.checkCanvas .canvasChild').css('color', $(this).val())
             })
 
             //设置背景颜色
-            form.find('input[name="backgroundcolor"]').on('change', function() {
+            form.find('input[name="backgroundcolor"]').on('change', function () {
                 $('.checkCanvas .canvasChild').css('background', $(this).val())
             })
 
@@ -2137,7 +2267,7 @@ function main() {
                 onColor: 'success',
                 offColor: 'info',
                 setState: false,
-                onSwitchChange: function(event, state) {
+                onSwitchChange: function (event, state) {
                     if (state == true) {
                         console.log('1111')
                         $('.checkCanvas .canvasChild').css(
@@ -2161,7 +2291,7 @@ function main() {
                 onColor: 'success',
                 offColor: 'info',
                 setState: false,
-                onSwitchChange: function(event, state) {
+                onSwitchChange: function (event, state) {
                     if (state == true) {
                         $('.checkCanvas .canvasChild').css(
                             'font-style',
@@ -2183,7 +2313,7 @@ function main() {
                 onColor: 'success',
                 offColor: 'info',
                 setState: false,
-                onSwitchChange: function(event, state) {
+                onSwitchChange: function (event, state) {
                     if (state == true) {
                         $('.checkCanvas .canvasChild').css(
                             'white-space',
@@ -2199,7 +2329,7 @@ function main() {
             })
 
             //设置字间距
-            form.find('[name="wordSpace"]').on('change', function() {
+            form.find('[name="wordSpace"]').on('change', function () {
                 $('.checkCanvas .canvasChild').css(
                     'letter-spacing',
                     $(this).val()
@@ -2207,13 +2337,13 @@ function main() {
             })
 
             //设置行间距
-            form.find('[name="rowSpace"]').on('change', function() {
+            form.find('[name="rowSpace"]').on('change', function () {
                 $('.checkCanvas .canvasChild').css('line-height', $(this).val())
             })
         }
 
         tableEdiInit() {
-            $('#addTableRow').on('click', function() {
+            $('#addTableRow').on('click', function () {
                 let html = `
                 <tr>
                     <td>
@@ -2261,7 +2391,7 @@ function main() {
 
             $('#imgEdi')
                 .find('.saveEdi button')
-                .on('click', function(e) {
+                .on('click', function (e) {
                     //图片
                     e.preventDefault()
                     let edi = $('#imgEdi')
@@ -2275,7 +2405,7 @@ function main() {
                     data.scalingRatio = edi
                         .find('input[name="zoomInput"]')
                         .val()
-                    
+
                     console.log(data)
 
                     let str = JSON.stringify(data)
@@ -2288,7 +2418,7 @@ function main() {
 
             $('#videoEdi')
                 .find('.saveEdi button')
-                .on('click', function(e) {
+                .on('click', function (e) {
                     //视频
                     e.preventDefault()
                     let edi = $('#videoEdi')
@@ -2320,7 +2450,7 @@ function main() {
 
             $('#audioEdi')
                 .find('.saveEdi button')
-                .on('click', function(e) {
+                .on('click', function (e) {
                     //音频
                     e.preventDefault()
                     let edi = $('#audioEdi')
@@ -2341,7 +2471,7 @@ function main() {
 
             $('#textEdi')
                 .find('.saveEdi button')
-                .on('click', function(e) {
+                .on('click', function (e) {
                     //文字
                     e.preventDefault()
                     let edi = $('#textEdi')
@@ -2390,7 +2520,7 @@ function main() {
 
             $('#rtspEdi')
                 .find('.saveEdi button')
-                .on('click', function(e) {
+                .on('click', function (e) {
                     //RTSP
                     e.preventDefault()
                     let edi = $('#rtspEdi')
@@ -2407,7 +2537,7 @@ function main() {
 
             $('#tabelEdi')
                 .find('.saveEdi button')
-                .on('click', function(e) {
+                .on('click', function (e) {
                     //表格
                     e.preventDefault()
                     let edi = $('#tabelEdi')
@@ -2440,7 +2570,7 @@ function main() {
 
             $('#clockEdi')
                 .find('.saveEdi button')
-                .on('click', function(e) {
+                .on('click', function (e) {
                     //时钟
                     e.preventDefault()
                     let edi = $('#clockEdi')
@@ -2472,7 +2602,7 @@ function main() {
 
             $('#weatherEdi')
                 .find('.saveEdi button')
-                .on('click', function(e) {
+                .on('click', function (e) {
                     //天气
                     e.preventDefault()
                     let edi = $('#weatherEdi')
@@ -2511,7 +2641,7 @@ function main() {
 
             $('#htmlEdi')
                 .find('.saveEdi button')
-                .on('click', function(e) {
+                .on('click', function (e) {
                     //Html
                     e.preventDefault()
                     let edi = $('#htmlEdi')
@@ -2531,7 +2661,7 @@ function main() {
 
             $('#documentEdi')
                 .find('.saveEdi button')
-                .on('click', function(e) {
+                .on('click', function (e) {
                     //文档
                     e.preventDefault()
                     let edi = $('#htmlEdi')
@@ -2583,7 +2713,7 @@ function main() {
 
                 that.observer(el, obs, ['style'])
 
-                form.find('.videoPlayTime').on('blur', function() {
+                form.find('.videoPlayTime').on('blur', function () {
                     let str = $(this)
                         .val()
                         .trim()
@@ -2655,12 +2785,12 @@ function main() {
                 $.ajax({
                     type: 'post',
                     dataType: 'json',
-                    url: './json/material.json',
-                    // url: '/idm/template/getmaterial.do', //idm/template/getmaterial.do   //./json/material.json
+                    url: that.api.material,
                     data: {
                         areaId: that.areaId,
                         materialType: thats.val(),
-                        searchValue: ''
+                        searchValue: '',
+                        groupName: $('#groupIndex').val()
                     },
                     success(res) {
                         if (res.success) {
@@ -2723,7 +2853,7 @@ function main() {
                 })
             }
 
-            $('#itemIndex').on('change', function() {
+            $('#itemIndex').on('change', function () {
                 let thats = $(this)
                 getMate()
             })
@@ -2744,8 +2874,7 @@ function main() {
             $.ajax({
                 type: 'post',
                 dataType: 'json',
-                url: './json/template.json',
-                // url: '/idm/template/gettemplates.do', //idm/template/gettemplate.do  //./json/template.json
+                url: that.api.template,
                 data: {
                     areaId: that.areaId,
                     searchValue: ''
@@ -2772,7 +2901,7 @@ function main() {
         //读取模版
         readTemplate() {
             let that = this
-            $('#templateList').on('click', 'img', function() {
+            $('#templateList').on('click', 'img', function () {
                 var r = confirm('确定读取该模版？')
                 if (r == true) {
                     let data = JSON.parse($(this).attr('data-j'))
@@ -2847,9 +2976,7 @@ function main() {
                         if (item.layerList.length < 4) {
                             //轨道不到四条 添加预留轨道
                             for (
-                                let i = 0;
-                                i < 4 - item.layerList.length;
-                                i++
+                                let i = 0; i < 4 - item.layerList.length; i++
                             ) {
                                 html += `
                                 <div class="trackSeize clearfix">
@@ -2886,9 +3013,9 @@ function main() {
                         let data = JSON.parse($(firstO.index).attr('data-j'))
                         let trackData = JSON.parse(
                             $(firstO.index)
-                                .parent()
-                                .parent()
-                                .attr('data-j')
+                            .parent()
+                            .parent()
+                            .attr('data-j')
                         )
 
                         that.drawImg(
@@ -2917,7 +3044,7 @@ function main() {
 
             function compare(prop) {
                 //数组对象排序
-                return function(obj1, obj2) {
+                return function (obj1, obj2) {
                     var val1 = obj1[prop]
                     var val2 = obj2[prop]
                     if (val1 < val2) {
@@ -2935,16 +3062,16 @@ function main() {
         // 保存初始化
         save() {
             let that = this
-            $('#save').on('click', function() {
+            $('#save').on('click', function () {
                 $('#savePro').modal('show')
             })
 
-            $('#saveBtnPro').on('click', function() {
+            $('#saveBtnPro').on('click', function () {
                 //保存为节目
                 if (
                     $('#saveForm')
-                        .find('.required')
-                        .val() == ''
+                    .find('.required')
+                    .val() == ''
                 ) {
                     alert('请填写名称')
                     return
@@ -2961,11 +3088,11 @@ function main() {
                 html2canvas($('#canvas'), {
                     height: $('#canvas').outerHeight() + 20,
                     width: $('#canvas').outerWidth() + 20,
-                    onrendered: function(canvas) {
+                    onrendered: function (canvas) {
                         data.photo = canvas.toDataURL()
 
                         $.ajax({
-                            url: '/idm/program/saveprogram.do',
+                            url: that.api.save,
                             type: 'POST',
                             dataType: 'json',
                             data,
@@ -2981,12 +3108,12 @@ function main() {
                 })
             })
 
-            $('#saveBtnTem').on('click', function() {
+            $('#saveBtnTem').on('click', function () {
                 //保存为模版
                 if (
                     $('#saveForm')
-                        .find('.required')
-                        .val() == ''
+                    .find('.required')
+                    .val() == ''
                 ) {
                     alert('请填写名称')
                     return
@@ -3003,11 +3130,11 @@ function main() {
                 html2canvas($('#canvas'), {
                     height: $('#canvas').outerHeight() + 20,
                     width: $('#canvas').outerWidth() + 20,
-                    onrendered: function(canvas) {
+                    onrendered: function (canvas) {
                         data.photo = canvas.toDataURL()
 
                         $.ajax({
-                            url: '/idm/template/savetemplate.do',
+                            url: that.api.savetemplate,
                             type: 'POST',
                             dataType: 'json',
                             data,
@@ -3048,7 +3175,7 @@ function main() {
 
             data.duration
             data.params = []
-            
+
             for (let i = 0; i < $('.track').length; i++) {
                 let parObj = {}
                 parObj.elementList = []
@@ -3058,15 +3185,15 @@ function main() {
                 let track = $(e).find('.trackContent')
                 // layerObj.imageList = []
                 // layerObj.zAxis = i
-                
+
                 // for (const item of elList) {
-                    //     layerObj[item] = []
-                    // }
-                    
+                //     layerObj[item] = []
+                // }
+
                 for (let it = 0; it < $(track).children().length; it++) {
 
                     let layerObj = {}
-                    
+
                     //循环轨道元素
                     let trackChildObj = {}
                     let el = $(track).children()[it]
@@ -3074,9 +3201,9 @@ function main() {
                         .attr('data-t')
 
                     trackChildObj =
-                        $(el).attr('data-p') == undefined
-                            ? JSON.parse($(el).attr('data-j'))
-                            : JSON.parse($(el).attr('data-p'))
+                        $(el).attr('data-p') == undefined ?
+                        JSON.parse($(el).attr('data-j')) :
+                        JSON.parse($(el).attr('data-p'))
 
                     // 寻找轨道相关画布图片
                     for (const ite of $('.canvasDiv')) {
@@ -3095,14 +3222,14 @@ function main() {
                             layerObj.index = it
                         }
                     }
-                    
+
                     // layerObj[elList[layerObj.type]].push(trackChildObj)
                     Object.assign(layerObj, trackChildObj)
 
                     // 获取持续时间
                     if (
                         parseFloat($(el).css('left')) +
-                            parseFloat($(el).css('width')) >
+                        parseFloat($(el).css('width')) >
                         durFlag
                     ) {
                         durFlag =
@@ -3162,7 +3289,7 @@ function main() {
             //     // parObj.endTime = that.formatSeconds(endTime)
             // }
 
-            
+
             // data.params = JSON.stringify(data.params)
 
             Object.assign(data, that.proObj)
@@ -3185,12 +3312,12 @@ function main() {
             //按钮绑定事件
             let that = this
 
-            $('#addTrack').on('click', function() {
+            $('#addTrack').on('click', function () {
                 //添加轨道按钮
                 that.newTrack()
             })
 
-            $(document).on('keydown', function(e) {
+            $(document).on('keydown', function (e) {
                 //监听del键盘事件
                 var code = e.keyCode
                 if (46 == code) {
@@ -3226,7 +3353,7 @@ function main() {
 
             $(
                 '#ediBox input[name="startTime"], #ediBox input[name="endTime"]'
-            ).on('blur', function(e) {
+            ).on('blur', function (e) {
                 //时间格式验证
                 let str = $(this)
                     .val()
@@ -3279,16 +3406,16 @@ function main() {
 
         //设置canvas缩放
         setTransform() {
+            const THAT = this
             let clinenW = document.body.clientWidth
             let clinenH = document.body.clientHeight
 
             let width = clinenW - $('.row-right').width()
             let ratio =
-                (width / this.width).toFixed(1) < 1
-                    ? (width / this.width).toFixed(1) * 10
-                    : 10
+                (width / this.width).toFixed(1) < 1 ?
+                (width / this.width).toFixed(1) * 10 :
+                10
 
-            console.log(ratio)
 
             $('#canvas').css(
                 'transform',
@@ -3296,11 +3423,23 @@ function main() {
             )
             $('#transformCanvas').val(ratio)
 
-            $('#transformCanvas').on('change', function() {
+            $('#transformCanvas').on('change', function () {
                 $('#canvas').css(
                     'transform',
                     `scale(${0.1 * $(this).val()}, ${0.1 * $(this).val()})`
                 )
+
+                if (0.1 * $(this).val() * THAT.height < $('#hiddenBox').height()) {
+                    $('#hiddenBox').css('overflow-y', 'hidden')
+                } else {
+                    $('#hiddenBox').css('overflow-y', 'auto')
+                }
+
+                if (0.1 * $(this).val() * THAT.width < $('#hiddenBox').width()) {
+                    $('#hiddenBox').css('overflow-x', 'hidden')
+                } else {
+                    $('#hiddenBox').css('overflow-x', 'auto')
+                }
             })
         }
 
@@ -3335,7 +3474,7 @@ function main() {
         setPlayLength() {
             let that = this
 
-            $(document).keyup(function(event) {
+            $(document).keyup(function (event) {
                 if (event.keyCode == 13) {
                     $('#addTime').val('')
                     let ctrlEle = $('.ctrlEle')
@@ -3343,7 +3482,7 @@ function main() {
                 }
             })
 
-            $('#setPlayBtn').on('click', function() {
+            $('#setPlayBtn').on('click', function () {
                 let ctrlEle = $('.ctrlEle')
                 let addTime = $('#addTime').val()
                 let timeTotal = $('#nowTime').attr('data-t') * 60
@@ -3379,8 +3518,8 @@ function main() {
         //通用方法
         //监听属性变化观察者
         observer(el, func, filter) {
-            var observer = new MutationObserver(function(mutations, observer) {
-                mutations.forEach(function(mutation) {
+            var observer = new MutationObserver(function (mutations, observer) {
+                mutations.forEach(function (mutation) {
                     func(mutation)
                 })
             })
@@ -3391,15 +3530,6 @@ function main() {
             }
 
             observer.observe(el, config)
-
-            // let obj = {}
-            // obj.obs = el.style
-            // Object.defineProperty(obj, 'obs', {
-            //     set(val) {
-            //         console.log(val)
-            //         func(val)
-            //     }
-            // })
         }
 
         //秒转化为00:00:00格式
@@ -3507,6 +3637,25 @@ function main() {
                 window.sessionStorage['playParams'] = data
 
                 window.open('../Pro/play/player.html')
+            })
+        }
+
+        //素材组 
+        getGroup() {
+            const THAT = this
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                url: THAT.api.getGroup,
+                success(res) {
+                    let html = ''
+                    for (const item of res.groupNameList) {
+                        html += `<option value=${item}>${item}</option>`
+                    }
+                    $('#groupIndex').html(html)
+
+                    THAT.getMaterial()
+                }
             })
         }
     }

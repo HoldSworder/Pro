@@ -304,3 +304,9 @@ body {
 .ctrlEle {
     border: 1px solid #333;
 }
+
+.item-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}

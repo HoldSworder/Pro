@@ -15,24 +15,84 @@ function main() {
 
             observer.observe(el, config)
         }
+
+        static formatSeconds(value) { //秒转化为00:00:00格式
+            var theTime = parseInt(value) // 秒
+            var theTime1 = 0 // 分
+            var theTime2 = 0 // 小时
+
+            if (theTime > 60) {
+                theTime1 = parseInt(theTime / 60)
+                theTime = parseInt(theTime % 60)
+
+                if (theTime1 > 60) {
+                    theTime2 = parseInt(theTime1 / 60)
+                    theTime1 = parseInt(theTime1 % 60)
+                }
+            }
+
+            theTime1 = theTime1 < 10 ? `0${theTime1}` : theTime1
+            theTime2 = theTime2 < 10 ? `0${theTime2}` : theTime2
+            theTime = theTime < 10 ? `0${theTime}` : theTime
+
+            var result = `00:00:${theTime}`
+
+            if (theTime1 > 0) {
+                result = `00:${theTime1}:${theTime}`
+            }
+
+            if (theTime2 > 0) {
+                result = `${theTime2}:${theTime1}:${theTime}`
+            }
+
+            return result
+        }
+
+        static calcTime(el) { //计算起止时间
+            let track = el.parent()
+            let timeS = $('#nowTime').attr('data-t') * 60 //时间轴总时间换算s
+            let trackW = track.width()
+            let elL = parseFloat(el.attr('data-l'))
+            let elR = parseFloat(el.width()) + elL //元素左右长度
+
+            let beginT = parseInt((elL / trackW) * timeS)
+            let endT = parseInt((elR / trackW) * timeS)
+
+            return {
+                start: Tool.formatSeconds(beginT),
+                end: Tool.formatSeconds(endT)
+            }
+        }
+
     }
 
     class Element {
         constructor(data, id) {
-            this.id = id
-            this.divDom = $('#canvas').find(`div[data-i=${this.id}]`)
-            this.img = $('#canvas').find(`div[data-i=${this.id}]`).find('img')
-            this.checkEle = $('.trackBox').find(`div[data-i=${this.id}]`)
-            this.observe = {
-                data: data,
-                width: this.img.width(),
-                height: this.img.height(),
-                x: this.divDom.css('left'),
-                y: this.divDom.css('top'),
+            this.$data = JSON.parse(data)
+            this.$id = id
+
+            this.dDiv = $('#canvas').find(`div[data-i=${this.$id}]`)
+            this.dImg = this.dDiv.find('img')
+            this.dCheckEle = $('.trackBox').find(`div[data-i=${this.$id}]`)
+
+            this._proxyObj
+            this._observe = {
+                data: this.$data,
+                width: this.dImg.width(),
+                height: this.dImg.height(),
+                x: this.dDiv.css('left'),
+                y: this.dDiv.css('top'),
                 start: '00:00:00',
                 end: '00:00:00'
             }
-            this.proxyObj
+            // this._changeList = {
+            //     width: [dDiv, 'width', 'width'],
+            //     height: [dDiv, 'height', 'height'],
+            //     x: [dDiv, 'location_x', 'left'],
+            //     y: [dDiv, 'location_y', 'top'],
+            //     start: [dCheckEle, 'width', 'width'],
+            //     end: [dCheckEle, 'width', 'width'],
+            // }
 
             this.proxy()
             this.observer()
@@ -40,44 +100,59 @@ function main() {
 
         observer() {
             const THAT = this
-            const proxyObj = this.proxyObj
+            const proxyObj = this._proxyObj
 
-            Tool.observer(this.img[0], mutation => {
+            Tool.observer(this.dImg[0], mutation => {
                 let cWidth = parseFloat(mutation.target.style.width)
-                let cHeight = parseFloat(mutation.target.style.width)
+                let cHeight = parseFloat(mutation.target.style.height)
 
                 proxyObj.width = cWidth
                 proxyObj.height = cHeight
             }, ['style'])
 
-            Tool.observer(this.divDom[0], mutation => {
+            Tool.observer(this.dDiv[0], mutation => {
                 let cX = parseFloat(mutation.target.style.top)
                 let cY = parseFloat(mutation.target.style.left)
+
                 proxyObj.x = cX
                 proxyObj.y = cY
+            }, ['style'])
+
+            Tool.observer(this.dCheckEle[0], mutation => {
+                console.log(Tool.calcTime(THAT.dCheckEle).start)
+                console.log(Tool.calcTime(THAT.dCheckEle).end)
+
+                proxyObj.start = Tool.calcTime(THAT.dCheckEle).start
+                proxyObj.end = Tool.calcTime(THAT.dCheckEle).end
             }, ['style'])
         }
 
         proxy() {
             const THAT = this
-            this.proxyObj = new Proxy(this.observe, {
-                get: function (target, key, receiver) {
-                    if (key == 'data') {
-                        return JSON.parse(target[key])
-                    }
-                    return Reflect.get(target, key, receiver);
-                },
+            this._proxyObj = new Proxy(this._observe, {
                 set: function (target, key, value, receiver) {
-                    if (key == 'data') {
-                        target[key] = JSON.stringify(value)
-                    } else if (key == 'width') {
-                        THAT.widthChange()
-                    } else if (key == 'height') {
-                        console.log('height')
-                    } else if (key == 'x') {
-                        console.log('x')
-                    } else if (key == 'y') {
-                        console.log('y')
+                    switch (key) {
+                        case 'data':
+                            target[key] = JSON.stringify(value)
+                            break;
+                        case 'width':
+                            THAT.wChange()
+                            break;
+                        case 'height':
+                            THAT.hChange()
+                            break;
+                        case 'x':
+                            THAT.xChange()
+                            break;
+                        case 'y':
+                            THAT.yChange()
+                            break;
+                        case 'start':
+                            THAT.sChange()
+                            break;
+                        case 'end':
+                            THAT.eChange()
+                            break;
                     }
 
                     return Reflect.set(target, key, value, receiver);
@@ -85,15 +160,48 @@ function main() {
             })
         }
 
-        widthChange() {
-            $('.activeEdi')
-                .find('input[name="width"]')
-                .val($('.checkCanvas .canvasChild').width())
-            $('.activeEdi')
-                .find('input[name="height"]')
-                .val($('.checkCanvas .canvasChild').height())
+        wChange() {
+            // let nwidth = $('.checkCanvas .canvasChild').width()
+            // let nHeight = $('.checkCanvas .canvasChild').height()
+            // $('.activeEdi')
+            //     .find('input[name="width"]')
+            //     .val(nwidth)
+            // $('.activeEdi')
+            //     .find('input[name="height"]')
+            //     .val(nHeight)
+
+            // this.dImg.css('width', nwidth)
+            // this.dImg.css('width', nHeight)
             console.log('width')
         }
+
+        hChange() {
+            // let nwidth = $('.checkCanvas .canvasChild').width()
+            // let nHeight = $('.checkCanvas .canvasChild').height()
+            // $('.activeEdi')
+            //     .find('input[name="width"]')
+            //     .val(nwidth)
+            // $('.activeEdi')
+            //     .find('input[name="height"]')
+            //     .val(nHeight)
+
+            // this.dImg.css('width', nwidth)
+            // this.dImg.css('width', nHeight)
+            console.log('height')
+        }
+
+        xChange() {
+            console.log('x')
+        }
+
+        yChange() {
+            console.log('y')
+        }
+
+        sChange() {}
+
+        eChange() {}
+
     }
 
     class Canvas {
@@ -139,7 +247,6 @@ function main() {
             }
             this.mapElement = new Map()
         }
-
 
         init() {
             //入口
@@ -235,8 +342,7 @@ function main() {
             }
 
             this.canvas.append(html)
-            const elementObj = new Element(img.attr('data-J'), id)
-            this.mapElement.set(id, elementObj)
+
 
             this.fixPosition(this, $(`#div${index}`).children()[0])
 
@@ -278,6 +384,8 @@ function main() {
             this.showControl()
 
             placeholder.render()
+
+
         }
 
         //拖动绘制属性
@@ -293,7 +401,8 @@ function main() {
                 let clone = $(this).clone()
                 $(this).after(clone)
 
-                clone.hide()
+                //隐藏克隆图片
+                // clone.hide()
 
                 cloner = clone
 
@@ -332,6 +441,8 @@ function main() {
                             let imgX = that.width()
                             let imgY = that.height()
 
+                            //生成轨道元素
+                            //绘制画布元素
                             thats.drawImg(
                                 that.attr('src'),
                                 nameId,
@@ -339,7 +450,12 @@ function main() {
                                 nowY - canY - imgY / 2,
                                 that
                             )
+
                             thats.sliderEle(that, nameId)
+
+                            // const elementObj = new Element(that.attr('data-J'), nameId)
+                            // thats.mapElement.set(nameId, elementObj)
+
 
                             $(document).off('mouseup', upE)
                             $(document).off('mousemove', moveE)
@@ -1470,7 +1586,7 @@ function main() {
 
         }
 
-        //计算起止时间
+        //设置起止时间
         setTime(el) {
             let that = this
             let track = el.parent()
@@ -1570,38 +1686,24 @@ function main() {
             const checkImg = $('#canvas').find(`[data-i=${$('.checkEle').attr('data-i')}]`).find('img')
 
             //点击获取x、y数据并填充
-            // nowEdi
-            //     .find('input[name="location_x"]')
-            //     .val(parseInt($('.checkCanvas').css('left')))
-            // nowEdi
-            //     .find('input[name="location_y"]')
-            //     .val(parseInt($('.checkCanvas').css('top')))
             nowEdi.find('input[name="location_x"]').val(data.location_x)
             nowEdi.find('input[name="location_y"]').val(data.location_y)
 
+            let trans
             //点击获取缩放并填充设置
-            // let trans =
-            //     (
-            //         $('.checkCanvas .canvasChild').width() / that.imgWidth
-            //     ).toFixed(2) * 100
-            let trans = (data.width / checkImg[0].naturalWidth).toFixed(2) * 100
-            nowEdi.find('input[name="zoomInput"]').val(trans)
-            // .change()
-
-            // TODO: 更改缩放比
-            $('.activeEdi .zoom .ui-slider-tip').text(trans)
-            $('.activeEdi .zoom .ui-slider-handle').css(
-                'left',
-                `${(100 / 500) * trans}%`
-            )
+            if(nowEdi.find('input[name="zoomInput"]').length !== 0) {
+                trans = (data.width / checkImg[0].naturalWidth).toFixed(2) * 100
+                nowEdi.find('input[name="zoomInput"]').val(trans)
+    
+                // TODO: 更改缩放比
+                $('.activeEdi .zoom .ui-slider-tip').text(trans)
+                $('.activeEdi .zoom .ui-slider-handle').css(
+                    'left',
+                    `${(100 / 500) * trans}%`
+                )
+            }
 
             //点击获取宽、高数据并填充
-            // nowEdi
-            //     .find('input[name="width"]')
-            //     .val(parseInt($('.checkCanvas .canvasChild').width()))
-            // nowEdi
-            //     .find('input[name="height"]')
-            //     .val(parseInt($('.checkCanvas .canvasChild').height()))
             nowEdi.find('input[name="width"]').val(data.width)
             nowEdi.find('input[name="height"]').val(data.height)
 
@@ -1816,14 +1918,238 @@ function main() {
 
             $('.checkInit').bootstrapSwitch()
 
-            this.videoEdiInit()
-            this.audioEdiInit()
+            class RepertoryTool {
+                static videoEdiInit() {
+                    $('#video-slider')
+                        .slider({
+                            min: 0,
+                            max: 100,
+                            range: true
+                        })
+                        .slider('pips', {
+                            rest: false
+                        })
+        
+                    $('#video-vol-slider')
+                        .slider({
+                            min: 0,
+                            max: 100,
+                            range: false
+                        })
+                        .slider('pips', {
+                            rest: false
+                        })
+                        .slider('float')
+        
+                    $('#video-video-check').bootstrapSwitch()
+                    $('#video-audio-check').bootstrapSwitch()
+                }
+        
+                static audioEdiInit() {
+                    $('#audio-slider')
+                        .slider({
+                            min: 0,
+                            max: 100,
+                            range: true
+                        })
+                        .slider('pips', {
+                            rest: false
+                        })
+        
+                    $('#audio-vol-slider')
+                        .slider({
+                            min: 0,
+                            max: 100,
+                            range: false
+                        })
+                        .slider('pips', {
+                            rest: false
+                        })
+                        .slider('float')
+                }
+        
+                static textEdiInit() {
+                    let form = $('#textEdi form')
+        
+                    $('#text-transparency-slider')
+                        .slider({
+                            min: 0,
+                            max: 100,
+                            range: false
+                        })
+                        .slider('pips', {
+                            rest: false
+                        })
+                        .slider('float')
+        
+                    $('#text-verticalcheck')
+                        .parent()
+                        .on('switch-change', function (e, data) {
+                            console.log('ok')
+                        })
+        
+                    //设置文字内容
+                    form.find('textarea').on('input', function () {
+                        $('.checkCanvas .canvasChild').text($(this).val())
+                    })
+        
+                    //设置文字对齐
+                    form.find('select[name="alignment"]').on('change', function () {
+                        let data = ['left', 'center', 'right']
+                        $('.checkCanvas .canvasChild').css(
+                            'text-align',
+                            data[$(this).val()]
+                        )
+                    })
+        
+                    //设置文字字号
+                    form.find('input[name="size"]').on('change', function () {
+                        let font = parseInt($(this).val())
+        
+                        if (font < 12) {
+                            font = 12
+                            $(this).val(12)
+                        }
+        
+                        $('.checkCanvas .canvasChild').css('font-size', font)
+                    })
+        
+                    //设置文字字体
+                    form.find('select[name="font"]').on('change', function () {
+                        $('.checkCanvas .canvasChild').css('font-family', $(this).val())
+                    })
+        
+                    //设置字体颜色
+                    form.find('input[name="color"]').on('change', function () {
+                        $('.checkCanvas .canvasChild').css('color', $(this).val())
+                    })
+        
+                    //设置背景颜色
+                    form.find('input[name="backgroundcolor"]').on('change', function () {
+                        $('.checkCanvas .canvasChild').css('background', $(this).val())
+                    })
+        
+                    //设置粗体
+                    form.find('[name="bold"]').bootstrapSwitch({
+                        onText: 'Yes',
+                        offText: 'No',
+                        onColor: 'success',
+                        offColor: 'info',
+                        setState: false,
+                        onSwitchChange: function (event, state) {
+                            if (state == true) {
+                                console.log('1111')
+                                $('.checkCanvas .canvasChild').css(
+                                    'font-weight',
+                                    'bold'
+                                )
+                            } else {
+                                console.log('22222')
+                                $('.checkCanvas .canvasChild').css(
+                                    'font-weight',
+                                    'normal'
+                                )
+                            }
+                        }
+                    })
+        
+                    //设置斜体
+                    form.find('[name="italic"]').bootstrapSwitch({
+                        onText: 'Yes',
+                        offText: 'No',
+                        onColor: 'success',
+                        offColor: 'info',
+                        setState: false,
+                        onSwitchChange: function (event, state) {
+                            if (state == true) {
+                                $('.checkCanvas .canvasChild').css(
+                                    'font-style',
+                                    'italic'
+                                )
+                            } else {
+                                $('.checkCanvas .canvasChild').css(
+                                    'font-style',
+                                    'normal'
+                                )
+                            }
+                        }
+                    })
+        
+                    //设置多行
+                    form.find('[name="multiline"]').bootstrapSwitch({
+                        onText: 'Yes',
+                        offText: 'No',
+                        onColor: 'success',
+                        offColor: 'info',
+                        setState: false,
+                        onSwitchChange: function (event, state) {
+                            if (state == true) {
+                                $('.checkCanvas .canvasChild').css(
+                                    'white-space',
+                                    'normal'
+                                )
+                            } else {
+                                $('.checkCanvas .canvasChild').css(
+                                    'white-space',
+                                    'nowrap'
+                                )
+                            }
+                        }
+                    })
+        
+                    //设置字间距
+                    form.find('[name="wordSpace"]').on('change', function () {
+                        $('.checkCanvas .canvasChild').css(
+                            'letter-spacing',
+                            $(this).val()
+                        )
+                    })
+        
+                    //设置行间距
+                    form.find('[name="rowSpace"]').on('change', function () {
+                        $('.checkCanvas .canvasChild').css('line-height', $(this).val())
+                    })
+                }
+        
+                static tableEdiInit() {
+                    $('#addTableRow').on('click', function () {
+                        let html = `
+                        <tr>
+                            <td>
+                                <input name="dataColumnList" class="form-control">
+                            </td>
+                            <td>
+                                <input name="rowList" class="form-control">
+                            </td>
+                        </tr>
+                        `
+        
+                        $('#rowDataTable tbody').append(html)
+                    })
+                }
+        
+                static htmlEdiInit() {
+                    $('.transparent-range')
+                        .slider({
+                            min: 0,
+                            max: 10,
+                            range: false
+                        })
+                        .slider('pips', {
+                            rest: false
+                        })
+                        .slider('float')
+                }
+            }
+
+            RepertoryTool.videoEdiInit()
+            RepertoryTool.audioEdiInit()
+            RepertoryTool.textEdiInit()
+            RepertoryTool.tableEdiInit()
+            RepertoryTool.htmlEdiInit()
+
             this.saveEdi()
             this.setPlayTime()
-
-            this.textEdiInit()
-            this.tableEdiInit()
-            this.htmlEdiInit()
             this.ediInit()
         }
 
@@ -2149,228 +2475,7 @@ function main() {
             checkEle.attr('data-p', JSON.stringify(dataJ))
         }
 
-        videoEdiInit() {
-            $('#video-slider')
-                .slider({
-                    min: 0,
-                    max: 100,
-                    range: true
-                })
-                .slider('pips', {
-                    rest: false
-                })
-
-            $('#video-vol-slider')
-                .slider({
-                    min: 0,
-                    max: 100,
-                    range: false
-                })
-                .slider('pips', {
-                    rest: false
-                })
-                .slider('float')
-
-            $('#video-video-check').bootstrapSwitch()
-            $('#video-audio-check').bootstrapSwitch()
-        }
-
-        audioEdiInit() {
-            $('#audio-slider')
-                .slider({
-                    min: 0,
-                    max: 100,
-                    range: true
-                })
-                .slider('pips', {
-                    rest: false
-                })
-
-            $('#audio-vol-slider')
-                .slider({
-                    min: 0,
-                    max: 100,
-                    range: false
-                })
-                .slider('pips', {
-                    rest: false
-                })
-                .slider('float')
-        }
-
-        textEdiInit() {
-            let that = this
-            let form = $('#textEdi form')
-
-            $('#text-transparency-slider')
-                .slider({
-                    min: 0,
-                    max: 100,
-                    range: false
-                })
-                .slider('pips', {
-                    rest: false
-                })
-                .slider('float')
-
-            $('#text-verticalcheck')
-                .parent()
-                .on('switch-change', function (e, data) {
-                    console.log('ok')
-                })
-
-            //设置文字内容
-            form.find('textarea').on('input', function () {
-                $('.checkCanvas .canvasChild').text($(this).val())
-            })
-
-            //设置文字对齐
-            form.find('select[name="alignment"]').on('change', function () {
-                let data = ['left', 'center', 'right']
-                $('.checkCanvas .canvasChild').css(
-                    'text-align',
-                    data[$(this).val()]
-                )
-            })
-
-            //设置文字字号
-            form.find('input[name="size"]').on('change', function () {
-                let font = parseInt($(this).val())
-
-                if (font < 12) {
-                    font = 12
-                    $(this).val(12)
-                }
-
-                $('.checkCanvas .canvasChild').css('font-size', font)
-            })
-
-            //设置文字字体
-            form.find('select[name="font"]').on('change', function () {
-                $('.checkCanvas .canvasChild').css('font-family', $(this).val())
-            })
-
-            //设置字体颜色
-            form.find('input[name="color"]').on('change', function () {
-                $('.checkCanvas .canvasChild').css('color', $(this).val())
-            })
-
-            //设置背景颜色
-            form.find('input[name="backgroundcolor"]').on('change', function () {
-                $('.checkCanvas .canvasChild').css('background', $(this).val())
-            })
-
-            //设置粗体
-            form.find('[name="bold"]').bootstrapSwitch({
-                onText: 'Yes',
-                offText: 'No',
-                onColor: 'success',
-                offColor: 'info',
-                setState: false,
-                onSwitchChange: function (event, state) {
-                    if (state == true) {
-                        console.log('1111')
-                        $('.checkCanvas .canvasChild').css(
-                            'font-weight',
-                            'bold'
-                        )
-                    } else {
-                        console.log('22222')
-                        $('.checkCanvas .canvasChild').css(
-                            'font-weight',
-                            'normal'
-                        )
-                    }
-                }
-            })
-
-            //设置斜体
-            form.find('[name="italic"]').bootstrapSwitch({
-                onText: 'Yes',
-                offText: 'No',
-                onColor: 'success',
-                offColor: 'info',
-                setState: false,
-                onSwitchChange: function (event, state) {
-                    if (state == true) {
-                        $('.checkCanvas .canvasChild').css(
-                            'font-style',
-                            'italic'
-                        )
-                    } else {
-                        $('.checkCanvas .canvasChild').css(
-                            'font-style',
-                            'normal'
-                        )
-                    }
-                }
-            })
-
-            //设置多行
-            form.find('[name="multiline"]').bootstrapSwitch({
-                onText: 'Yes',
-                offText: 'No',
-                onColor: 'success',
-                offColor: 'info',
-                setState: false,
-                onSwitchChange: function (event, state) {
-                    if (state == true) {
-                        $('.checkCanvas .canvasChild').css(
-                            'white-space',
-                            'normal'
-                        )
-                    } else {
-                        $('.checkCanvas .canvasChild').css(
-                            'white-space',
-                            'nowrap'
-                        )
-                    }
-                }
-            })
-
-            //设置字间距
-            form.find('[name="wordSpace"]').on('change', function () {
-                $('.checkCanvas .canvasChild').css(
-                    'letter-spacing',
-                    $(this).val()
-                )
-            })
-
-            //设置行间距
-            form.find('[name="rowSpace"]').on('change', function () {
-                $('.checkCanvas .canvasChild').css('line-height', $(this).val())
-            })
-        }
-
-        tableEdiInit() {
-            $('#addTableRow').on('click', function () {
-                let html = `
-                <tr>
-                    <td>
-                        <input name="dataColumnList" class="form-control">
-                    </td>
-                    <td>
-                        <input name="rowList" class="form-control">
-                    </td>
-                </tr>
-                `
-
-                $('#rowDataTable tbody').append(html)
-            })
-        }
-
-        htmlEdiInit() {
-            $('.transparent-range')
-                .slider({
-                    min: 0,
-                    max: 10,
-                    range: false
-                })
-                .slider('pips', {
-                    rest: false
-                })
-                .slider('float')
-        }
+        
 
         //设置保存参数
         saveEdi() {
@@ -2389,24 +2494,57 @@ function main() {
                 Object.assign(obj, JSON.parse($('.checkEle').attr('data-j')))
             }
 
-            $('#imgEdi')
-                .find('.saveEdi button')
-                .on('click', function (e) {
-                    //图片
-                    e.preventDefault()
+            for (const item of $('#ediBox').children()) {
+                const $item = $(item)
+
+                $item.find('form').on('change', function () {
+                    switch ($item.attr('id')) {
+                        case 'imgEdi':
+                            SaveTool.cImg()
+                            break;
+                        case 'videoEdi':
+                            SaveTool.cVideo()
+                            break;
+                        case 'audioEdi':
+                            SaveTool.cAudio()
+                            break;
+                        case 'textEdi':
+                            SaveTool.cText()
+                            break;
+                        case 'rtspEdi':
+                            SaveTool.cRtsp()
+                            break;
+                        case 'tableEdi':
+                            SaveTool.cTable()
+                            break;
+                        case 'clockEdi':
+                            SaveTool.cClock()
+                            break;
+                        case 'weatherEdi':
+                            SaveTool.cWeather()
+                            break;
+                        case 'htmlEdi':
+                            SaveTool.cHtml()
+                            break;
+                        case 'documentEdi':
+                            SaveTool.cDocument()
+                            break;
+
+                    }
+                })
+            }
+
+            class SaveTool {
+                static cImg() {
                     let edi = $('#imgEdi')
                     let ele = $('.checkEle')
                     let data = {}
 
                     getTime(data, edi)
-                    console.log(data)
                     data.transition = edi.find('select[name="animation"]').val()
-                    // data.animation = edi.find('select[name="animation"]').val()
                     data.scalingRatio = edi
                         .find('input[name="zoomInput"]')
                         .val()
-
-                    console.log(data)
 
                     let str = JSON.stringify(data)
                     ele.attr('data-p', str)
@@ -2414,13 +2552,9 @@ function main() {
                     if (edi.find('input[name="setBack"]').is(':checked')) {
                         $('.checkCanvas').addClass('setBackground')
                     }
-                })
+                }
 
-            $('#videoEdi')
-                .find('.saveEdi button')
-                .on('click', function (e) {
-                    //视频
-                    e.preventDefault()
+                static cVideo() {
                     let edi = $('#videoEdi')
                     let ele = $('.checkEle')
                     let data = {}
@@ -2446,13 +2580,9 @@ function main() {
 
                     let str = JSON.stringify(data)
                     ele.attr('data-p', str)
-                })
+                }
 
-            $('#audioEdi')
-                .find('.saveEdi button')
-                .on('click', function (e) {
-                    //音频
-                    e.preventDefault()
+                static cAudio() {
                     let edi = $('#audioEdi')
                     let ele = $('.checkEle')
                     let data = {}
@@ -2467,13 +2597,9 @@ function main() {
 
                     let str = JSON.stringify(data)
                     ele.attr('data-p', str)
-                })
+                }
 
-            $('#textEdi')
-                .find('.saveEdi button')
-                .on('click', function (e) {
-                    //文字
-                    e.preventDefault()
+                static cText() {
                     let edi = $('#textEdi')
                     let ele = $('.checkEle')
                     let data = {}
@@ -2509,20 +2635,11 @@ function main() {
                     data.wordSpace = edi.find('input[name="wordSpace"]').val()
                     data.rowSpace = edi.find('input[name="rowSpace"]').val()
 
-                    // data.transition = edi
-                    //     .find('select[name="transition"]')
-                    //     .val()
-                    // data.animation = edi.find('select[name="animation"]').val()
-
                     let str = JSON.stringify(data)
                     ele.attr('data-p', str)
-                })
+                }
 
-            $('#rtspEdi')
-                .find('.saveEdi button')
-                .on('click', function (e) {
-                    //RTSP
-                    e.preventDefault()
+                static cRtsp() {
                     let edi = $('#rtspEdi')
                     let ele = $('.checkEle')
                     let data = {}
@@ -2533,14 +2650,10 @@ function main() {
 
                     let str = JSON.stringify(data)
                     ele.attr('data-p', str)
-                })
+                }
 
-            $('#tabelEdi')
-                .find('.saveEdi button')
-                .on('click', function (e) {
-                    //表格
-                    e.preventDefault()
-                    let edi = $('#tabelEdi')
+                static cTable() {
+                    let edi = $('#tableEdi')
                     let ele = $('.checkEle')
                     let imgEle = $('.checkCanvas')
                     let data = {}
@@ -2566,13 +2679,9 @@ function main() {
 
                     let str = JSON.stringify(data)
                     ele.attr('data-p', str)
-                })
+                }
 
-            $('#clockEdi')
-                .find('.saveEdi button')
-                .on('click', function (e) {
-                    //时钟
-                    e.preventDefault()
+                static cClock() {
                     let edi = $('#clockEdi')
                     let ele = $('.checkEle')
                     let data = {}
@@ -2598,13 +2707,9 @@ function main() {
 
                     let str = JSON.stringify(data)
                     ele.attr('data-p', str)
-                })
+                }
 
-            $('#weatherEdi')
-                .find('.saveEdi button')
-                .on('click', function (e) {
-                    //天气
-                    e.preventDefault()
+                static cWeather() {
                     let edi = $('#weatherEdi')
                     let ele = $('.checkEle')
                     let data = {}
@@ -2637,13 +2742,9 @@ function main() {
 
                     let str = JSON.stringify(data)
                     ele.attr('data-p', str)
-                })
+                }
 
-            $('#htmlEdi')
-                .find('.saveEdi button')
-                .on('click', function (e) {
-                    //Html
-                    e.preventDefault()
+                static cHtml() {
                     let edi = $('#htmlEdi')
                     let ele = $('.checkEle')
                     let data = {}
@@ -2657,13 +2758,9 @@ function main() {
 
                     let str = JSON.stringify(data)
                     ele.attr('data-p', str)
-                })
+                }
 
-            $('#documentEdi')
-                .find('.saveEdi button')
-                .on('click', function (e) {
-                    //文档
-                    e.preventDefault()
+                static cDocument() {
                     let edi = $('#htmlEdi')
                     let ele = $('.checkEle')
                     let data = {}
@@ -2680,7 +2777,8 @@ function main() {
 
                     let str = JSON.stringify(data)
                     ele.attr('data-p', str)
-                })
+                }
+            }
         }
 
         //监听video进度设置
@@ -2830,9 +2928,12 @@ function main() {
                                         // }`
 
                                         html += `
-                                        <img src="${url}" class="material" data-J='${JSON.stringify(
-                                            item
-                                        )}'>
+                                        <div class='item-container'>
+                                            <img src="${url}" class="material" data-J='${JSON.stringify(
+                                                item
+                                            )}'>
+                                            <p>${item.fileName}</p>
+                                        </div>
                                         `
                                     }
                                 }
@@ -3658,6 +3759,8 @@ function main() {
                 }
             })
         }
+
+
     }
 
     function initCanvas() {

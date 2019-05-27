@@ -2955,7 +2955,10 @@ function main() {
             }
 
             $('#itemIndex').on('change', function () {
-                let thats = $(this)
+                getMate()
+            })
+
+            $('#groupIndex').on('change', function () {
                 getMate()
             })
 

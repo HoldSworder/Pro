@@ -117,9 +117,6 @@ function main() {
             const THAT = this
             const data = ele[THAT.$option.key]
             this.$func(data)
-            // for (const item of THAT.$wacher) {
-            //     item = data
-            // }
         }
 
         link() {
@@ -194,6 +191,12 @@ function main() {
             const THAT = this
             this._proxyObj = new Proxy(this._observe, {
                 set: function (target, key, value, receiver) {
+                    console.log(target)
+                    console.log(key)
+                    console.log(value)
+                    console.log(receiver)
+                    if(parseInt(target[key]) == value) Reflect.set(target, key, value, receiver)
+
                     switch (key) {
                         case 'data':
                             target[key] = JSON.stringify(value)
@@ -203,10 +206,12 @@ function main() {
                         case 'height':
                             break;
                         case 'x':
-                            console.log('x')
+                            // console.log('x')
                             THAT.mObs.get('x').update(THAT._observe)
                             break;
-                        case 'y':
+                            case 'y':
+                            // console.log('y')
+                            THAT.mObs.get('y').update(THAT._observe)
                             break;
                         case 'start':
                             break;
@@ -218,8 +223,15 @@ function main() {
                 }
             })
         }
+        
 
         link() {
+
+            // [{
+            //    input: THAT.dForm.find('input[name="location_x"]')[0],
+            //    left:THAT.dDiv
+            // }]
+
             const THAT = this
             const xObs = new Observer(function (newD) {
                 THAT.dForm.find('input[name="location_x"]').val(newD)
@@ -229,6 +241,16 @@ function main() {
                 dom: THAT.dDiv
             }, THAT)
             this.mObs.set('x', xObs)
+
+            const yObs = new Observer(function (newD) {
+                console.log(THAT._proxyObj)
+                THAT.dForm.find('input[name="location_y"]').val(newD)
+                THAT.dDiv.css('top', newD)
+            }, [THAT.dForm.find('input[name="location_y"]')[0], THAT.dDiv[0]], {
+                key: 'y',
+                dom: THAT.dDiv
+            }, THAT)
+            this.mObs.set('y', yObs)
 
         }
 
@@ -541,8 +563,8 @@ function main() {
 
                             thats.sliderEle(that, nameId)
 
-                            const elementObj = new Element(that.attr('data-J'), nameId)
-                            thats.mapElement.set(nameId, elementObj)
+                            // const elementObj = new Element(that.attr('data-J'), nameId)
+                            // thats.mapElement.set(nameId, elementObj)
 
 
                             $(document).off('mouseup', upE)
@@ -2237,6 +2259,7 @@ function main() {
             this.ediInit()
         }
 
+        //各种属性关联
         ediInit() {
             let that = this
             //通用初始化

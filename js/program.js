@@ -104,22 +104,22 @@ function main() {
     }
 
     class Observer {
-        constructor(func, wacher, option, element) {
+        constructor(func, option, element) {
             this.$func = func
-            this.$wacher = wacher
             this.$option = option
             this.$ele = element
 
             // this.link()
         }
 
-        update(ele) {
+        update(data) {
             const THAT = this
-            const data = ele[THAT.$option.key]
-            this.$func(data)
+            THAT.$func.call(THAT, data)
         }
 
-        link() {
+        _link() {
+
+
             this.$ele.update('x', '100px')
         }
     }
@@ -140,30 +140,22 @@ function main() {
                 data: this.$data,
                 width: this.dImg.width(),
                 height: this.dImg.height(),
-                x: this.dDiv.css('left'),
-                y: this.dDiv.css('top'),
+                x: parseInt(this.dDiv.css('left')),
+                y: parseInt(this.dDiv.css('top')),
                 start: '00:00:00',
                 end: '00:00:00'
             }
-            // this._changeList = {
-            //     width: [dDiv, 'width', 'width'],
-            //     height: [dDiv, 'height', 'height'],
-            //     x: [dDiv, 'location_x', 'left'],
-            //     y: [dDiv, 'location_y', 'top'],
-            //     start: [dCheckEle, 'width', 'width'],
-            //     end: [dCheckEle, 'width', 'width'],
-            // }
 
             this.mObs = new Map()
 
-            this.link()
-            this.proxy()
-            this.observer()
+            this._proxy()
+            this._link()
+            this._observer()
         }
 
-        observer() {
+        _observer() {
             const THAT = this
-            const proxyObj = this._proxyObj
+            let proxyObj = THAT._proxyObj
 
             Tool.observer(this.dImg[0], mutation => {
                 let cWidth = parseFloat(mutation.target.style.width)
@@ -174,8 +166,8 @@ function main() {
             }, ['style'])
 
             Tool.observer(this.dDiv[0], mutation => {
-                let cX = parseFloat(mutation.target.style.top)
-                let cY = parseFloat(mutation.target.style.left)
+                let cX = parseFloat(mutation.target.style.left)
+                let cY = parseFloat(mutation.target.style.top)
 
                 proxyObj.x = cX
                 proxyObj.y = cY
@@ -187,31 +179,26 @@ function main() {
             }, ['style'])
         }
 
-        proxy() {
+        _proxy() {
             const THAT = this
             this._proxyObj = new Proxy(this._observe, {
                 set: function (target, key, value, receiver) {
-                    console.log(target)
-                    console.log(key)
-                    console.log(value)
-                    console.log(receiver)
-                    if(parseInt(target[key]) == value) Reflect.set(target, key, value, receiver)
 
                     switch (key) {
                         case 'data':
                             target[key] = JSON.stringify(value)
                             break;
                         case 'width':
+                            THAT.mObs.get('width').update(value)
                             break;
                         case 'height':
+                            THAT.mObs.get('height').update(Math.floor(value))
                             break;
                         case 'x':
-                            // console.log('x')
-                            THAT.mObs.get('x').update(THAT._observe)
+                            THAT.mObs.get('x').update(value)
                             break;
-                            case 'y':
-                            // console.log('y')
-                            THAT.mObs.get('y').update(THAT._observe)
+                        case 'y':
+                            THAT.mObs.get('y').update(value)
                             break;
                         case 'start':
                             break;
@@ -219,38 +206,50 @@ function main() {
                             break;
                     }
 
-                    return Reflect.set(target, key, value, receiver);
+                    return Reflect.set(target, key, value, receiver)
                 }
             })
         }
-        
 
-        link() {
 
-            // [{
-            //    input: THAT.dForm.find('input[name="location_x"]')[0],
-            //    left:THAT.dDiv
-            // }]
-
+        _link() {
             const THAT = this
+
             const xObs = new Observer(function (newD) {
                 THAT.dForm.find('input[name="location_x"]').val(newD)
                 THAT.dDiv.css('left', newD)
-            }, [THAT.dForm.find('input[name="location_x"]')[0], THAT.dDiv[0]], {
+            }, {
                 key: 'x',
-                dom: THAT.dDiv
+                dom: [THAT.dForm.find('input[name="location_x"]')]
             }, THAT)
             this.mObs.set('x', xObs)
 
             const yObs = new Observer(function (newD) {
-                console.log(THAT._proxyObj)
                 THAT.dForm.find('input[name="location_y"]').val(newD)
                 THAT.dDiv.css('top', newD)
-            }, [THAT.dForm.find('input[name="location_y"]')[0], THAT.dDiv[0]], {
+            }, {
                 key: 'y',
                 dom: THAT.dDiv
             }, THAT)
             this.mObs.set('y', yObs)
+
+            const wObs = new Observer(function (newD) {
+                THAT.dForm.find('input[name="width"]').val(newD)
+                THAT.dImg.css('width', newD)
+            }, {
+                key: 'width',
+                dom: THAT.dImg
+            }, THAT)
+            this.mObs.set('width', wObs)
+
+            const hObs = new Observer(function (newD) {
+                THAT.dForm.find('input[name="height"]').val(newD)
+                THAT.dImg.css('height', newD)
+            }, {
+                key: 'height',
+                dom: THAT.dImg
+            }, THAT)
+            this.mObs.set('height', hObs)
 
         }
 
@@ -464,18 +463,18 @@ function main() {
                     //     .eq($('.checkEle').attr('data-l') - 1)
                     //     .find('form')
 
-                    let inputX = form.find('input[name="location_x"]')
-                    let inputY = form.find('input[name="location_y"]')
+                    // let inputX = form.find('input[name="location_x"]')
+                    // let inputY = form.find('input[name="location_y"]')
 
-                    inputX.val(parseInt(divE.css('left')))
-                    inputY.val(parseInt(divE.css('top')))
+                    // inputX.val(parseInt(divE.css('left')))
+                    // inputY.val(parseInt(divE.css('top')))
 
                     //同步轨道数据
-                    that.setDataJ(
-                        ['location_x', 'location_y'],
-                        [parseInt(divE.css('left')), parseInt(divE.css('top'))],
-                        $(ele).attr('data-i')
-                    )
+                    // that.setDataJ(
+                    //     ['location_x', 'location_y'],
+                    //     [parseInt(divE.css('left')), parseInt(divE.css('top'))],
+                    //     $(ele).attr('data-i')
+                    // )
 
                 }
             })
@@ -495,7 +494,18 @@ function main() {
 
             placeholder.render()
 
+            ;
+            (function (dom, THAT) { //绘制大图片处理
+                const img = dom.find('img')
+                const w = img[0].naturalWidth
+                const h = img[0].naturalHeight
+                const cW = THAT.proObj.width
+                const cH = THAT.proObj.height
 
+                if (w > cW || h > cH) {
+                    console.log('out')
+                }
+            }($(`#div${index}`), this))
         }
 
         //拖动绘制属性
@@ -563,8 +573,8 @@ function main() {
 
                             thats.sliderEle(that, nameId)
 
-                            // const elementObj = new Element(that.attr('data-J'), nameId)
-                            // thats.mapElement.set(nameId, elementObj)
+                            const elementObj = new Element(that.attr('data-J'), nameId)
+                            thats.mapElement.set(nameId, elementObj)
 
 
                             $(document).off('mouseup', upE)
@@ -2256,7 +2266,18 @@ function main() {
 
             this.saveEdi()
             this.setPlayTime()
-            this.ediInit()
+
+            $('.zoom')
+                .slider({
+                    min: 1,
+                    max: 500,
+                    range: false
+                })
+                .slider('pips', {
+                    rest: false
+                })
+                .slider('float')
+            // this.ediInit()
         }
 
         //各种属性关联

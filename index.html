@@ -69,11 +69,12 @@
                     <div class="timeLineBox">
                         <div class="timeLine clearfix">
                             <div class="sliderContainer row">
-                                <div class="col-sm-2">
+                                <div class="col-sm-2 sliderBox">
                                     <!-- <button id="addTrack">添加轨道</button> -->
-                                    <button id="addTrack" type="button" class="btn btn-default btn-xs">
-                                        <span class="iconfont icon-jia" aria-hidden="true"></span>
-                                    </button>
+                                    <!-- <button id="addTrack" type="button" class="btn btn-default btn-xs"> -->
+                                        <!-- <span class="iconfont icon-jia" aria-hidden="true"></span> -->
+                                    <!-- </button> -->
+                                    <img id="addTrack" class="btn" src="./img/add/add.svg" alt="">
                                     <span>
                                         <span id="nowTime" data-t="60">00:00</span>
                                     </span>
@@ -119,9 +120,9 @@
                             <div class="abbrTrack row">
                                 <div id="abbr-slider" class="col-sm-2" style="margin: 1em 0; background: #cdd4d7;">
                                 </div>
-                                <div class="col-sm-2">
+                                <!-- <div class="col-sm-2">
                                     <button class="form-control" id="play">播放</button>
-                                </div>
+                                </div> -->
                                 <!-- <div class="trackContent col-sm-10"></div> -->
                             </div>
                         </div>
@@ -154,7 +155,8 @@
 
                                     </ol>
                                     <div class="row" style="margin: 0">
-                                        <select id="groupIndex" class="form-control col-sm-6" style="width: 50%"></select>
+                                        <select id="groupIndex" class="form-control col-sm-6"
+                                            style="width: 50%"></select>
                                         <select id="itemIndex" class="form-control col-sm-6" style="width: 50%">
                                             <option value="1">图片</option>
                                             <option value="2">视频</option>
@@ -1434,6 +1436,7 @@
 
 <div>
     <button id="save" class="btn btn-primary hvr-bounce-in">保存</button>
+    <button id="play" class="btn btn-primary hvr-bounce-in">播放</button>
 
     <!-- 保存设置 -->
     <div class="modal open" id="savePro" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">

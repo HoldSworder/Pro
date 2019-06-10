@@ -162,7 +162,7 @@ body {
 
 .itemBox {
     display: flex;
-    justify-content: space-between;
+    /* justify-content: space-between; */
     flex-wrap: wrap;
     padding: 0 15px;
 }
@@ -251,7 +251,17 @@ body {
     bottom: 10px;
     border-radius: 50%;
     outline: none;
+    font-size: 16px;
+}
 
+#play {
+    width: 60px;
+    height: 60px;
+    position: fixed;
+    right: 100px;
+    bottom: 10px;
+    border-radius: 50%;
+    outline: none;
     font-size: 16px;
 }
 
@@ -286,6 +296,7 @@ body {
 
 #addTrack {
     padding-bottom: 5px;
+    padding: 4px 12px;
 }
 
 .setBackground {
@@ -310,6 +321,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin: 5px;
 }
 
 .flexBtn {
@@ -320,4 +332,11 @@ body {
     border: 1px solid white;
     z-index: 9999;
     box-sizing: content-box !important;
+}
+
+.sliderBox {
+    display: flex;
+    align-items: center;
+    position: relative;
+    top: -5px;
 }

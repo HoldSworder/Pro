@@ -104,12 +104,13 @@ function main() {
     }
 
     class Observer {
-        constructor(func, option, element) {
+        constructor(key, option, func, element) {
+            this.$key = key
             this.$func = func
             this.$option = option
             this.$ele = element
 
-            // this.link()
+            this._link()
         }
 
         update(data) {
@@ -118,10 +119,22 @@ function main() {
         }
 
         _link() {
-
-
-            this.$ele.update('x', '100px')
+            const THAT = this
+            for (const key in this.$option) {
+                const element = this.$option[key]
+                if(element.length == 0) return
+                switch (key) {
+                    case 'input':
+                        for (const item of element) {
+                            $(item).on('change', function () {
+                                THAT.$ele._proxyObj[THAT.$key] = parseInt($(this).val())
+                            })
+                        }
+                        break;
+                }
+            }
         }
+
     }
 
     class Element {
@@ -134,6 +147,9 @@ function main() {
             this.dImg = this.dDiv.find('img')
             this.dCheckEle = $('.trackBox').find(`div[data-i=${this.$id}]`)
             this.dForm = $('#ediBox').children().eq(this.$type - 1)
+            this.dZoom = this.dForm.find('.zoom')
+
+            this.dScale = this.dImg[0].naturalWidth / this.dImg[0].naturalHeight //宽高比
 
             this._proxyObj
             this._observe = {
@@ -143,7 +159,8 @@ function main() {
                 x: parseInt(this.dDiv.css('left')),
                 y: parseInt(this.dDiv.css('top')),
                 start: '00:00:00',
-                end: '00:00:00'
+                end: '00:00:00',
+                scale: Math.floor(this.dImg.width() / this.dImg[0].naturalWidth),
             }
 
             this.mObs = new Map()
@@ -151,6 +168,7 @@ function main() {
             this._proxy()
             this._link()
             this._observer()
+            this._timeBlur()
         }
 
         _observer() {
@@ -158,16 +176,16 @@ function main() {
             let proxyObj = THAT._proxyObj
 
             Tool.observer(this.dImg[0], mutation => {
-                let cWidth = parseFloat(mutation.target.style.width)
-                let cHeight = parseFloat(mutation.target.style.height)
+                let cWidth = parseInt(mutation.target.style.width)
+                let cHeight = parseInt(mutation.target.style.height)
 
                 proxyObj.width = cWidth
                 proxyObj.height = cHeight
             }, ['style'])
 
             Tool.observer(this.dDiv[0], mutation => {
-                let cX = parseFloat(mutation.target.style.left)
-                let cY = parseFloat(mutation.target.style.top)
+                let cX = parseInt(mutation.target.style.left)
+                let cY = parseInt(mutation.target.style.top)
 
                 proxyObj.x = cX
                 proxyObj.y = cY
@@ -177,22 +195,30 @@ function main() {
                 proxyObj.start = Tool.calcTime(THAT.dCheckEle).start
                 proxyObj.end = Tool.calcTime(THAT.dCheckEle).end
             }, ['style'])
+
+            Tool.observer(this.dZoom[0], mutation => {
+                console.log('asdf')
+            })
         }
 
         _proxy() {
             const THAT = this
+            const scale = this.dScale
             this._proxyObj = new Proxy(this._observe, {
                 set: function (target, key, value, receiver) {
-
                     switch (key) {
                         case 'data':
                             target[key] = JSON.stringify(value)
                             break;
                         case 'width':
-                            THAT.mObs.get('width').update(value)
+                            value = parseInt(value)
+                            target['height'] = Math.round(value / scale)
+                            THAT.mObs.get('width').update(Math.round(value))
                             break;
                         case 'height':
-                            THAT.mObs.get('height').update(Math.floor(value))
+                            value = parseInt(value)
+                            target['width'] = Math.round(value * scale)
+                            THAT.mObs.get('height').update(Math.round(value))
                             break;
                         case 'x':
                             THAT.mObs.get('x').update(value)
@@ -200,56 +226,75 @@ function main() {
                         case 'y':
                             THAT.mObs.get('y').update(value)
                             break;
+                        case 'scale':
+                            
+                            break;
                         case 'start':
                             break;
                         case 'end':
                             break;
                     }
 
+
                     return Reflect.set(target, key, value, receiver)
                 }
             })
         }
 
-
         _link() {
             const THAT = this
+            const form = THAT.dForm
+            const div = THAT.dDiv
+            const img = THAT.dImg
+            const scale = this.dScale
 
-            const xObs = new Observer(function (newD) {
-                THAT.dForm.find('input[name="location_x"]').val(newD)
-                THAT.dDiv.css('left', newD)
-            }, {
-                key: 'x',
-                dom: [THAT.dForm.find('input[name="location_x"]')]
+            const xObs = new Observer('x', {
+                input: [form.find('input[name="location_x"]')]
+            }, function (newD) {
+                form.find('input[name="location_x"]').val(newD)
+                div.css('left', newD)
             }, THAT)
             this.mObs.set('x', xObs)
 
-            const yObs = new Observer(function (newD) {
-                THAT.dForm.find('input[name="location_y"]').val(newD)
-                THAT.dDiv.css('top', newD)
-            }, {
-                key: 'y',
-                dom: THAT.dDiv
+            const yObs = new Observer('y', {
+                input: [form.find('input[name="location_y"]')]
+            }, function (newD) {
+                form.find('input[name="location_y"]').val(newD)
+                div.css('top', newD)
             }, THAT)
             this.mObs.set('y', yObs)
 
-            const wObs = new Observer(function (newD) {
-                THAT.dForm.find('input[name="width"]').val(newD)
-                THAT.dImg.css('width', newD)
-            }, {
-                key: 'width',
-                dom: THAT.dImg
+            const wObs = new Observer('width', {
+                input: [form.find('input[name="width"]')]
+            }, function (newD) {
+                newD = parseInt(newD)
+                let nHeight = Math.round(newD / scale)
+
+                form.find('input[name="width"]').val(newD)
+                form.find('input[name="height"]').val(nHeight)
+                img.css('width', newD)
+                img.css('height', nHeight)
             }, THAT)
             this.mObs.set('width', wObs)
 
-            const hObs = new Observer(function (newD) {
-                THAT.dForm.find('input[name="height"]').val(newD)
-                THAT.dImg.css('height', newD)
-            }, {
-                key: 'height',
-                dom: THAT.dImg
+            const hObs = new Observer('height', {
+                input: [form.find('input[name="height"]')]
+            }, function (newD) {
+                newD = parseInt(newD)
+                let nWidth = Math.round(newD * scale)
+
+                form.find('input[name="height"]').val(newD)
+                form.find('input[name="width"]').val(nWidth)
+                img.css('height', newD)
+                img.css('width', nWidth)
             }, THAT)
             this.mObs.set('height', hObs)
+
+            const sObs = new Observer('start', {
+                input: []
+            }, function (newD) {
+                form.find('input[name="start"]').val()
+            },THAT)
 
         }
 
@@ -257,35 +302,61 @@ function main() {
             this._observe[key] = val
         }
 
-        // wChange() {
-        //     let nwidth = $('.checkCanvas .canvasChild').width()
-        //     let nHeight = $('.checkCanvas .canvasChild').height()
-        //     $('.activeEdi')
-        //         .find('input[name="width"]')
-        //         .val(nwidth)
-        //     $('.activeEdi')
-        //         .find('input[name="height"]')
-        //         .val(nHeight)
+        _timeBlur() {
+            $(
+                '#ediBox input[name="startTime"], #ediBox input[name="endTime"]'
+            ).on('change', function (e) {
+                //时间格式验证
+                let str = $(this)
+                    .val()
+                    .trim()
 
-        //     this.dImg.css('width', nwidth)
-        //     this.dImg.css('width', nHeight)
-        //     console.log('width')
-        // }
+                let reg = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/
+                if (!reg.test(str)) {
+                    let html = `
+                        <div class="alert alert-warning alert-dismissible fade in" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
+                            请输入正确的格式
+                            如 00:00:00
+                        </div>
+                        `
 
-        // hChange() {
-        //     // let nwidth = $('.checkCanvas .canvasChild').width()
-        //     // let nHeight = $('.checkCanvas .canvasChild').height()
-        //     // $('.activeEdi')
-        //     //     .find('input[name="width"]')
-        //     //     .val(nwidth)
-        //     // $('.activeEdi')
-        //     //     .find('input[name="height"]')
-        //     //     .val(nHeight)
+                    $(this).after(html)
 
-        //     // this.dImg.css('width', nwidth)
-        //     // this.dImg.css('width', nHeight)
-        //     console.log('height')
-        // }
+                    setTimeout(() => {
+                        $('.alert').alert('close')
+                    }, 3000)
+
+                    $(this).val('')
+                } else {
+                    let thisV = $(this).val()
+                    let indexF = thisV.indexOf(':')
+
+                    let h = Number(thisV.slice(0, indexF))
+                    let m = Number(thisV.slice(indexF + 1, indexF + 3))
+                    let s = Number(thisV.slice(indexF + 4, indexF + 6))
+
+                    let timeS = h * 60 + m * 60 + s
+
+                    let timeA = $('#nowTime').attr('data-t')
+                    if ($(this).attr('name') == 'startTime') {
+                        let timeSe = timeS / (timeA * 60)
+                        $('.checkEle').css('left', `${timeSe * 100}%`)
+                        $('.checkEle').attr('data-begin', thisV)
+                    } else {
+                        let timeSe = timeS / (timeA * 60)
+                        $('.checkEle').css(
+                            'width',
+                            `${timeSe * parseFloat($('.trackContent').width()) -
+                                parseFloat($('.checkEle').css('left'))}px`
+                        )
+                        $('.checkEle').attr('data-end', thisV)
+                    }
+                }
+            })
+        }
+
+
 
     }
 
@@ -736,6 +807,7 @@ function main() {
                         return
                     }
 
+                    //TODO 缩放关联缩放条
                     if (lookx) {
                         //等比缩放
                         oparent.style.width = iw + 'px'
@@ -747,7 +819,7 @@ function main() {
 
                         let form = $('.activeEdi form')
 
-                        let transN = (iw / nWidth).toFixed(2) * 100
+                        let transN = Math.floor((iw / nWidth).toFixed(2) * 100)
                         // let transN = (iw / that.imgWidth).toFixed(2) * 100
 
                         form.find('input[name="zoomInput"]').val(
@@ -3582,57 +3654,7 @@ function main() {
                 }
             })
 
-            $(
-                '#ediBox input[name="startTime"], #ediBox input[name="endTime"]'
-            ).on('blur', function (e) {
-                //时间格式验证
-                let str = $(this)
-                    .val()
-                    .trim()
 
-                let reg = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/
-                if (!reg.test(str)) {
-                    let html = `
-                        <div class="alert alert-warning alert-dismissible fade in" role="alert">
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
-                            请输入正确的格式
-                            如 00:00:00
-                        </div>
-                        `
-
-                    $(this).after(html)
-
-                    setTimeout(() => {
-                        $('.alert').alert('close')
-                    }, 3000)
-
-                    $(this).val('')
-                } else {
-                    let thisV = $(this).val()
-                    let indexF = thisV.indexOf(':')
-
-                    let h = Number(thisV.slice(0, indexF))
-                    let m = Number(thisV.slice(indexF + 1, indexF + 3))
-                    let s = Number(thisV.slice(indexF + 4, indexF + 6))
-
-                    let timeS = h * 60 + m * 60 + s
-
-                    let timeA = $('#nowTime').attr('data-t')
-                    if ($(this).attr('name') == 'startTime') {
-                        let timeSe = timeS / (timeA * 60)
-                        $('.checkEle').css('left', `${timeSe * 100}%`)
-                        $('.checkEle').attr('data-begin', thisV)
-                    } else {
-                        let timeSe = timeS / (timeA * 60)
-                        $('.checkEle').css(
-                            'width',
-                            `${timeSe * parseFloat($('.trackContent').width()) -
-                                parseFloat($('.checkEle').css('left'))}px`
-                        )
-                        $('.checkEle').attr('data-end', thisV)
-                    }
-                }
-            })
         }
 
         //设置canvas缩放

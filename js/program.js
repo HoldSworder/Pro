@@ -1,4 +1,6 @@
 function main() {
+    const $option = JSON.parse(window.localStorage.getProgram)
+    console.log($option)
 
     class Tool {
         static observer(el, func, filter) {
@@ -122,12 +124,17 @@ function main() {
             const THAT = this
             for (const key in this.$option) {
                 const element = this.$option[key]
-                if(element.length == 0) return
+                if (element.length == 0) return
                 switch (key) {
                     case 'input':
                         for (const item of element) {
                             $(item).on('change', function () {
-                                THAT.$ele._proxyObj[THAT.$key] = parseInt($(this).val())
+                                if (THAT.$option.func) THAT.$option.func.call(this)
+                                if ($(this).attr('type') == 'number') {
+                                    THAT.$ele._proxyObj[THAT.$key] = parseInt($(this).val())
+                                } else {
+                                    THAT.$ele._proxyObj[THAT.$key] = $(this).val()
+                                }
                             })
                         }
                         break;
@@ -151,6 +158,10 @@ function main() {
 
             this.dScale = this.dImg[0].naturalWidth / this.dImg[0].naturalHeight //宽高比
 
+            this.constrain = [1, 2] //等比例缩放类型
+            this.width = this.dImg.width()
+            this.height = this.dImg.height()
+
             this._proxyObj
             this._observe = {
                 data: this.$data,
@@ -166,22 +177,76 @@ function main() {
             this.mObs = new Map()
 
             this._proxy()
-            this._link()
             this._observer()
-            this._timeBlur()
+            // this._timeBlur()
         }
 
         _observer() {
+            this._zoomObserver()
+            this._divObserver()
+            this._imgObserver()
+            this._eleObserver()
+        }
+
+        _zoomObserver() {
             const THAT = this
-            let proxyObj = THAT._proxyObj
+            let el = this.dZoom.find('.ui-slider-handle')
 
-            Tool.observer(this.dImg[0], mutation => {
-                let cWidth = parseInt(mutation.target.style.width)
-                let cHeight = parseInt(mutation.target.style.height)
+            const scaleObs = new Observer('scale', {
+                input: [THAT.dForm.find('input[name="zoomInput"]')]
+            }, function (newD) {
+                newD = parseInt(newD)
 
-                proxyObj.width = cWidth
-                proxyObj.height = cHeight
-            }, ['style'])
+                $(el).parent()
+                    .next()
+                    .find('input[name="zoomInput"]')
+                    .val(newD)
+
+                let slider = $(el)
+                    .parent()
+                    .prev()
+                slider
+                    .find('.ui-slider-tip')
+                    .text(parseInt(newD))
+                slider
+                    .find('.ui-slider-handle')
+                    .css('left', `${(newD / 500) * 100}%`)
+
+                THAT._proxyObj.width = THAT.dImg[0].naturalWidth * newD / 100
+                THAT._proxyObj.height = THAT.dImg[0].naturalHeight * newD / 100
+
+            }, THAT)
+            this.mObs.set('scale', scaleObs)
+
+
+
+
+            for (const item of el) {
+                el = item
+
+                function obs(mutation) {
+                    el = mutation.target
+                    if (THAT.constrain.indexOf(THAT.dCheckEle.attr('data-t')) != -1) {
+                        return
+                    }
+
+                    let textV = $(el)
+                        .find('.ui-slider-tip')
+                        .text()
+                    THAT._proxyObj.scale = textV
+
+                }
+
+
+                Tool.observer(el, obs, ['style'])
+            }
+        }
+
+        _divObserver() {
+            const THAT = this,
+                proxyObj = THAT._proxyObj,
+                div = THAT.dDiv,
+                form = THAT.dForm
 
             Tool.observer(this.dDiv[0], mutation => {
                 let cX = parseInt(mutation.target.style.left)
@@ -190,63 +255,6 @@ function main() {
                 proxyObj.x = cX
                 proxyObj.y = cY
             }, ['style'])
-
-            Tool.observer(this.dCheckEle[0], mutation => {
-                proxyObj.start = Tool.calcTime(THAT.dCheckEle).start
-                proxyObj.end = Tool.calcTime(THAT.dCheckEle).end
-            }, ['style'])
-
-            Tool.observer(this.dZoom[0], mutation => {
-                console.log('asdf')
-            })
-        }
-
-        _proxy() {
-            const THAT = this
-            const scale = this.dScale
-            this._proxyObj = new Proxy(this._observe, {
-                set: function (target, key, value, receiver) {
-                    switch (key) {
-                        case 'data':
-                            target[key] = JSON.stringify(value)
-                            break;
-                        case 'width':
-                            value = parseInt(value)
-                            target['height'] = Math.round(value / scale)
-                            THAT.mObs.get('width').update(Math.round(value))
-                            break;
-                        case 'height':
-                            value = parseInt(value)
-                            target['width'] = Math.round(value * scale)
-                            THAT.mObs.get('height').update(Math.round(value))
-                            break;
-                        case 'x':
-                            THAT.mObs.get('x').update(value)
-                            break;
-                        case 'y':
-                            THAT.mObs.get('y').update(value)
-                            break;
-                        case 'scale':
-                            
-                            break;
-                        case 'start':
-                            break;
-                        case 'end':
-                            break;
-                    }
-
-
-                    return Reflect.set(target, key, value, receiver)
-                }
-            })
-        }
-
-        _link() {
-            const THAT = this
-            const form = THAT.dForm
-            const div = THAT.dDiv
-            const img = THAT.dImg
-            const scale = this.dScale
 
             const xObs = new Observer('x', {
                 input: [form.find('input[name="location_x"]')]
@@ -263,6 +271,22 @@ function main() {
                 div.css('top', newD)
             }, THAT)
             this.mObs.set('y', yObs)
+        }
+
+        _imgObserver() {
+            const THAT = this,
+                proxyObj = THAT._proxyObj,
+                img = THAT.dImg,
+                form = THAT.dForm,
+                scale = THAT.dScale
+
+            Tool.observer(this.dImg[0], mutation => {
+                let cWidth = parseInt(mutation.target.style.width)
+                let cHeight = parseInt(mutation.target.style.height)
+
+                proxyObj.width = cWidth
+                proxyObj.height = cHeight
+            }, ['style'])
 
             const wObs = new Observer('width', {
                 input: [form.find('input[name="width"]')]
@@ -289,13 +313,168 @@ function main() {
                 img.css('width', nWidth)
             }, THAT)
             this.mObs.set('height', hObs)
+        }
+
+        _eleObserver() {
+            const THAT = this,
+                proxyObj = THAT._proxyObj,
+                form = THAT.dForm,
+                checkEle = THAT.dCheckEle
+
+            Tool.observer(this.dCheckEle[0], mutation => {
+                proxyObj.start = Tool.calcTime(THAT.dCheckEle).start
+                proxyObj.end = Tool.calcTime(THAT.dCheckEle).end
+            }, ['style'])
 
             const sObs = new Observer('start', {
-                input: []
-            }, function (newD) {
-                form.find('input[name="start"]').val()
-            },THAT)
+                    input: [THAT.dForm.find('input[name="startTime"]')],
+                    func() {
+                        beforeInput.call(this)
+                    }
+                },
+                function (newD) {
+                    form.find('input[name="startTime"]').val(newD)
+                    let timeS = getSeconds(newD)
+                    console.log(newD)
+                    console.log(THAT._proxyObj)
+                    // let timeA = $('#nowTime').attr('data-t')
+                    // let timeSe = timeS / (timeA * 60)
+                    // checkEle.css('left', `${timeSe * 100}%`)
+                    checkEle.attr('data-begin', newD)
+                }, THAT)
+            this.mObs.set('start', sObs)
 
+            const eObs = new Observer('end', {
+                input: [THAT.dForm.find('input[name="endTime"]')],
+                func() {
+                    beforeInput.call(this)
+                }
+            }, function (newD) {
+                form.find('input[name="endTime"]').val(newD)
+                let timeA = $('#nowTime').attr('data-t')
+                // let timeS = getSeconds(newD)
+                // let timeSe = timeS / (timeA * 60)
+                //     checkEle.css(
+                //         'width',
+                //         `${timeSe * parseFloat($('.trackContent').width()) -
+                //                 parseFloat(checkEle.css('left'))}px`
+                //     )
+                checkEle.attr('data-end', newD)
+            }, THAT)
+            this.mObs.set('end', eObs)
+
+            function beforeInput() {
+
+                let str = $(this)
+                    .val()
+                    .trim()
+
+                let reg = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/
+                if (!reg.test(str)) {
+                    let html = `
+                        <div class="alert alert-warning alert-dismissible fade in" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
+                            请输入正确的格式
+                            如 00:00:00
+                        </div>
+                        `
+
+                    $(this).after(html)
+
+                    setTimeout(() => {
+                        $('.alert').alert('close')
+                    }, 3000)
+
+                    $(this).val('')
+                }
+            }
+
+            function getSeconds(data) {
+                let indexA = data.split(':')
+
+                let h = Number(indexA[0])
+                let m = Number(indexA[1])
+                let s = Number(indexA[2])
+
+                let timeS = h * 60 + m * 60 + s
+                return timeS
+            }
+
+            function calcWidth(newD) {
+
+            }
+        }
+
+        _proxy() {
+            const THAT = this
+            const scale = this.dScale
+            this._proxyObj = new Proxy(this._observe, {
+                set: function (target, key, value, receiver) {
+
+                    switch (key) {
+                        case 'data':
+                            target[key] = JSON.stringify(value)
+                            break;
+                        case 'width':
+                            value = THAT._test(target, key, value)
+                            target['height'] = Math.round(value / scale)
+                            THAT.mObs.get('width').update(Math.round(value))
+                            break;
+                        case 'height':
+                            value = THAT._test(target, key, value)
+                            target['width'] = Math.round(value * scale)
+                            THAT.mObs.get('height').update(Math.round(value))
+                            break;
+                        case 'x':
+                            value = THAT._test(target, key, value)
+                            THAT.mObs.get('x').update(value)
+                            break;
+                        case 'y':
+                            value = THAT._test(target, key, value)
+                            THAT.mObs.get('y').update(value)
+                            break;
+                        case 'scale':
+                            value = THAT._test(target, key, value)
+                            THAT.mObs.get('scale').update(value)
+                            break;
+                        case 'start':
+                            THAT.mObs.get('start').update(value)
+                            break;
+                        case 'end':
+                            THAT.mObs.get('end').update(value)
+                            break;
+                    }
+
+
+                    return Reflect.set(target, key, value, receiver)
+                }
+            })
+        }
+
+        _test(target, key, value) { //测试数据 设置最值
+            value = parseInt(value)
+            if (value < 0) value = 0
+
+            switch (key) {
+                case 'width':
+                    if (value > $option.width) value = $option.width
+                    break
+                case 'height':
+                    if (value > $option.height) value = $option.height
+                    break
+                case 'x':
+                    break
+                case 'y':
+                    break
+                case 'scale':
+                    if (value < 1) {
+                        value = 1
+                    } else if (value > 500) {
+                        value = 500
+                    }
+                    break
+            }
+            return value
         }
 
         update(key, val) {
@@ -303,6 +482,8 @@ function main() {
         }
 
         _timeBlur() {
+
+
             $(
                 '#ediBox input[name="startTime"], #ediBox input[name="endTime"]'
             ).on('change', function (e) {
@@ -355,8 +536,6 @@ function main() {
                 }
             })
         }
-
-
 
     }
 
@@ -2095,6 +2274,8 @@ function main() {
 
             $('.checkInit').bootstrapSwitch()
 
+
+
             class RepertoryTool { //监听表格变化，设置相应画布元素变化
                 static videoEdiInit() {
                     $('#video-slider')
@@ -2339,6 +2520,7 @@ function main() {
             this.saveEdi()
             this.setPlayTime()
 
+            //滑块元素初始化
             $('.zoom')
                 .slider({
                     min: 1,
@@ -2349,23 +2531,24 @@ function main() {
                     rest: false
                 })
                 .slider('float')
+
+            let el = $('#ediBox').find('.ui-slider-handle')
+
+            el.parent()
+                .next()
+                .find('input[name="zoomInput"]')
+                .val(100)
+
+            el.css('left', `${(100 / 500) * 100}%`)
+            el.find('.ui-slider-tip').text(100)
+
             // this.ediInit()
         }
 
         //各种属性关联
         ediInit() {
             let that = this
-            //通用初始化
-            $('.zoom')
-                .slider({
-                    min: 1,
-                    max: 500,
-                    range: false
-                })
-                .slider('pips', {
-                    rest: false
-                })
-                .slider('float')
+                //通用初始化
 
                 //关联缩放
                 !(function () {

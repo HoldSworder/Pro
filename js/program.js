@@ -178,7 +178,7 @@ function main() {
 
             this._proxy()
             this._observer()
-            // this._timeBlur()
+            this._timeBlur()
         }
 
         _observer() {
@@ -217,8 +217,6 @@ function main() {
 
             }, THAT)
             this.mObs.set('scale', scaleObs)
-
-
 
 
             for (const item of el) {
@@ -329,17 +327,12 @@ function main() {
             const sObs = new Observer('start', {
                     input: [THAT.dForm.find('input[name="startTime"]')],
                     func() {
-                        beforeInput.call(this)
+                        // beforeInput.call(this)
                     }
                 },
                 function (newD) {
                     form.find('input[name="startTime"]').val(newD)
-                    let timeS = getSeconds(newD)
-                    console.log(newD)
-                    console.log(THAT._proxyObj)
-                    // let timeA = $('#nowTime').attr('data-t')
-                    // let timeSe = timeS / (timeA * 60)
-                    // checkEle.css('left', `${timeSe * 100}%`)
+                    console.log('start')
                     checkEle.attr('data-begin', newD)
                 }, THAT)
             this.mObs.set('start', sObs)
@@ -347,18 +340,11 @@ function main() {
             const eObs = new Observer('end', {
                 input: [THAT.dForm.find('input[name="endTime"]')],
                 func() {
-                    beforeInput.call(this)
+                    // beforeInput.call(this)
                 }
             }, function (newD) {
+                console.log('end')
                 form.find('input[name="endTime"]').val(newD)
-                let timeA = $('#nowTime').attr('data-t')
-                // let timeS = getSeconds(newD)
-                // let timeSe = timeS / (timeA * 60)
-                //     checkEle.css(
-                //         'width',
-                //         `${timeSe * parseFloat($('.trackContent').width()) -
-                //                 parseFloat(checkEle.css('left'))}px`
-                //     )
                 checkEle.attr('data-end', newD)
             }, THAT)
             this.mObs.set('end', eObs)
@@ -400,8 +386,14 @@ function main() {
                 return timeS
             }
 
-            function calcWidth(newD) {
+            function calcWidth() {
+                const sStart = getSeconds(THAT._proxyObj.start)
+                const eStart = getSeconds(THAT._proxyObj.end)
 
+                const timeA = $('#nowTime').attr('data-t') * 60
+
+                checkEle.css('left', `${sStart / timeA * 100}%`)
+                // checkEle.css('width', `${(eStart / timeA) * parseInt($('.trackContent').eq(0).width()) - parseInt(checkEle.css('left'))}px`)
             }
         }
 
@@ -452,6 +444,8 @@ function main() {
         }
 
         _test(target, key, value) { //测试数据 设置最值
+            const form = this.dForm,
+                img = this.dImg
             value = parseInt(value)
             if (value < 0) value = 0
 
@@ -472,7 +466,23 @@ function main() {
                     } else if (value > 500) {
                         value = 500
                     }
-                    break
+
+                    const nW = img[0].naturalWidth
+                    const nH = img[0].naturalHeight
+                    const sW = nW * value / 100
+                    const sH = nH * value / 100
+                    if (sW > $option.width || sH > $option.height) {
+                        if(($option.width - img.width()) < ($option.height - img.height())) {
+                            value = Math.floor(($option.width / nW) * 100)
+                        }else {
+                            value = Math.floor(($option.height / nH) * 100)
+                        }
+                        // console.log(value)
+                        form.find('.ui-slider-handle').css('left', `${value / 500 * 100}%`)
+                        form.find('.ui-slider-tip').text(value)
+                    }
+
+                        break
             }
             return value
         }
@@ -756,6 +766,8 @@ function main() {
                     console.log('out')
                 }
             }($(`#div${index}`), this))
+
+
         }
 
         //拖动绘制属性
@@ -824,6 +836,7 @@ function main() {
                             thats.sliderEle(that, nameId)
 
                             const elementObj = new Element(that.attr('data-J'), nameId)
+                            elementObj.dImg.click()
                             thats.mapElement.set(nameId, elementObj)
 
 

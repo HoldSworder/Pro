@@ -1,6 +1,5 @@
 function main() {
     const $option = JSON.parse(window.localStorage.getProgram)
-    console.log($option)
 
     class Tool {
         static observer(el, func, filter) {
@@ -178,7 +177,7 @@ function main() {
 
             this._proxy()
             this._observer()
-            this._timeBlur()
+            // this._timeBlur()
         }
 
         _observer() {
@@ -325,27 +324,28 @@ function main() {
             }, ['style'])
 
             const sObs = new Observer('start', {
-                    input: [THAT.dForm.find('input[name="startTime"]')],
-                    func() {
-                        // beforeInput.call(this)
-                    }
-                },
-                function (newD) {
-                    form.find('input[name="startTime"]').val(newD)
-                    console.log('start')
-                    checkEle.attr('data-begin', newD)
-                }, THAT)
+                input: [THAT.dForm.find('input[name="startTime"]')],
+                func() {
+                    beforeInput.call(this)
+                }
+            }, function (newD) {
+                form.find('input[name="startTime"]').val(newD)
+                // console.log('start')
+                checkEle.attr('data-begin', newD)
+                calcWidth()
+            }, THAT)
             this.mObs.set('start', sObs)
 
             const eObs = new Observer('end', {
                 input: [THAT.dForm.find('input[name="endTime"]')],
                 func() {
-                    // beforeInput.call(this)
+                    beforeInput.call(this)
                 }
             }, function (newD) {
-                console.log('end')
+                // console.log('end')
                 form.find('input[name="endTime"]').val(newD)
                 checkEle.attr('data-end', newD)
+                calcWidth()
             }, THAT)
             this.mObs.set('end', eObs)
 
@@ -391,9 +391,11 @@ function main() {
                 const eStart = getSeconds(THAT._proxyObj.end)
 
                 const timeA = $('#nowTime').attr('data-t') * 60
+                const width = (eStart / timeA) * parseInt($('.trackContent').eq(0).width()) - parseInt(checkEle.css('left'))
+                // console.log(width)
 
                 checkEle.css('left', `${sStart / timeA * 100}%`)
-                // checkEle.css('width', `${(eStart / timeA) * parseInt($('.trackContent').eq(0).width()) - parseInt(checkEle.css('left'))}px`)
+                // checkEle.css('width', `${width}px`)
             }
         }
 
@@ -437,6 +439,7 @@ function main() {
                             break;
                     }
 
+                    THAT.update(key, value)
 
                     return Reflect.set(target, key, value, receiver)
                 }
@@ -472,23 +475,33 @@ function main() {
                     const sW = nW * value / 100
                     const sH = nH * value / 100
                     if (sW > $option.width || sH > $option.height) {
-                        if(($option.width - img.width()) < ($option.height - img.height())) {
+                        if (($option.width - img.width()) < ($option.height - img.height())) {
                             value = Math.floor(($option.width / nW) * 100)
-                        }else {
+                        } else {
                             value = Math.floor(($option.height / nH) * 100)
                         }
                         // console.log(value)
                         form.find('.ui-slider-handle').css('left', `${value / 500 * 100}%`)
                         form.find('.ui-slider-tip').text(value)
+
+                        $('.ui-slider-tip').hide()
                     }
 
-                        break
+                    break
             }
             return value
         }
 
         update(key, val) {
-            this._observe[key] = val
+            const checkEle = this.dCheckEle
+
+            let dataJ =
+                checkEle.attr('data-p') == undefined ? {} :
+                JSON.parse(checkEle.attr('data-p'))
+
+            dataJ[key] = val
+
+            checkEle.attr('data-p', JSON.stringify(dataJ))
         }
 
         _timeBlur() {
@@ -1408,7 +1421,7 @@ function main() {
             let html = `
                 <div class="track clearfix">
                     <div class="trackController col-sm-2">
-                        <span>轨道</span>
+                        <span>轨道${indexT - 1}</span>
                         <span class="glyphicon glyphicon glyphicon-align-justify" aria-hidden="true"></span>
                     </div>
                     <div id="track${indexT}" class="trackContent col-sm-10"></div>
@@ -1438,7 +1451,8 @@ function main() {
 
         //在轨道上移动元素
         moveEle() {
-            let that = this
+            const that = this,
+                THAT = this
             $('.trackBox').on('mousedown', '.silderBlock', function (e) {
                 e.preventDefault()
                 e.stopPropagation()
@@ -1451,28 +1465,84 @@ function main() {
 
                 let downX = e.clientX //鼠标落下X
                 let eItemX = downX - left //鼠标距离元素左边界距离
+                const oldEle = $(this).parent()
 
-                $(this).css({
+                const clone = $(this).clone()
+                clone.appendTo($('.trackBox'))
+                clone.css({
                     position: 'fixed',
                     top: `${top}px`,
                     left: `${left}px`,
                     width: `${divW}px`,
-                    'z-index': 9999
+                    'z-index': 9999,
+                    opacity: 0.5
                 })
+                $(this).click()
+                // $(this).css({
+                //     position: 'fixed',
+                //     top: `${top}px`,
+                //     left: `${left}px`,
+                //     width: `${divW}px`,
+                //     'z-index': 9999
+                // })
 
                 let moveE = function (e) {
                     let nowX = e.clientX
                     let nowY = e.clientY
 
-                    $(thats).css({
+                    // $(thats).css({
+                    clone.css({
                         top: `${nowY - divH / 2}px`,
                         left: `${nowX - eItemX}px`
                     })
+
+                    const nowEle = calcEle(e)
+                    if (nowEle) {
+                        $('.now-ele').removeClass('now-ele')
+                        nowEle.addClass('now-ele')
+                    }
                 }
 
                 let upE = function (e) {
                     e.stopPropagation()
                     e.preventDefault()
+
+                    const nowEle = calcEle(e),
+                        eX = e.clientX, //鼠标点击距离左边界距离
+                        trackX = $(thats).parent().offset().left, //轨道距离左边界距离
+                        thisX = parseFloat($(thats).offset().left) //元素距离左边界距离
+
+                    if (nowEle.attr('id') == oldEle.attr('id')) {   //轨道内移动
+                        let flag = false
+
+                        let trackEle = $(thats).parent().children()
+
+                        for (const it of trackEle) {
+                            //判断是否重合轨道内其他元素
+                            if (that.checkHoverDiv($(clone), $(it))) {
+                                $(thats).css({
+                                    position: 'absolute',
+                                    top: `0px`,
+                                    left: `${$(thats).attr('data-l')}px`,
+                                    width: `${divW}px`,
+                                    'z-index': 0
+                                })
+
+                                flag = true
+                            }
+                        }
+
+                        if (!flag) {
+                            $(thats).attr('data-l', eX - trackX - eItemX)
+                            $(thats).css({
+                                position: 'absolute',
+                                top: `0px`,
+                                left: `${$(thats).attr('data-l')}px`,
+                                width: `${divW}px`,
+                                'z-index': 0
+                            })
+                        }
+                    }
 
                     for (const item of $('.track')) {
                         //循环所有轨道 找到元素将移动的轨道
@@ -1494,40 +1564,12 @@ function main() {
                             .parent()
                             .parent()
 
-                        let eX = e.clientX //鼠标点击距离左边界距离
-                        let thisX = parseFloat($(thats).offset().left) //元素距离左边界距离
-                        let trackX = $(thats)
-                            .parent()
-                            .offset().left //轨道距离左边界距离
 
                         if (
                             that.checkHover(e, $(item).find('.trackContent')) &&
                             copyId != itemId
                         ) {
                             //切换轨道
-
-                            //判断轨道类型
-                            // if (
-                            //     $(thats).attr('data-t') !=
-                            //     $(item)
-                            //         .find('.trackController')
-                            //         .attr('data-t')
-                            // ) {
-                            //     //判断类型元素类型不等于轨道类型报错
-                            //     alert('元素类型与轨道不相符')
-                            //     $(thats).css({
-                            //         position: 'absolute',
-                            //         top: `0px`,
-                            //         left: `${$(thats).attr('data-l')}px`,
-                            //         width: `${divW}px`,
-                            //         'z-index': 0
-                            //     })
-
-                            //     $(document).off('mousemove', moveE)
-                            //     $(document).off('mouseup', upE)
-                            //     return
-                            // }
-
                             if (itemChildren.length != 0) {
                                 //判断轨道内是否有元素
                                 let leftAll = 0
@@ -1608,87 +1650,101 @@ function main() {
                                 }
                             }
                             break
-                        } else if (
-                            that.checkHover(e, $(item).find('.trackContent')) &&
-                            copyId == itemId &&
-                            eX - trackX > eItemX &&
-                            trackW - (eX - trackX) > $(thats).width() - eItemX
-                        ) {
-                            //轨道内移动
-
-                            let flag = false
-
-                            let trackEle = $(thats)
-                                .parent()
-                                .children()
-                            // debugger
-                            for (const it of trackEle) {
-                                //判断是否重合轨道内其他元素
-                                // debugger
-                                if (that.checkHoverDiv($(thats), $(it))) {
-                                    $(thats).css({
-                                        position: 'absolute',
-                                        top: `0px`,
-                                        left: `${$(thats).attr('data-l')}px`,
-                                        width: `${divW}px`,
-                                        'z-index': 0
-                                    })
-
-                                    flag = true
-                                }
-                            }
-
-                            //  判断是否为本轨道循环
-                            let flagI = false
-                            for (let el = 0; el < $('.track').length; el++) {
-                                const e = $('.track')[el]
-                                if (e == item) {
-                                    flagI = true
-                                }
-                            }
-
-                            if (!flag && flagI) {
-                                $(thats).attr('data-l', eX - trackX - eItemX)
-                                $(thats).css({
-                                    position: 'absolute',
-                                    top: `0px`,
-                                    left: `${$(thats).attr('data-l')}px`,
-                                    width: `${divW}px`,
-                                    'z-index': 0
-                                })
-                            }
-
-                            break
-                        } else {
-                            //移出轨道还原位置
-                            //  判断是否为本轨道循环
-                            let flagI = false
-                            for (let el = 0; el < $('.track').length; el++) {
-                                const e = $('.track')[el]
-                                if (item == e && el == $('.track').length - 1) {
-                                    flagI = true
-                                }
-                            }
-
-                            if (flagI) {
-                                $(thats).css({
-                                    position: 'absolute',
-                                    top: `0px`,
-                                    left: `${$(thats).attr('data-l')}px`,
-                                    width: `${divW}px`,
-                                    'z-index': 0
-                                })
-                            }
                         }
+                        // else if (
+                        //     that.checkHover(e, $(item).find('.trackContent')) &&
+                        //     copyId == itemId &&
+                        //     eX - trackX > eItemX &&
+                        //     trackW - (eX - trackX) > $(thats).width() - eItemX
+                        // ) {
+                        //     //轨道内移动
+
+                        //     let flag = false
+
+                        //     let trackEle = $(thats)
+                        //         .parent()
+                        //         .children()
+                        //     // debugger
+                        //     for (const it of trackEle) {
+                        //         //判断是否重合轨道内其他元素
+                        //         // debugger
+                        //         if (that.checkHoverDiv($(thats), $(it))) {
+                        //             $(thats).css({
+                        //                 position: 'absolute',
+                        //                 top: `0px`,
+                        //                 left: `${$(thats).attr('data-l')}px`,
+                        //                 width: `${divW}px`,
+                        //                 'z-index': 0
+                        //             })
+
+                        //             flag = true
+                        //         }
+                        //     }
+
+                        //     //  判断是否为本轨道循环
+                        //     let flagI = false
+                        //     for (let el = 0; el < $('.track').length; el++) {
+                        //         const e = $('.track')[el]
+                        //         if (e == item) {
+                        //             flagI = true
+                        //         }
+                        //     }
+
+                        //     if (!flag && flagI) {
+                        //         $(thats).attr('data-l', eX - trackX - eItemX)
+                        //         $(thats).css({
+                        //             position: 'absolute',
+                        //             top: `0px`,
+                        //             left: `${$(thats).attr('data-l')}px`,
+                        //             width: `${divW}px`,
+                        //             'z-index': 0
+                        //         })
+                        //     }
+
+                        //     break
+                        // }
+                        // else {
+                        //     //移出轨道还原位置
+                        //     //  判断是否为本轨道循环
+                        //     let flagI = false
+                        //     for (let el = 0; el < $('.track').length; el++) {
+                        //         const e = $('.track')[el]
+                        //         if (item == e && el == $('.track').length - 1) {
+                        //             flagI = true
+                        //         }
+                        //     }
+
+                        //     if (flagI) {
+                        //         $(thats).css({
+                        //             position: 'absolute',
+                        //             top: `0px`,
+                        //             left: `${$(thats).attr('data-l')}px`,
+                        //             width: `${divW}px`,
+                        //             'z-index': 0
+                        //         })
+                        //     }
+                        // }
                     }
 
                     $(document).off('mousemove', moveE)
                     $(document).off('mouseup', upE)
+                    clone.remove()
+                    $('.now-ele').removeClass('now-ele')
                 }
 
                 $(document).on('mouseup', upE)
                 $(document).on('mousemove', moveE)
             })
+
+            function calcEle(e) {
+                for (const item of $('.trackContent')) {
+                    if (THAT.checkHover(e, $(item))) {
+                        return $(item)
+                    }
+                }
+
+                return false
+            }
         }
 
         //移动轨道
@@ -4110,7 +4166,6 @@ function main() {
                 }
             })
         }
-
 
     }
 

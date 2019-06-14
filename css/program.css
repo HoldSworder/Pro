@@ -340,3 +340,8 @@ body {
     position: relative;
     top: -5px;
 }
+
+.now-ele {
+    background: #B0BED9;
+    z-index: 9;
+}

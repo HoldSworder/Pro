@@ -101,6 +101,34 @@ class Tool {
             return $('.trackBox').find(`div[data-i=${id}]`)
         }
     }
+
+    static debounce(func, wait = 50) {
+        let timeout
+        return function (...args) {
+            const ctx = this
+
+            if (timeout) clearTimeout(timeout)
+
+            let callNow = !timeout
+            timeout = setTimeout(() => {
+                timeout = null
+            }, wait)
+
+            if (callNow) func.apply(ctx, args)
+        }
+    }
+
+    static throttle(func, wait = 50) {
+        let previous = 0
+        return function (...args) {
+            const ctx = this
+            let now = Date.now()
+            if (now - previous > wait) {
+                func.apply(ctx, args)
+                previous = now
+            }
+        }
+    }
 }
 
 class Observer {
@@ -115,8 +143,8 @@ class Observer {
 
     update(data) {
         const THAT = this
-        //TODO: 取消缩放关联
-        // THAT.$func.call(THAT, data)
+
+        THAT.$func.call(THAT, data)
     }
 
     _link() {
@@ -140,7 +168,6 @@ class Observer {
             }
         }
     }
-
 }
 
 class Element {
@@ -188,7 +215,11 @@ class Element {
     }
 
     _zoomObserver() {
-        const THAT = this
+        const THAT = this,
+            proxyObj = THAT._proxyObj,
+            img = THAT.dImg,
+            form = THAT.dForm
+
         let el = this.dZoom.find('.ui-slider-handle')
 
         const scaleObs = new Observer('scale', {
@@ -196,23 +227,18 @@ class Element {
         }, function (newD) {
             newD = parseInt(newD)
 
-            $(el).parent()
-                .next()
-                .find('input[name="zoomInput"]')
-                .val(newD)
+            THAT.dForm.find('input[name="zoomInput"]').val(newD)
 
-            let slider = $(el)
-                .parent()
-                .prev()
-            slider
-                .find('.ui-slider-tip')
-                .text(parseInt(newD))
-            slider
-                .find('.ui-slider-handle')
-                .css('left', `${(newD / 500) * 100}%`)
+            THAT.dZoom.find('.ui-slider-tip').text(parseInt(newD))
 
-            THAT._proxyObj.width = THAT.dImg[0].naturalWidth * newD / 100
-            THAT._proxyObj.height = THAT.dImg[0].naturalHeight * newD / 100
+            THAT.dZoom.find('.ui-slider-handle').css('left', `${(newD / 500) * 100}%`)
+
+            const nWidth = THAT.dImg[0].naturalWidth * newD / 100,
+                nHeight = THAT.dImg[0].naturalHeight * newD / 100
+
+                console.log(THAT.$id)
+            proxyObj.width = nWidth
+            proxyObj.height = nHeight
 
         }, THAT)
         this.mObs.set('scale', scaleObs)
@@ -233,8 +259,6 @@ class Element {
                 THAT._proxyObj.scale = textV
 
             }
-
-
             Tool.observer(el, obs, ['style'])
         }
     }
@@ -277,7 +301,7 @@ class Element {
             form = THAT.dForm,
             scale = THAT.dScale
 
-        Tool.observer(this.dImg[0], mutation => {
+        Tool.observer(THAT.dImg[0], mutation => {
             let cWidth = parseInt(mutation.target.style.width)
             let cHeight = parseInt(mutation.target.style.height)
 
@@ -293,6 +317,7 @@ class Element {
 
             form.find('input[name="width"]').val(newD)
             form.find('input[name="height"]').val(nHeight)
+
             img.css('width', newD)
             img.css('height', nHeight)
         }, THAT)
@@ -306,6 +331,7 @@ class Element {
 
             form.find('input[name="height"]').val(newD)
             form.find('input[name="width"]').val(nWidth)
+
             img.css('height', newD)
             img.css('width', nWidth)
         }, THAT)
@@ -559,7 +585,6 @@ class Element {
             }
         })
     }
-
 }
 
 class Canvas {
@@ -1031,12 +1056,10 @@ class Canvas {
                     let form = $('.activeEdi form')
 
                     let transN = Math.floor((iw / nWidth).toFixed(2) * 100)
-                    // let transN = (iw / that.imgWidth).toFixed(2) * 100
 
                     form.find('input[name="zoomInput"]').val(
                         transN > 500 ? 500 : transN
                     )
-                    // .change()
 
                     $('.activeEdi .zoom .ui-slider-tip').text(transN)
                     $('.activeEdi .zoom .ui-slider-handle').css(
@@ -1914,7 +1937,7 @@ class Canvas {
             let trackEle = $('#canvas').find(`div[data-i=${dataId}]`)
             trackEle.click()
 
-            that.setInput()
+            // that.setInput()
 
             $(this).on('mousedown', '.eleWidth', function (e) {
                 //轨道元素拉伸属性
@@ -4148,6 +4171,12 @@ class Canvas {
             window.sessionStorage['playParams'] = data
 
             window.open('../Pro/play/player.html')
+
+            // let map = that.mapElement
+            // let ele = Array.from(map.values())[0]
+            // let num = ele._proxyObj.width
+            // ele._proxyObj.width = 500
+            // console.log(ele._proxyObj.width)
         })
     }
 

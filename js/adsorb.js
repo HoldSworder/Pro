@@ -63,6 +63,8 @@ class Adsorb {
       top,
       bottom
     } = p
+
+    console.log(Array.from(THAT.lMap.entries()))
     
     for (const item of THAT.lMap.entries()) {
       const key = item[0]

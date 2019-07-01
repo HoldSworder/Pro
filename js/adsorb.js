@@ -2,8 +2,16 @@ class Adsorb {
   constructor(opt) {
     this.default = {
       container: document,
-      attr: '.absorb',
-      length: 100
+      attr: '.absorb', //添加class标记
+      length: 10, //吸附阈值
+      vertical: true, //开启垂直吸附
+      horizontal: true, //开启水平吸附
+      canvas: {
+        container: document,
+        zIndex: 1,
+        lineColor: 'black',
+        lineWidth: 1
+      }
     }
     this.option = {
       ...this.default,
@@ -15,33 +23,40 @@ class Adsorb {
     this.tMap = new Map() //top
     this.bMap = new Map() //bottom
     this.trans = $('#transformCanvas').val() * 0.1
+    this.canvas
+    this.ctx
 
     this.init()
   }
 
   init() {
-    this.bindEvent()
+    this._bindEvent()
+    if (this.option.canvas) {
+      this._initCanvas()
+    }
   }
 
-  bindEvent() {
+  _bindEvent() { // 绑定点击事件 绑定观察者
     const {
       attr,
       container
     } = this.option
     const THAT = this
 
-    THAT.setMap(container)
+    THAT._setMap(container)
 
-    $('#canvas').on('click', attr, function () {
+    $('#canvas').on('click', attr, function (e) {
       if (THAT.domMap.has(this)) return
 
-      THAT.event(this)
+      THAT._event(this)
+
+      THAT.canvas.addEventListener('mouseup', function () {
+        THAT.canvas.style.display = 'none'
+      })
     })
   }
 
-
-
-  event(item) {
+  _event(item) { //元素移动观察者
     const THAT = this
 
     this.domMap.set(item, item.getBoundingClientRect())
@@ -50,14 +65,15 @@ class Adsorb {
       const p = item.getBoundingClientRect()
 
       Tool.debounce(() => {
-        THAT.move(p, mutation.target)
+        THAT._move(p, mutation.target)
       }, 10)()
 
-      THAT.setMap(item)
+      THAT._setMap(item)
     })
   }
 
-  move(p, dom) {
+  _move(p, dom) { //元素移动判断吸附逻辑
+    this._clearRect()
     const THAT = this
     const {
       left,
@@ -66,97 +82,88 @@ class Adsorb {
       bottom
     } = p
 
-    // for (const item of THAT.lMap.entries()) {
-    //   const key = item[0]
-    //   const value = item[1]
-    //   if (key.getAttribute('data-i') === dom.getAttribute('data-i')) continue
+    const mapArr = []
+    this.ctx.beginPath()
 
-    //   if (THAT.checkNear(value, left)) {
-    //     $(dom).css('left', `${THAT.calcNum(key, 'left')}px`)
-    //   } else if (THAT.checkNear(value, right)) {
-    //     $(dom).css('left', `${THAT.calcNum(key, 'left') - $(dom).width()}px`)
-    //   }
-    // }
+    if (THAT.option.vertical) {
+      mapArr.push('lMap', 'rMap')
+    }
 
-    // for (const item of THAT.rMap.entries()) {
-    //   const key = item[0]
-    //   const value = item[1]
-    //   if (key.getAttribute('data-i') === dom.getAttribute('data-i')) continue
+    if (THAT.option.horizontal) {
+      mapArr.push('tMap', 'bMap')
+    }
 
-    //   if (THAT.checkNear(value, left)) {
-    //     $(dom).css('left', `${THAT.calcNum(key, 'left') + $(key).width()}px`)
-    //   } else if (THAT.checkNear(value, right)) {
-    //     $(dom).css('left', `${THAT.calcNum(key, 'left') + Math.abs($(dom).width() - $(key).width())}px`)
-    //   }
-    // }
-
-    // for (const item of THAT.tMap.entries()) {
-    //   const key = item[0]
-    //   const value = item[1]
-    //   if (key.getAttribute('data-i') === dom.getAttribute('data-i')) continue
-
-    //   if (THAT.checkNear(value, top)) {
-    //     $(dom).css('top', `${THAT.calcNum(key, 'top')}px`)
-    //   } else if (THAT.checkNear(value, bottom)) {
-    //     $(dom).css('top', `${THAT.calcNum(key, 'top') - $(dom).height()}px`)
-    //   }
-    // }
-
-    // for (const item of THAT.bMap.entries()) {
-    //   const key = item[0]
-    //   const value = item[1]
-    //   if (key.getAttribute('data-i') === dom.getAttribute('data-i')) continue
-
-    //   if (THAT.checkNear(value, top)) {
-    //     $(dom).css('top', `${THAT.calcNum(key, 'top') + $(key).height()}px`)
-    //   } else if (THAT.checkNear(value, bottom)) {
-    //     $(dom).css('top', `${THAT.calcNum(key, 'top') + Math.abs($(dom).height() - $(key).height())}px`)
-    //   }
-    // }
-
-    const mapArr = ['lMap', 'rMap', 'tMap', 'bMap']
     for (const i of mapArr) {
       for (const item of THAT[i].entries()) {
-        const key = item[0]
-        const value = item[1]
+        const key = item[0],
+          value = item[1],
+          scale = (document.querySelector('#transformCanvas').value * .1).toFixed(1)
 
         if (key.getAttribute('data-i') === dom.getAttribute('data-i')) continue
 
+        let val
         switch (i) {
           case 'lMap':
-            if (THAT.checkNear(value, left)) {
-              $(dom).css('left', `${THAT.calcNum(key, 'left')}px`)
-            } else if (THAT.checkNear(value, right)) {
-              $(dom).css('left', `${THAT.calcNum(key, 'left') - $(dom).width()}px`)
+            if (THAT._checkNear(value, left)) {
+              console.log('1')
+              val = THAT._calcNum(key, 'left')
+              $(dom).css('left', `${val}px`)
+              THAT._drawLine('y', val * scale)
+            } else if (THAT._checkNear(value, right)) {
+              console.log('2')
+              val = THAT._calcNum(key, 'left') - $(dom).width()
+              $(dom).css('left', `${val}px`)
+              THAT._drawLine('y', (val + $(dom).width()) * scale)
             }
             break;
           case 'rMap':
-            if (THAT.checkNear(value, left)) {
-              $(dom).css('left', `${THAT.calcNum(key, 'left') + $(key).width()}px`)
-            } else if (THAT.checkNear(value, right)) {
-              $(dom).css('left', `${THAT.calcNum(key, 'left') + Math.abs($(dom).width() - $(key).width())}px`)
+            if (THAT._checkNear(value, left)) {
+              console.log('3')
+              val = THAT._calcNum(key, 'left') + $(key).width()
+              $(dom).css('left', `${val}px`)
+              THAT._drawLine('y', val * scale)
+            } else if (THAT._checkNear(value, right)) {
+              console.log('4')
+              val = THAT._calcNum(key, 'left') + ($(key).width() - $(dom).width())
+              $(dom).css('left', `${val}px`)
+              THAT._drawLine('y', (val + $(dom).width()) * scale)
             }
             break;
           case 'tMap':
-            if (THAT.checkNear(value, top)) {
-              $(dom).css('top', `${THAT.calcNum(key, 'top')}px`)
-            } else if (THAT.checkNear(value, bottom)) {
-              $(dom).css('top', `${THAT.calcNum(key, 'top') - $(dom).height()}px`)
+            if (THAT._checkNear(value, top)) {
+              console.log('5')
+              val = THAT._calcNum(key, 'top')
+              $(dom).css('top', `${val}px`)
+              THAT._drawLine('x', val * scale)
+            } else if (THAT._checkNear(value, bottom)) {
+              console.log('6')
+              val = THAT._calcNum(key, 'top') - $(dom).height()
+              $(dom).css('top', `${val}px`)
+              THAT._drawLine('x', (val + $(dom).height()) * scale)
             }
             break;
           case 'bMap':
-            if (THAT.checkNear(value, top)) {
-              $(dom).css('top', `${THAT.calcNum(key, 'top') + $(key).height()}px`)
-            } else if (THAT.checkNear(value, bottom)) {
-              $(dom).css('top', `${THAT.calcNum(key, 'top') + Math.abs($(dom).height() - $(key).height())}px`)
+            if (THAT._checkNear(value, top)) {
+              console.log('7')
+              val = THAT._calcNum(key, 'top') + $(key).height()
+              $(dom).css('top', `${val}px`)
+              THAT._drawLine('x', val * scale)
+            } else if (THAT._checkNear(value, bottom)) {
+              console.log('8')
+              val = THAT._calcNum(key, 'top') - ($(dom).height() - $(key).height())
+              $(dom).css('top', `${val}px`)
+              THAT._drawLine('x', (val + $(dom).height()) * scale)
             }
             break;
         }
       }
     }
+
+    this.ctx.closePath()
+
   }
 
-  setMap(dom) {
+  _setMap(dom) { //设置map
     const rect = dom.getBoundingClientRect()
     this.domMap.set(dom, rect)
     this.lMap.set(dom, rect.left)
@@ -165,7 +172,7 @@ class Adsorb {
     this.bMap.set(dom, rect.bottom)
   }
 
-  checkNear(val1, val2) { //判断是否处于触发阈值
+  _checkNear(val1, val2) { //判断是否处于触发阈值
     val1 = parseInt(val1)
     val2 = parseInt(val2)
 
@@ -173,7 +180,7 @@ class Adsorb {
     return bool
   }
 
-  calcNum(dom, attr) { //计算值 val1:当前元素
+  _calcNum(dom, attr) { //计算值
     let res
     if (dom == this.option.container) {
       res = 0
@@ -183,4 +190,46 @@ class Adsorb {
     return res
   }
 
+  _initCanvas() { //初始化画布
+    const THAT = this,
+      ele = THAT.option.container,
+      rect = ele.getBoundingClientRect(),
+      box = this.option.canvas.container
+    let canvas = this.canvas = document.createElement('canvas')
+    this.ctx = canvas.getContext('2d')
+
+    canvas.width = box.clientWidth
+    canvas.height = box.clientHeight
+    canvas.style.position = 'fixed'
+    canvas.style.left = rect.x
+    canvas.style.top = rect.y
+    canvas.style.display = 'none'
+    canvas.style.zIndex = this.option.canvas.zIndex
+
+    this.ctx.strokeStyle = this.option.canvas.color
+
+    document.querySelector('body').appendChild(canvas)
+  }
+
+  _drawLine(type, coordinate) { //绘制线条
+    const width = this.canvas.clientWidth,
+      height = this.canvas.clientHeight
+
+    this.canvas.style.display = 'block'
+
+
+    if (type == 'x') {
+      this.ctx.moveTo(0, coordinate)
+      this.ctx.lineTo(width, coordinate)
+    } else {
+      this.ctx.moveTo(coordinate, 0)
+      this.ctx.lineTo(coordinate, height)
+    }
+
+    this.ctx.stroke()
+  }
+
+  _clearRect() { //清空画布
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+  }
 }

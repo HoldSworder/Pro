@@ -259,7 +259,7 @@ class Element {
                 THAT._proxyObj.scale = textV
 
             }
-            
+
             Tool.observer(item, obs, ['style'])
         }
     }
@@ -589,131 +589,131 @@ class Element {
 
     zoom() {
         const that = this
-        //关联缩放
-        !(function () {
-            let el = $('.zoom').find('.ui-slider-handle')
+            //关联缩放
+            !(function () {
+                let el = $('.zoom').find('.ui-slider-handle')
 
-            el.parent()
-                .next()
-                .find('input[name="zoomInput"]')
-                .val(100)
-            el.css('left', `${(100 / 500) * 100}%`)
-            el.find('.ui-slider-tip').text(100)
+                el.parent()
+                    .next()
+                    .find('input[name="zoomInput"]')
+                    .val(100)
+                el.css('left', `${(100 / 500) * 100}%`)
+                el.find('.ui-slider-tip').text(100)
 
-            for (const item of el) {
-                // debugger
-                el = item
+                for (const item of el) {
+                    // debugger
+                    el = item
 
-                function obs(mutation) {
+                    function obs(mutation) {
 
-                    el = mutation.target
-                    let canvasCheck = $(
-                        `.canvasDiv[data-i='${$('.checkCanvas').attr(
+                        el = mutation.target
+                        let canvasCheck = $(
+                            `.canvasDiv[data-i='${$('.checkCanvas').attr(
                             'data-i'
                         )}'`
-                    ).find('.canvasChild')
+                        ).find('.canvasChild')
 
-                    //关联宽高框
-                    $('.activeEdi')
-                        .find('input[name="width"]')
-                        .val(parseInt(canvasCheck.width()))
-                    $('.activeEdi')
-                        .find('input[name="height"]')
-                        .val(parseInt(canvasCheck.height()))
+                        //关联宽高框
+                        $('.activeEdi')
+                            .find('input[name="width"]')
+                            .val(parseInt(canvasCheck.width()))
+                        $('.activeEdi')
+                            .find('input[name="height"]')
+                            .val(parseInt(canvasCheck.height()))
 
-                    if (
-                        that.constrain.indexOf(
-                            $('.checkEle').attr('data-t')
-                        ) != -1
-                    ) {
-                        return
+                        if (
+                            that.constrain.indexOf(
+                                $('.checkEle').attr('data-t')
+                            ) != -1
+                        ) {
+                            return
+                        }
+
+                        let textV = $(el)
+                            .find('.ui-slider-tip')
+                            .text()
+
+                        $(el)
+                            .parent()
+                            .next()
+                            .find('input[name="zoomInput"]')
+                            .val(textV)
+
+                        let trans = textV / 100
+                        let nWidth = canvasCheck[0].naturalWidth
+                        let nHeight = canvasCheck[0].naturalHeight
+
+                        //TODO：锁定缩放最大值
+                        if (nWidth * trans >= $('#canvas').width()) {
+                            return
+                        } else if (nHeight * trans >= $('#canvas').height()) {
+                            return
+                        }
+
+                        canvasCheck.css({
+                            width: nWidth * trans,
+                            height: nHeight * trans
+                        })
+
+                        that.setDataJ(
+                            ['width', 'height', 'scalingRatio'],
+                            [nWidth * trans, nHeight * trans, textV]
+                        )
                     }
 
-                    let textV = $(el)
-                        .find('.ui-slider-tip')
-                        .text()
+
+                    Tool.observer(el, obs, ['style'])
 
                     $(el)
                         .parent()
                         .next()
                         .find('input[name="zoomInput"]')
-                        .val(textV)
+                        .on('change', function () {
 
-                    let trans = textV / 100
-                    let nWidth = canvasCheck[0].naturalWidth
-                    let nHeight = canvasCheck[0].naturalHeight
-
-                    //TODO：锁定缩放最大值
-                    if (nWidth * trans >= $('#canvas').width()) {
-                        return
-                    } else if (nHeight * trans >= $('#canvas').height()) {
-                        return
-                    }
-
-                    canvasCheck.css({
-                        width: nWidth * trans,
-                        height: nHeight * trans
-                    })
-
-                    that.setDataJ(
-                        ['width', 'height', 'scalingRatio'],
-                        [nWidth * trans, nHeight * trans, textV]
-                    )
-                }
-
-
-                Tool.observer(el, obs, ['style'])
-
-                $(el)
-                    .parent()
-                    .next()
-                    .find('input[name="zoomInput"]')
-                    .on('change', function () {
-
-                        let canvasCheck = $(
-                            `.canvasDiv[data-i='${$('.checkCanvas').attr(
+                            let canvasCheck = $(
+                                `.canvasDiv[data-i='${$('.checkCanvas').attr(
                                 'data-i'
                             )}'`
-                        ).find('.canvasChild')
-                        let inputV = $(this).val()
-                        let trans = inputV / 100
-                        if (inputV < 1) {
-                            $(this).val(1)
-                        } else if (inputV > 500) {
-                            $(this).val(500)
-                        }
-                        let slider = $(this)
-                            .parent()
-                            .prev()
-                        slider
-                            .find('.ui-slider-tip')
-                            .text(parseInt($(this).val()))
-                        slider
-                            .find('.ui-slider-handle')
-                            .css('left', `${(inputV / 500) * 100}%`)
+                            ).find('.canvasChild')
+                            let inputV = $(this).val()
+                            let trans = inputV / 100
+                            if (inputV < 1) {
+                                $(this).val(1)
+                            } else if (inputV > 500) {
+                                $(this).val(500)
+                            }
+                            let slider = $(this)
+                                .parent()
+                                .prev()
+                            slider
+                                .find('.ui-slider-tip')
+                                .text(parseInt($(this).val()))
+                            slider
+                                .find('.ui-slider-handle')
+                                .css('left', `${(inputV / 500) * 100}%`)
 
-                        // $('.checkCanvas').css('transform', `scale(${trans}, ${trans})`)
+                            // $('.checkCanvas').css('transform', `scale(${trans}, ${trans})`)
 
-                        let nWidth = canvasCheck[0].naturalWidth
-                        let nHeight = canvasCheck[0].naturalHeight
+                            let nWidth = canvasCheck[0].naturalWidth
+                            let nHeight = canvasCheck[0].naturalHeight
 
-                        let tHeight = nHeight * (128 / nWidth)
+                            let tHeight = nHeight * (128 / nWidth)
 
-                        canvasCheck.css({
-                            width: 128 * trans,
-                            height: tHeight * trans
+                            canvasCheck.css({
+                                width: 128 * trans,
+                                height: tHeight * trans
+                            })
+
+                            //关联宽高框
+                            $('.activeEdi')
+                                .find('input[name="width"]')
+                                .val(parseInt($('.checkCanvas').width()))
+                            $('.activeEdi')
+                                .find('input[name="height"]')
+                                .val(parseInt($('.checkCanvas').height()))
                         })
-
-                        //关联宽高框
-                        $('.activeEdi')
-                            .find('input[name="width"]')
-                            .val(parseInt($('.checkCanvas').width()))
-                        $('.activeEdi')
-                            .find('input[name="height"]')
-                            .val(parseInt($('.checkCanvas').height()))
-                    })
-            }
-        })()
+                }
+            })()
     }
 
     setDataJ(keys, vals, id) {
@@ -781,11 +781,7 @@ class Canvas {
         }
         this.mapElement = new Map()
 
-        new Adsorb({
-            container: $('#canvas')[0],
-            attr: '.canvasDiv',
-            class: this
-        })
+
     }
 
     init() {
@@ -815,6 +811,14 @@ class Canvas {
         this.play() //播放预览
 
         this.getGroup() //获取素材组
+
+        new Adsorb({
+            container: $('#canvas')[0],
+            attr: '.canvasDiv',
+            canvas: {
+                container: $('#hiddenBox')[0]
+            }
+        })
     }
 
     //画布属性

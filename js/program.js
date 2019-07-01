@@ -144,7 +144,10 @@ class Observer {
     update(data) {
         const THAT = this
 
-        THAT.$func.call(THAT, data)
+        Tool.debounce(() => {
+            THAT.$func.call(THAT, data)
+        }, 10)()
+
     }
 
     _link() {
@@ -208,7 +211,8 @@ class Element {
     }
 
     _observer() {
-        this._zoomObserver()
+        // this._zoomObserver()
+        this.zoom()
         this._divObserver()
         this._imgObserver()
         this._eleObserver()
@@ -219,8 +223,6 @@ class Element {
             proxyObj = THAT._proxyObj,
             img = THAT.dImg,
             form = THAT.dForm
-
-        let el = this.dZoom.find('.ui-slider-handle')
 
         const scaleObs = new Observer('scale', {
             input: [THAT.dForm.find('input[name="zoomInput"]')]
@@ -236,7 +238,6 @@ class Element {
             const nWidth = THAT.dImg[0].naturalWidth * newD / 100,
                 nHeight = THAT.dImg[0].naturalHeight * newD / 100
 
-                console.log(THAT.$id)
             proxyObj.width = nWidth
             proxyObj.height = nHeight
 
@@ -244,22 +245,22 @@ class Element {
         this.mObs.set('scale', scaleObs)
 
 
-        for (const item of el) {
-            el = item
-
+        for (const item of $('.scaleBox').find('.ui-slider-handle')) {
             function obs(mutation) {
-                el = mutation.target
+                const e = mutation.target
+                console.log(e)
                 if (THAT.constrain.indexOf(THAT.dCheckEle.attr('data-t')) != -1) {
                     return
                 }
 
-                let textV = $(el)
+                let textV = $(e)
                     .find('.ui-slider-tip')
                     .text()
                 THAT._proxyObj.scale = textV
 
             }
-            Tool.observer(el, obs, ['style'])
+            
+            Tool.observer(item, obs, ['style'])
         }
     }
 
@@ -296,10 +297,10 @@ class Element {
 
     _imgObserver() {
         const THAT = this,
-            proxyObj = THAT._proxyObj,
-            img = THAT.dImg,
-            form = THAT.dForm,
-            scale = THAT.dScale
+            proxyObj = this._proxyObj,
+            img = this.dImg,
+            form = this.dForm,
+            scale = this.dScale
 
         Tool.observer(THAT.dImg[0], mutation => {
             let cWidth = parseInt(mutation.target.style.width)
@@ -585,6 +586,152 @@ class Element {
             }
         })
     }
+
+    zoom() {
+        const that = this
+        //关联缩放
+        !(function () {
+            let el = $('.zoom').find('.ui-slider-handle')
+
+            el.parent()
+                .next()
+                .find('input[name="zoomInput"]')
+                .val(100)
+            el.css('left', `${(100 / 500) * 100}%`)
+            el.find('.ui-slider-tip').text(100)
+
+            for (const item of el) {
+                // debugger
+                el = item
+
+                function obs(mutation) {
+
+                    el = mutation.target
+                    let canvasCheck = $(
+                        `.canvasDiv[data-i='${$('.checkCanvas').attr(
+                            'data-i'
+                        )}'`
+                    ).find('.canvasChild')
+
+                    //关联宽高框
+                    $('.activeEdi')
+                        .find('input[name="width"]')
+                        .val(parseInt(canvasCheck.width()))
+                    $('.activeEdi')
+                        .find('input[name="height"]')
+                        .val(parseInt(canvasCheck.height()))
+
+                    if (
+                        that.constrain.indexOf(
+                            $('.checkEle').attr('data-t')
+                        ) != -1
+                    ) {
+                        return
+                    }
+
+                    let textV = $(el)
+                        .find('.ui-slider-tip')
+                        .text()
+
+                    $(el)
+                        .parent()
+                        .next()
+                        .find('input[name="zoomInput"]')
+                        .val(textV)
+
+                    let trans = textV / 100
+                    let nWidth = canvasCheck[0].naturalWidth
+                    let nHeight = canvasCheck[0].naturalHeight
+
+                    //TODO：锁定缩放最大值
+                    if (nWidth * trans >= $('#canvas').width()) {
+                        return
+                    } else if (nHeight * trans >= $('#canvas').height()) {
+                        return
+                    }
+
+                    canvasCheck.css({
+                        width: nWidth * trans,
+                        height: nHeight * trans
+                    })
+
+                    that.setDataJ(
+                        ['width', 'height', 'scalingRatio'],
+                        [nWidth * trans, nHeight * trans, textV]
+                    )
+                }
+
+
+                Tool.observer(el, obs, ['style'])
+
+                $(el)
+                    .parent()
+                    .next()
+                    .find('input[name="zoomInput"]')
+                    .on('change', function () {
+
+                        let canvasCheck = $(
+                            `.canvasDiv[data-i='${$('.checkCanvas').attr(
+                                'data-i'
+                            )}'`
+                        ).find('.canvasChild')
+                        let inputV = $(this).val()
+                        let trans = inputV / 100
+                        if (inputV < 1) {
+                            $(this).val(1)
+                        } else if (inputV > 500) {
+                            $(this).val(500)
+                        }
+                        let slider = $(this)
+                            .parent()
+                            .prev()
+                        slider
+                            .find('.ui-slider-tip')
+                            .text(parseInt($(this).val()))
+                        slider
+                            .find('.ui-slider-handle')
+                            .css('left', `${(inputV / 500) * 100}%`)
+
+                        // $('.checkCanvas').css('transform', `scale(${trans}, ${trans})`)
+
+                        let nWidth = canvasCheck[0].naturalWidth
+                        let nHeight = canvasCheck[0].naturalHeight
+
+                        let tHeight = nHeight * (128 / nWidth)
+
+                        canvasCheck.css({
+                            width: 128 * trans,
+                            height: tHeight * trans
+                        })
+
+                        //关联宽高框
+                        $('.activeEdi')
+                            .find('input[name="width"]')
+                            .val(parseInt($('.checkCanvas').width()))
+                        $('.activeEdi')
+                            .find('input[name="height"]')
+                            .val(parseInt($('.checkCanvas').height()))
+                    })
+            }
+        })()
+    }
+
+    setDataJ(keys, vals, id) {
+        let checkEle =
+            id == undefined ?
+            $('.checkEle') :
+            $('.trackBox').find(`div[data-i=${id}]`)
+
+        let dataJ =
+            checkEle.attr('data-p') == undefined ? {} :
+            JSON.parse(checkEle.attr('data-p'))
+
+        keys.forEach((item, i) => {
+            dataJ[item] = vals[i]
+        })
+
+        checkEle.attr('data-p', JSON.stringify(dataJ))
+    }
 }
 
 class Canvas {
@@ -634,11 +781,11 @@ class Canvas {
         }
         this.mapElement = new Map()
 
-        // new Adsorb({
-        //     container: $('#canvas')[0],
-        //     attr: '.canvasDiv',
-        //     class: this
-        // })
+        new Adsorb({
+            container: $('#canvas')[0],
+            attr: '.canvasDiv',
+            class: this
+        })
     }
 
     init() {
@@ -1937,7 +2084,7 @@ class Canvas {
             let trackEle = $('#canvas').find(`div[data-i=${dataId}]`)
             trackEle.click()
 
-            // that.setInput()
+            that.setInput()
 
             $(this).on('mousedown', '.eleWidth', function (e) {
                 //轨道元素拉伸属性

@@ -25,15 +25,21 @@ class Adsorb {
     this.trans = $('#transformCanvas').val() * 0.1
     this.canvas
     this.ctx
+    this.flag = 0
 
     this.init()
   }
 
   init() {
+    const THAT = this
     this._bindEvent()
     if (this.option.canvas) {
       this._initCanvas()
     }
+
+    setInterval(function() {
+      THAT.flag = 0
+    }, 100)
   }
 
   _bindEvent() { // 绑定点击事件 绑定观察者
@@ -64,9 +70,7 @@ class Adsorb {
     Tool.observer(item, function (mutation) {
       const p = item.getBoundingClientRect()
 
-      Tool.debounce(() => {
-        THAT._move(p, mutation.target)
-      }, 10)()
+      THAT._move(p, mutation.target)
 
       THAT._setMap(item)
     })
@@ -82,16 +86,14 @@ class Adsorb {
       bottom
     } = p
 
+    this.flag++
+    if(this.flag > 100) return
+
     const mapArr = []
     this.ctx.beginPath()
 
-    if (THAT.option.vertical) {
-      mapArr.push('lMap', 'rMap')
-    }
-
-    if (THAT.option.horizontal) {
-      mapArr.push('tMap', 'bMap')
-    }
+    if (THAT.option.vertical) mapArr.push('lMap', 'rMap')
+    if (THAT.option.horizontal) mapArr.push('tMap', 'bMap')
 
     for (const i of mapArr) {
       for (const item of THAT[i].entries()) {
@@ -105,12 +107,12 @@ class Adsorb {
         switch (i) {
           case 'lMap':
             if (THAT._checkNear(value, left)) {
-              console.log('1')
+              // console.log('1')
               val = THAT._calcNum(key, 'left')
               $(dom).css('left', `${val}px`)
               THAT._drawLine('y', val * scale)
             } else if (THAT._checkNear(value, right)) {
-              console.log('2')
+              // console.log('2')
               val = THAT._calcNum(key, 'left') - $(dom).width()
               $(dom).css('left', `${val}px`)
               THAT._drawLine('y', (val + $(dom).width()) * scale)
@@ -118,12 +120,12 @@ class Adsorb {
             break;
           case 'rMap':
             if (THAT._checkNear(value, left)) {
-              console.log('3')
+              // console.log('3')
               val = THAT._calcNum(key, 'left') + $(key).width()
               $(dom).css('left', `${val}px`)
               THAT._drawLine('y', val * scale)
             } else if (THAT._checkNear(value, right)) {
-              console.log('4')
+              // console.log('4')
               val = THAT._calcNum(key, 'left') + ($(key).width() - $(dom).width())
               $(dom).css('left', `${val}px`)
               THAT._drawLine('y', (val + $(dom).width()) * scale)
@@ -131,12 +133,12 @@ class Adsorb {
             break;
           case 'tMap':
             if (THAT._checkNear(value, top)) {
-              console.log('5')
+              // console.log('5')
               val = THAT._calcNum(key, 'top')
               $(dom).css('top', `${val}px`)
               THAT._drawLine('x', val * scale)
             } else if (THAT._checkNear(value, bottom)) {
-              console.log('6')
+              // console.log('6')
               val = THAT._calcNum(key, 'top') - $(dom).height()
               $(dom).css('top', `${val}px`)
               THAT._drawLine('x', (val + $(dom).height()) * scale)
@@ -144,12 +146,12 @@ class Adsorb {
             break;
           case 'bMap':
             if (THAT._checkNear(value, top)) {
-              console.log('7')
+              // console.log('7')
               val = THAT._calcNum(key, 'top') + $(key).height()
               $(dom).css('top', `${val}px`)
               THAT._drawLine('x', val * scale)
             } else if (THAT._checkNear(value, bottom)) {
-              console.log('8')
+              // console.log('8')
               val = THAT._calcNum(key, 'top') - ($(dom).height() - $(key).height())
               $(dom).css('top', `${val}px`)
               THAT._drawLine('x', (val + $(dom).height()) * scale)

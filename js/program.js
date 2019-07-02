@@ -1,739 +1,5 @@
 const $option = JSON.parse(window.localStorage.getProgram)
 
-class Tool {
-    static observer(el, func, filter = ['style']) {
-        var observer = new MutationObserver(function (mutations, observer) {
-            mutations.forEach(function (mutation) {
-                func(mutation)
-            })
-        })
-        var config = {
-            attributes: true,
-            attributeOldValue: true,
-            attributeFilter: filter
-        }
-
-        observer.observe(el, config)
-    }
-
-    static formatSeconds(value) { //秒转化为00:00:00格式
-        var theTime = parseInt(value) // 秒
-        var theTime1 = 0 // 分
-        var theTime2 = 0 // 小时
-
-        if (theTime > 60) {
-            theTime1 = parseInt(theTime / 60)
-            theTime = parseInt(theTime % 60)
-
-            if (theTime1 > 60) {
-                theTime2 = parseInt(theTime1 / 60)
-                theTime1 = parseInt(theTime1 % 60)
-            }
-        }
-
-        theTime1 = theTime1 < 10 ? `0${theTime1}` : theTime1
-        theTime2 = theTime2 < 10 ? `0${theTime2}` : theTime2
-        theTime = theTime < 10 ? `0${theTime}` : theTime
-
-        var result = `00:00:${theTime}`
-
-        if (theTime1 > 0) {
-            result = `00:${theTime1}:${theTime}`
-        }
-
-        if (theTime2 > 0) {
-            result = `${theTime2}:${theTime1}:${theTime}`
-        }
-
-        return result
-    }
-
-    static calcTime(el) { //计算起止时间
-        let track = el.parent()
-        let timeS = $('#nowTime').attr('data-t') * 60 //时间轴总时间换算s
-        let trackW = track.width()
-        let elL = parseFloat(el.attr('data-l'))
-        let elR = parseFloat(el.width()) + elL //元素左右长度
-
-        let beginT = parseInt((elL / trackW) * timeS)
-        let endT = parseInt((elR / trackW) * timeS)
-
-        return {
-            start: Tool.formatSeconds(beginT),
-            end: Tool.formatSeconds(endT)
-        }
-    }
-
-    static getTime(date) {
-        let n = date
-        let result = {
-            year: n.getFullYear(),
-            month: n.getMonth() + 1,
-            day: n.getDate(),
-            week: n.getDay(),
-            hours: n.getHours(),
-            min: n.getMinutes(),
-            sec: n.getSeconds(),
-            mil: n.getMilliseconds(),
-            stamp: n.getTime()
-        }
-
-        let addZero = ['month', 'day', 'hours', 'min', 'sec']
-        for (const key in result) {
-            if (result.hasOwnProperty(key)) {
-                result[key] = String(result[key])
-                const element = result[key]
-                if (addZero.find(x => x == key)) {
-                    if (element < 10) {
-                        result[key] = `0${element}`
-                    }
-                }
-            }
-        }
-
-        return result
-    }
-
-    static getEleFromId(id, type) {
-        if (type == 'canvas') {
-            return $('#canvas').find(`div[data-i=${id}]`)
-        } else {
-            return $('.trackBox').find(`div[data-i=${id}]`)
-        }
-    }
-
-    static debounce(func, wait = 50) {
-        let timeout
-        return function (...args) {
-            const ctx = this
-
-            if (timeout) clearTimeout(timeout)
-
-            let callNow = !timeout
-            timeout = setTimeout(() => {
-                timeout = null
-            }, wait)
-
-            if (callNow) func.apply(ctx, args)
-        }
-    }
-
-    static throttle(func, wait = 50) {
-        let previous = 0
-        return function (...args) {
-            const ctx = this
-            let now = Date.now()
-            if (now - previous > wait) {
-                func.apply(ctx, args)
-                previous = now
-            }
-        }
-    }
-}
-
-class Observer {
-    constructor(key, option, func, element) {
-        this.$key = key
-        this.$func = func
-        this.$option = option
-        this.$ele = element
-
-        this._link()
-    }
-
-    update(data) {
-        const THAT = this
-
-        Tool.debounce(() => {
-            THAT.$func.call(THAT, data)
-        }, 10)()
-
-    }
-
-    _link() {
-        const THAT = this
-        for (const key in this.$option) {
-            const element = this.$option[key]
-            if (element.length == 0) return
-            switch (key) {
-                case 'input':
-                    for (const item of element) {
-                        $(item).on('change', function () {
-                            if (THAT.$option.func) THAT.$option.func.call(this)
-                            if ($(this).attr('type') == 'number') {
-                                THAT.$ele._proxyObj[THAT.$key] = parseInt($(this).val())
-                            } else {
-                                THAT.$ele._proxyObj[THAT.$key] = $(this).val()
-                            }
-                        })
-                    }
-                    break;
-            }
-        }
-    }
-}
-
-class Element {
-    constructor(data, id) {
-        this.$data = JSON.parse(data)
-        this.$id = id
-        this.$type = this.$data.materialType
-
-        this.dDiv = $('#canvas').find(`div[data-i=${this.$id}]`)
-        this.dImg = this.dDiv.find('img')
-        this.dCheckEle = $('.trackBox').find(`div[data-i=${this.$id}]`)
-        this.dForm = $('#ediBox').children().eq(this.$type - 1)
-        this.dZoom = this.dForm.find('.zoom')
-
-        this.dScale = this.dImg[0].naturalWidth / this.dImg[0].naturalHeight //宽高比
-
-        this.constrain = [1, 2] //等比例缩放类型
-        this.width = this.dImg.width()
-        this.height = this.dImg.height()
-
-        this._proxyObj
-        this._observe = {
-            data: this.$data,
-            width: this.dImg.width(),
-            height: this.dImg.height(),
-            x: parseInt(this.dDiv.css('left')),
-            y: parseInt(this.dDiv.css('top')),
-            start: '00:00:00',
-            end: '00:00:00',
-            scale: Math.floor(this.dImg.width() / this.dImg[0].naturalWidth),
-        }
-
-        this.mObs = new Map()
-
-        this._proxy()
-        this._observer()
-        // this._timeBlur()
-    }
-
-    _observer() {
-        // this._zoomObserver()
-        this.zoom()
-        this._divObserver()
-        this._imgObserver()
-        this._eleObserver()
-    }
-
-    _zoomObserver() {
-        const THAT = this,
-            proxyObj = THAT._proxyObj,
-            img = THAT.dImg,
-            form = THAT.dForm
-
-        const scaleObs = new Observer('scale', {
-            input: [THAT.dForm.find('input[name="zoomInput"]')]
-        }, function (newD) {
-            newD = parseInt(newD)
-
-            THAT.dForm.find('input[name="zoomInput"]').val(newD)
-
-            THAT.dZoom.find('.ui-slider-tip').text(parseInt(newD))
-
-            THAT.dZoom.find('.ui-slider-handle').css('left', `${(newD / 500) * 100}%`)
-
-            const nWidth = THAT.dImg[0].naturalWidth * newD / 100,
-                nHeight = THAT.dImg[0].naturalHeight * newD / 100
-
-            proxyObj.width = nWidth
-            proxyObj.height = nHeight
-
-        }, THAT)
-        this.mObs.set('scale', scaleObs)
-
-
-        for (const item of $('.scaleBox').find('.ui-slider-handle')) {
-            function obs(mutation) {
-                const e = mutation.target
-                console.log(e)
-                if (THAT.constrain.indexOf(THAT.dCheckEle.attr('data-t')) != -1) {
-                    return
-                }
-
-                let textV = $(e)
-                    .find('.ui-slider-tip')
-                    .text()
-                THAT._proxyObj.scale = textV
-
-            }
-
-            Tool.observer(item, obs, ['style'])
-        }
-    }
-
-    _divObserver() {
-        const THAT = this,
-            proxyObj = THAT._proxyObj,
-            div = THAT.dDiv,
-            form = THAT.dForm
-
-        Tool.observer(this.dDiv[0], mutation => {
-            let cX = parseInt(mutation.target.style.left)
-            let cY = parseInt(mutation.target.style.top)
-
-            proxyObj.x = cX
-            proxyObj.y = cY
-        }, ['style'])
-
-        const xObs = new Observer('x', {
-            input: [form.find('input[name="location_x"]')]
-        }, function (newD) {
-            form.find('input[name="location_x"]').val(newD)
-            div.css('left', newD)
-        }, THAT)
-        this.mObs.set('x', xObs)
-
-        const yObs = new Observer('y', {
-            input: [form.find('input[name="location_y"]')]
-        }, function (newD) {
-            form.find('input[name="location_y"]').val(newD)
-            div.css('top', newD)
-        }, THAT)
-        this.mObs.set('y', yObs)
-    }
-
-    _imgObserver() {
-        const THAT = this,
-            proxyObj = this._proxyObj,
-            img = this.dImg,
-            form = this.dForm,
-            scale = this.dScale
-
-        Tool.observer(THAT.dImg[0], mutation => {
-            let cWidth = parseInt(mutation.target.style.width)
-            let cHeight = parseInt(mutation.target.style.height)
-
-            proxyObj.width = cWidth
-            proxyObj.height = cHeight
-        }, ['style'])
-
-        const wObs = new Observer('width', {
-            input: [form.find('input[name="width"]')]
-        }, function (newD) {
-            newD = parseInt(newD)
-            let nHeight = Math.round(newD / scale)
-
-            form.find('input[name="width"]').val(newD)
-            form.find('input[name="height"]').val(nHeight)
-
-            img.css('width', newD)
-            img.css('height', nHeight)
-        }, THAT)
-        this.mObs.set('width', wObs)
-
-        const hObs = new Observer('height', {
-            input: [form.find('input[name="height"]')]
-        }, function (newD) {
-            newD = parseInt(newD)
-            let nWidth = Math.round(newD * scale)
-
-            form.find('input[name="height"]').val(newD)
-            form.find('input[name="width"]').val(nWidth)
-
-            img.css('height', newD)
-            img.css('width', nWidth)
-        }, THAT)
-        this.mObs.set('height', hObs)
-    }
-
-    _eleObserver() {
-        const THAT = this,
-            proxyObj = THAT._proxyObj,
-            form = THAT.dForm,
-            checkEle = THAT.dCheckEle
-
-        Tool.observer(this.dCheckEle[0], mutation => {
-            proxyObj.start = Tool.calcTime(THAT.dCheckEle).start
-            proxyObj.end = Tool.calcTime(THAT.dCheckEle).end
-        }, ['style'])
-
-        const sObs = new Observer('start', {
-            input: [THAT.dForm.find('input[name="startTime"]')],
-            func() {
-                beforeInput.call(this)
-            }
-        }, function (newD) {
-            form.find('input[name="startTime"]').val(newD)
-            // console.log('start')
-            checkEle.attr('data-begin', newD)
-            calcWidth()
-        }, THAT)
-        this.mObs.set('start', sObs)
-
-        const eObs = new Observer('end', {
-            input: [THAT.dForm.find('input[name="endTime"]')],
-            func() {
-                beforeInput.call(this)
-            }
-        }, function (newD) {
-            // console.log('end')
-            form.find('input[name="endTime"]').val(newD)
-            checkEle.attr('data-end', newD)
-            calcWidth()
-        }, THAT)
-        this.mObs.set('end', eObs)
-
-        function beforeInput() {
-
-            let str = $(this)
-                .val()
-                .trim()
-
-            let reg = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/
-            if (!reg.test(str)) {
-                let html = `
-                        <div class="alert alert-warning alert-dismissible fade in" role="alert">
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
-                            请输入正确的格式
-                            如 00:00:00
-                        </div>
-                        `
-
-                $(this).after(html)
-
-                setTimeout(() => {
-                    $('.alert').alert('close')
-                }, 3000)
-
-                $(this).val('')
-            }
-        }
-
-        function getSeconds(data) {
-            let indexA = data.split(':')
-
-            let h = Number(indexA[0])
-            let m = Number(indexA[1])
-            let s = Number(indexA[2])
-
-            let timeS = h * 60 + m * 60 + s
-            return timeS
-        }
-
-        function calcWidth() {
-            const sStart = getSeconds(THAT._proxyObj.start)
-            const eStart = getSeconds(THAT._proxyObj.end)
-
-            const timeA = $('#nowTime').attr('data-t') * 60
-            const width = (eStart / timeA) * parseInt($('.trackContent').eq(0).width()) - parseInt(checkEle.css('left'))
-            // console.log(width)
-
-            checkEle.css('left', `${sStart / timeA * 100}%`)
-            // checkEle.css('width', `${width}px`)
-        }
-    }
-
-    _proxy() {
-        const THAT = this
-        const scale = this.dScale
-        this._proxyObj = new Proxy(this._observe, {
-            set: function (target, key, value, receiver) {
-
-                switch (key) {
-                    case 'data':
-                        target[key] = JSON.stringify(value)
-                        break;
-                    case 'width':
-                        value = THAT._test(target, key, value)
-                        target['height'] = Math.round(value / scale)
-                        THAT.mObs.get('width').update(Math.round(value))
-                        break;
-                    case 'height':
-                        value = THAT._test(target, key, value)
-                        target['width'] = Math.round(value * scale)
-                        THAT.mObs.get('height').update(Math.round(value))
-                        break;
-                    case 'x':
-                        value = THAT._test(target, key, value)
-                        THAT.mObs.get('x').update(value)
-                        break;
-                    case 'y':
-                        value = THAT._test(target, key, value)
-                        THAT.mObs.get('y').update(value)
-                        break;
-                    case 'scale':
-                        value = THAT._test(target, key, value)
-                        THAT.mObs.get('scale').update(value)
-                        break;
-                    case 'start':
-                        THAT.mObs.get('start').update(value)
-                        break;
-                    case 'end':
-                        THAT.mObs.get('end').update(value)
-                        break;
-                }
-
-                THAT.update(key, value)
-
-                return Reflect.set(target, key, value, receiver)
-            }
-        })
-    }
-
-    _test(target, key, value) { //测试数据 设置最值
-        const form = this.dForm,
-            img = this.dImg
-        value = parseInt(value)
-        if (value < 0) value = 0
-
-        switch (key) {
-            case 'width':
-                if (value > $option.width) value = $option.width
-                break
-            case 'height':
-                if (value > $option.height) value = $option.height
-                break
-            case 'x':
-                break
-            case 'y':
-                break
-            case 'scale':
-                if (value < 1) {
-                    value = 1
-                } else if (value > 500) {
-                    value = 500
-                }
-
-                const nW = img[0].naturalWidth
-                const nH = img[0].naturalHeight
-                const sW = nW * value / 100
-                const sH = nH * value / 100
-                if (sW > $option.width || sH > $option.height) {
-                    if (($option.width - img.width()) < ($option.height - img.height())) {
-                        value = Math.floor(($option.width / nW) * 100)
-                    } else {
-                        value = Math.floor(($option.height / nH) * 100)
-                    }
-                    // console.log(value)
-                    form.find('.ui-slider-handle').css('left', `${value / 500 * 100}%`)
-                    form.find('.ui-slider-tip').text(value)
-
-                    $('.ui-slider-tip').hide()
-                }
-
-                break
-        }
-        return value
-    }
-
-    update(key, val) {
-        const checkEle = this.dCheckEle
-
-        let dataJ =
-            checkEle.attr('data-p') == undefined ? {} :
-            JSON.parse(checkEle.attr('data-p'))
-
-        dataJ[key] = val
-
-        checkEle.attr('data-p', JSON.stringify(dataJ))
-    }
-
-    _timeBlur() {
-
-
-        $(
-            '#ediBox input[name="startTime"], #ediBox input[name="endTime"]'
-        ).on('change', function (e) {
-            //时间格式验证
-            let str = $(this)
-                .val()
-                .trim()
-
-            let reg = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/
-            if (!reg.test(str)) {
-                let html = `
-                        <div class="alert alert-warning alert-dismissible fade in" role="alert">
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
-                            请输入正确的格式
-                            如 00:00:00
-                        </div>
-                        `
-
-                $(this).after(html)
-
-                setTimeout(() => {
-                    $('.alert').alert('close')
-                }, 3000)
-
-                $(this).val('')
-            } else {
-                let thisV = $(this).val()
-                let indexF = thisV.indexOf(':')
-
-                let h = Number(thisV.slice(0, indexF))
-                let m = Number(thisV.slice(indexF + 1, indexF + 3))
-                let s = Number(thisV.slice(indexF + 4, indexF + 6))
-
-                let timeS = h * 60 + m * 60 + s
-
-                let timeA = $('#nowTime').attr('data-t')
-                if ($(this).attr('name') == 'startTime') {
-                    let timeSe = timeS / (timeA * 60)
-                    $('.checkEle').css('left', `${timeSe * 100}%`)
-                    $('.checkEle').attr('data-begin', thisV)
-                } else {
-                    let timeSe = timeS / (timeA * 60)
-                    $('.checkEle').css(
-                        'width',
-                        `${timeSe * parseFloat($('.trackContent').width()) -
-                                parseFloat($('.checkEle').css('left'))}px`
-                    )
-                    $('.checkEle').attr('data-end', thisV)
-                }
-            }
-        })
-    }
-
-    zoom() {
-        const that = this
-            //关联缩放
-            !(function () {
-                let el = $('.zoom').find('.ui-slider-handle')
-
-                el.parent()
-                    .next()
-                    .find('input[name="zoomInput"]')
-                    .val(100)
-                el.css('left', `${(100 / 500) * 100}%`)
-                el.find('.ui-slider-tip').text(100)
-
-                for (const item of el) {
-                    // debugger
-                    el = item
-
-                    function obs(mutation) {
-
-                        el = mutation.target
-                        let canvasCheck = $(
-                            `.canvasDiv[data-i='${$('.checkCanvas').attr(
-                            'data-i'
-                        )}'`
-                        ).find('.canvasChild')
-
-                        //关联宽高框
-                        $('.activeEdi')
-                            .find('input[name="width"]')
-                            .val(parseInt(canvasCheck.width()))
-                        $('.activeEdi')
-                            .find('input[name="height"]')
-                            .val(parseInt(canvasCheck.height()))
-
-                        if (
-                            that.constrain.indexOf(
-                                $('.checkEle').attr('data-t')
-                            ) != -1
-                        ) {
-                            return
-                        }
-
-                        let textV = $(el)
-                            .find('.ui-slider-tip')
-                            .text()
-
-                        $(el)
-                            .parent()
-                            .next()
-                            .find('input[name="zoomInput"]')
-                            .val(textV)
-
-                        let trans = textV / 100
-                        let nWidth = canvasCheck[0].naturalWidth
-                        let nHeight = canvasCheck[0].naturalHeight
-
-                        //TODO：锁定缩放最大值
-                        if (nWidth * trans >= $('#canvas').width()) {
-                            return
-                        } else if (nHeight * trans >= $('#canvas').height()) {
-                            return
-                        }
-
-                        canvasCheck.css({
-                            width: nWidth * trans,
-                            height: nHeight * trans
-                        })
-
-                        that.setDataJ(
-                            ['width', 'height', 'scalingRatio'],
-                            [nWidth * trans, nHeight * trans, textV]
-                        )
-                    }
-
-
-                    Tool.observer(el, obs, ['style'])
-
-                    $(el)
-                        .parent()
-                        .next()
-                        .find('input[name="zoomInput"]')
-                        .on('change', function () {
-
-                            let canvasCheck = $(
-                                `.canvasDiv[data-i='${$('.checkCanvas').attr(
-                                'data-i'
-                            )}'`
-                            ).find('.canvasChild')
-                            let inputV = $(this).val()
-                            let trans = inputV / 100
-                            if (inputV < 1) {
-                                $(this).val(1)
-                            } else if (inputV > 500) {
-                                $(this).val(500)
-                            }
-                            let slider = $(this)
-                                .parent()
-                                .prev()
-                            slider
-                                .find('.ui-slider-tip')
-                                .text(parseInt($(this).val()))
-                            slider
-                                .find('.ui-slider-handle')
-                                .css('left', `${(inputV / 500) * 100}%`)
-
-                            // $('.checkCanvas').css('transform', `scale(${trans}, ${trans})`)
-
-                            let nWidth = canvasCheck[0].naturalWidth
-                            let nHeight = canvasCheck[0].naturalHeight
-
-                            let tHeight = nHeight * (128 / nWidth)
-
-                            canvasCheck.css({
-                                width: 128 * trans,
-                                height: tHeight * trans
-                            })
-
-                            //关联宽高框
-                            $('.activeEdi')
-                                .find('input[name="width"]')
-                                .val(parseInt($('.checkCanvas').width()))
-                            $('.activeEdi')
-                                .find('input[name="height"]')
-                                .val(parseInt($('.checkCanvas').height()))
-                        })
-                }
-            })()
-    }
-
-    setDataJ(keys, vals, id) {
-        let checkEle =
-            id == undefined ?
-            $('.checkEle') :
-            $('.trackBox').find(`div[data-i=${id}]`)
-
-        let dataJ =
-            checkEle.attr('data-p') == undefined ? {} :
-            JSON.parse(checkEle.attr('data-p'))
-
-        keys.forEach((item, i) => {
-            dataJ[item] = vals[i]
-        })
-
-        checkEle.attr('data-p', JSON.stringify(dataJ))
-    }
-}
-
 class Canvas {
     constructor(canvas, proObj) {
         this.canvas = canvas
@@ -788,7 +54,7 @@ class Canvas {
         //入口
         // $('#ruler').ruler()
 
-        this.initDraw() //画布
+        this.drag() //画布
 
         this.slider() //时间轴
 
@@ -819,11 +85,6 @@ class Canvas {
                 container: $('#hiddenBox')[0]
             }
         })
-    }
-
-    //画布属性
-    initDraw() {
-        this.drag()
     }
 
     //在画布上绘制元素
@@ -1631,12 +892,11 @@ class Canvas {
 
     //在轨道上移动元素
     moveEle() {
-        const that = this,
-            THAT = this
+        const THAT = this
         $('.trackBox').on('mousedown', '.silderBlock', function (e) {
             e.preventDefault()
             e.stopPropagation()
-            let thats = this
+            const that = this
 
             let top = $(this).offset().top
             let left = $(this).offset().left
@@ -1658,26 +918,19 @@ class Canvas {
                 opacity: 0.5
             })
             $(this).click()
-            // $(this).css({
-            //     position: 'fixed',
-            //     top: `${top}px`,
-            //     left: `${left}px`,
-            //     width: `${divW}px`,
-            //     'z-index': 9999
-            // })
+
 
             let moveE = function (e) {
                 let nowX = e.clientX
                 let nowY = e.clientY
 
-                // $(thats).css({
                 clone.css({
                     top: `${nowY - divH / 2}px`,
                     left: `${nowX - eItemX}px`
                 })
 
                 const nowEle = calcEle(e)
-                if (nowEle) {
+                if (nowEle) { //判断当前移动到的轨道 并加上高亮
                     $('.now-ele').removeClass('now-ele')
                     nowEle.addClass('now-ele')
                 }
@@ -1688,22 +941,27 @@ class Canvas {
                 e.preventDefault()
 
                 const nowEle = calcEle(e),
+                    trackRect = that.parentNode.getBoundingClientRect(),
+                    thatRect = that.getBoundingClientRect(),
                     eX = e.clientX, //鼠标点击距离左边界距离
-                    trackX = $(thats).parent().offset().left, //轨道距离左边界距离
-                    thisX = parseFloat($(thats).offset().left) //元素距离左边界距离
+                    trackX = trackRect.left, //轨道距离左边界距离
+                    thisX = thatRect.left //元素距离左边界距离
+
 
                 if (nowEle.attr('id') == oldEle.attr('id')) { //轨道内移动
                     let flag = false
 
-                    let trackEle = $(thats).parent().children()
+                    let trackEle = $(that).parent().children()
 
                     for (const it of trackEle) {
+                        if($(it).attr('data-i') == $(clone).attr('data-i')) return
                         //判断是否重合轨道内其他元素
-                        if (that.checkHoverDiv($(clone), $(it))) {
-                            $(thats).css({
+                        if (THAT.checkHoverDiv($(clone), $(it))) {
+                            console.log('hover')
+                            $(that).css({
                                 position: 'absolute',
                                 top: `0px`,
-                                left: `${$(thats).attr('data-l')}px`,
+                                left: `${$(that).attr('data-l')}px`,
                                 width: `${divW}px`,
                                 'z-index': 0
                             })
@@ -1713,11 +971,11 @@ class Canvas {
                     }
 
                     if (!flag) {
-                        $(thats).attr('data-l', eX - trackX - eItemX)
-                        $(thats).css({
+                        $(that).attr('data-l', eX - trackX - eItemX)
+                        $(that).css({
                             position: 'absolute',
                             top: `0px`,
-                            left: `${$(thats).attr('data-l')}px`,
+                            left: `${$(that).attr('data-l')}px`,
                             width: `${divW}px`,
                             'z-index': 0
                         })
@@ -1726,7 +984,7 @@ class Canvas {
 
                 for (const item of $('.track')) {
                     //循环所有轨道 找到元素将移动的轨道
-                    let copyId = $(thats)
+                    let copyId = $(that)
                         .parent()
                         .attr('id')
                     let itemId = $(item)
@@ -1740,13 +998,13 @@ class Canvas {
                     let trackW = $(item)
                         .find('.trackContent')
                         .width() //轨道长度
-                    let track = $(thats)
+                    let track = $(that)
                         .parent()
                         .parent()
 
 
                     if (
-                        that.checkHover(e, $(item).find('.trackContent')) &&
+                        THAT.checkHover(e, $(item).find('.trackContent')) &&
                         copyId != itemId
                     ) {
                         //切换轨道
@@ -1763,14 +1021,14 @@ class Canvas {
                                 }
                             }
 
-                            $(thats).attr('data-l', leftAll)
+                            $(that).attr('data-l', leftAll)
 
                             $(item)
                                 .children()
                                 .eq(1)
-                                .append($(thats))
+                                .append($(that))
 
-                            $(thats).css({
+                            $(that).css({
                                 position: 'absolute',
                                 top: '0px',
                                 left: `${leftAll}px`,
@@ -1778,36 +1036,36 @@ class Canvas {
                                 'z-index': '0'
                             })
 
-                            that.removeTrack(track, thats)
+                            THAT.removeTrack(track, that)
                         } else {
                             //没元素 成为第一个元素
 
                             $(item)
                                 .children()
                                 .eq(1)
-                                .append($(thats))
+                                .append($(that))
 
-                            $(thats).attr('data-l', '0')
-                            $(thats).css({
+                            $(that).attr('data-l', '0')
+                            $(that).css({
                                 position: 'absolute',
                                 top: '0px',
                                 left: `0px`,
                                 'z-index': '0'
                             })
 
-                            that.removeTrack(track, thats)
-                            that.drawImg(
-                                $(thats).attr('data-s'),
-                                $(thats).attr('data-i'),
+                            THAT.removeTrack(track, that)
+                            THAT.drawImg(
+                                $(that).attr('data-s'),
+                                $(that).attr('data-i'),
                                 0,
                                 0,
-                                $(thats)
+                                $(that)
                             )
 
-                            let tContent = $(thats)
+                            let tContent = $(that)
                                 .parent()
                                 .prev('.trackController')
-                            let thisType = $(thats).attr('data-t')
+                            let thisType = $(that).attr('data-t')
                             if (thisType != tContent.attr('data-t')) {
                                 let index = 1
                                 for (const item of $('.track')) {
@@ -1821,89 +1079,11 @@ class Canvas {
                                     }
                                 }
 
-                                // tContent.text(
-                                //     `${
-                                //         that.typeIndex[thisType - 1]
-                                //     }${index}`
-                                // )
                                 tContent.attr('data-t', thisType)
                             }
                         }
                         break
                     }
-                    // else if (
-                    //     that.checkHover(e, $(item).find('.trackContent')) &&
-                    //     copyId == itemId &&
-                    //     eX - trackX > eItemX &&
-                    //     trackW - (eX - trackX) > $(thats).width() - eItemX
-                    // ) {
-                    //     //轨道内移动
-
-                    //     let flag = false
-
-                    //     let trackEle = $(thats)
-                    //         .parent()
-                    //         .children()
-                    //     // debugger
-                    //     for (const it of trackEle) {
-                    //         //判断是否重合轨道内其他元素
-                    //         // debugger
-                    //         if (that.checkHoverDiv($(thats), $(it))) {
-                    //             $(thats).css({
-                    //                 position: 'absolute',
-                    //                 top: `0px`,
-                    //                 left: `${$(thats).attr('data-l')}px`,
-                    //                 width: `${divW}px`,
-                    //                 'z-index': 0
-                    //             })
-
-                    //             flag = true
-                    //         }
-                    //     }
-
-                    //     //  判断是否为本轨道循环
-                    //     let flagI = false
-                    //     for (let el = 0; el < $('.track').length; el++) {
-                    //         const e = $('.track')[el]
-                    //         if (e == item) {
-                    //             flagI = true
-                    //         }
-                    //     }
-
-                    //     if (!flag && flagI) {
-                    //         $(thats).attr('data-l', eX - trackX - eItemX)
-                    //         $(thats).css({
-                    //             position: 'absolute',
-                    //             top: `0px`,
-                    //             left: `${$(thats).attr('data-l')}px`,
-                    //             width: `${divW}px`,
-                    //             'z-index': 0
-                    //         })
-                    //     }
-
-                    //     break
-                    // }
-                    // else {
-                    //     //移出轨道还原位置
-                    //     //  判断是否为本轨道循环
-                    //     let flagI = false
-                    //     for (let el = 0; el < $('.track').length; el++) {
-                    //         const e = $('.track')[el]
-                    //         if (item == e && el == $('.track').length - 1) {
-                    //             flagI = true
-                    //         }
-                    //     }
-
-                    //     if (flagI) {
-                    //         $(thats).css({
-                    //             position: 'absolute',
-                    //             top: `0px`,
-                    //             left: `${$(thats).attr('data-l')}px`,
-                    //             width: `${divW}px`,
-                    //             'z-index': 0
-                    //         })
-                    //     }
-                    // }
                 }
 
                 $(document).off('mousemove', moveE)
@@ -1916,7 +1096,7 @@ class Canvas {
             $(document).on('mousemove', moveE)
         })
 
-        function calcEle(e) {
+        function calcEle(e) { //判断移动到哪条轨道
             for (const item of $('.trackContent')) {
                 if (THAT.checkHover(e, $(item))) {
                     return $(item)
@@ -4354,8 +3534,6 @@ class Canvas {
     }
 
 }
-
-
 
 function initCanvas() {
     let getObj = JSON.parse(window.localStorage.getProgram)

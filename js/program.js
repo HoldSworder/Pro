@@ -947,144 +947,156 @@ class Canvas {
                     trackX = trackRect.left, //轨道距离左边界距离
                     thisX = thatRect.left //元素距离左边界距离
 
+                    console.log(!nowEle)
+                if (nowEle) {
+                    if (nowEle.attr('id') == oldEle.attr('id')) { //轨道内移动
+                        let flag = true
+                        let trackEle = $(that).parent().children()
+                        const oLeft = parseInt($(that).css('left'))
 
-                if (nowEle.attr('id') == oldEle.attr('id')) { //轨道内移动
-                    let flag = false
+                        for (const it of trackEle) {
+                            if ($(it).attr('data-i') == $(clone).attr('data-i')) continue
+                            let nLeft
 
-                    let trackEle = $(that).parent().children()
-
-                    for (const it of trackEle) {
-                        if($(it).attr('data-i') == $(clone).attr('data-i')) return
-                        //判断是否重合轨道内其他元素
-                        if (THAT.checkHoverDiv($(clone), $(it))) {
-                            console.log('hover')
-                            $(that).css({
-                                position: 'absolute',
-                                top: `0px`,
-                                left: `${$(that).attr('data-l')}px`,
-                                width: `${divW}px`,
-                                'z-index': 0
-                            })
-
-                            flag = true
-                        }
-                    }
-
-                    if (!flag) {
-                        $(that).attr('data-l', eX - trackX - eItemX)
-                        $(that).css({
-                            position: 'absolute',
-                            top: `0px`,
-                            left: `${$(that).attr('data-l')}px`,
-                            width: `${divW}px`,
-                            'z-index': 0
-                        })
-                    }
-                }
-
-                for (const item of $('.track')) {
-                    //循环所有轨道 找到元素将移动的轨道
-                    let copyId = $(that)
-                        .parent()
-                        .attr('id')
-                    let itemId = $(item)
-                        .children()
-                        .eq(1)
-                        .attr('id')
-                    let itemChildren = $(item)
-                        .children()
-                        .eq(1)
-                        .children()
-                    let trackW = $(item)
-                        .find('.trackContent')
-                        .width() //轨道长度
-                    let track = $(that)
-                        .parent()
-                        .parent()
-
-
-                    if (
-                        THAT.checkHover(e, $(item).find('.trackContent')) &&
-                        copyId != itemId
-                    ) {
-                        //切换轨道
-                        if (itemChildren.length != 0) {
-                            //判断轨道内是否有元素
-                            let leftAll = 0
-                            for (const i of itemChildren) {
-                                //有元素 获取最后一个元素的x定位
-                                let thisX =
-                                    parseFloat($(i).css('left')) +
-                                    $(i).width()
-                                if (thisX > leftAll) {
-                                    leftAll = thisX
+                            if (THAT.checkHoverDiv($(clone), $(it))) { //判断是否重合轨道内其他元素
+                                if (THAT.checkHoverAround(clone, it) == 'left') {
+                                    nLeft = parseInt($(it).css('left')) - $(clone).width()
+                                    $(that).attr('data-l', nLeft)
+                                    $(that).css('left', `${nLeft}px`)
+                                    chackOther(oLeft, that, trackEle)
+                                } else {
+                                    nLeft = parseInt($(it).css('left')) + $(it).width() + 1
+                                    $(that).attr('data-l', nLeft)
+                                    $(that).css('left', `${nLeft}px`)
+                                    chackOther(oLeft, that, trackEle)
                                 }
+
+                                flag = false
                             }
+                        }
 
-                            $(that).attr('data-l', leftAll)
+                        if (THAT.checkHoverDiv($(clone), nowEle.parent().find('.trackController'))) {
+                            $(that).attr('data-l', 0)
+                            $(that).css('left', `${0}px`)
+                            chackOther(oLeft, that, trackEle)
+                            flag = false
+                            console.log('on')
+                        }
 
-                            $(item)
-                                .children()
-                                .eq(1)
-                                .append($(that))
-
+                        if (flag) {
+                            console.log('out')
+                            $(that).attr('data-l', eX - trackX - eItemX)
                             $(that).css({
-                                position: 'absolute',
-                                top: '0px',
-                                left: `${leftAll}px`,
-                                width: '5%',
-                                'z-index': '0'
+                                left: `${$(that).attr('data-l')}px`,
                             })
-
-                            THAT.removeTrack(track, that)
-                        } else {
-                            //没元素 成为第一个元素
-
-                            $(item)
-                                .children()
-                                .eq(1)
-                                .append($(that))
-
-                            $(that).attr('data-l', '0')
-                            $(that).css({
-                                position: 'absolute',
-                                top: '0px',
-                                left: `0px`,
-                                'z-index': '0'
-                            })
-
-                            THAT.removeTrack(track, that)
-                            THAT.drawImg(
-                                $(that).attr('data-s'),
-                                $(that).attr('data-i'),
-                                0,
-                                0,
-                                $(that)
-                            )
-
-                            let tContent = $(that)
+                        }
+                    } else {
+                        for (const item of $('.track')) {
+                            //循环所有轨道 找到元素将移动的轨道
+                            let copyId = $(that)
                                 .parent()
-                                .prev('.trackController')
-                            let thisType = $(that).attr('data-t')
-                            if (thisType != tContent.attr('data-t')) {
-                                let index = 1
-                                for (const item of $('.track')) {
-                                    //判断重复类型轨道
-                                    if (
-                                        $(item)
-                                        .find('.trackController')
-                                        .attr('data-t') == thisType
-                                    ) {
-                                        index++
+                                .attr('id')
+                            let itemId = $(item)
+                                .children()
+                                .eq(1)
+                                .attr('id')
+                            let itemChildren = $(item)
+                                .children()
+                                .eq(1)
+                                .children()
+                            let trackW = $(item)
+                                .find('.trackContent')
+                                .width() //轨道长度
+                            let track = $(that)
+                                .parent()
+                                .parent()
+
+
+                            if (
+                                THAT.checkHover(e, $(item).find('.trackContent')) &&
+                                copyId != itemId
+                            ) {
+                                //切换轨道
+                                if (itemChildren.length != 0) {
+                                    //判断轨道内是否有元素
+                                    let leftAll = 0
+                                    for (const i of itemChildren) {
+                                        //有元素 获取最后一个元素的x定位
+                                        let thisX =
+                                            parseFloat($(i).css('left')) +
+                                            $(i).width()
+                                        if (thisX > leftAll) {
+                                            leftAll = thisX
+                                        }
+                                    }
+
+                                    $(that).attr('data-l', leftAll)
+
+                                    $(item)
+                                        .children()
+                                        .eq(1)
+                                        .append($(that))
+
+                                    $(that).css({
+                                        position: 'absolute',
+                                        top: '0px',
+                                        left: `${leftAll}px`,
+                                        width: '5%',
+                                        'z-index': '0'
+                                    })
+
+                                    THAT.removeTrack(track, that)
+                                } else {
+                                    //没元素 成为第一个元素
+
+                                    $(item)
+                                        .children()
+                                        .eq(1)
+                                        .append($(that))
+
+                                    $(that).attr('data-l', '0')
+                                    $(that).css({
+                                        position: 'absolute',
+                                        top: '0px',
+                                        left: `0px`,
+                                        'z-index': '0'
+                                    })
+
+                                    THAT.removeTrack(track, that)
+                                    THAT.drawImg(
+                                        $(that).attr('data-s'),
+                                        $(that).attr('data-i'),
+                                        0,
+                                        0,
+                                        $(that)
+                                    )
+
+                                    let tContent = $(that)
+                                        .parent()
+                                        .prev('.trackController')
+                                    let thisType = $(that).attr('data-t')
+                                    if (thisType != tContent.attr('data-t')) {
+                                        let index = 1
+                                        for (const item of $('.track')) {
+                                            //判断重复类型轨道
+                                            if (
+                                                $(item)
+                                                .find('.trackController')
+                                                .attr('data-t') == thisType
+                                            ) {
+                                                index++
+                                            }
+                                        }
+
+                                        tContent.attr('data-t', thisType)
                                     }
                                 }
-
-                                tContent.attr('data-t', thisType)
+                                break
                             }
                         }
-                        break
                     }
                 }
+
 
                 $(document).off('mousemove', moveE)
                 $(document).off('mouseup', upE)
@@ -1097,13 +1109,25 @@ class Canvas {
         })
 
         function calcEle(e) { //判断移动到哪条轨道
-            for (const item of $('.trackContent')) {
+            for (const item of $('.track')) {
                 if (THAT.checkHover(e, $(item))) {
-                    return $(item)
+                    return $(item).find('.trackContent')
                 }
             }
 
             return false
+        }
+
+        function chackOther(oLeft, that, trackEle) {
+            for (const ite of trackEle) {
+                if ($(ite).attr('data-i') == $(that).attr('data-i')) continue
+
+                if (THAT.checkHoverDiv($(that), $(ite))) {
+                    console.log(ite)
+                    $(that).attr('data-l', oLeft)
+                    $(that).css('left', `${oLeft}px`)
+                }
+            }
         }
     }
 
@@ -3478,6 +3502,12 @@ class Canvas {
         let div1R = window1.left + window1.width
         let div2R = window2.left + window2.width
 
+        // if (Math.max(div1L, div2L) <= Math.min(div2R, div2R)) {
+        //     return true
+        // } else {
+        //     return false
+        // }
+
         if (
             (div1L < div2L && div1R > div2L) ||
             (div2L < div1L && div2R > div1L) ||
@@ -3487,6 +3517,34 @@ class Canvas {
             return true
         } else {
             return false
+        }
+    }
+
+    checkHoverAround(target, div) { //target需要判断的元素 div参照系
+        target = $(target)
+        div = $(div)
+
+        const rect1 = target[0].getBoundingClientRect(),
+            rect2 = div[0].getBoundingClientRect()
+
+        const div1L = rect1.left,
+            div2L = rect2.left,
+            div1R = rect1.right,
+            div2R = rect2.right,
+            middle = rect2.width / 2 + rect2.left,
+            width1 = rect1.width,
+            width2 = rect2.width
+
+
+        let left, right
+
+        left = (width1 + width2) - Math.abs(div1L - div2L) - Math.abs(div1R - middle)
+        right = (width1 + width2) - Math.abs(div1L - middle) - Math.abs(div1R - div2R)
+
+        if (left > right) {
+            return 'left'
+        } else {
+            return 'right'
         }
     }
 

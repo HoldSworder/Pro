@@ -37,7 +37,7 @@ class Adsorb {
       this._initCanvas()
     }
 
-    setInterval(function() {
+    setInterval(function () {
       THAT.flag = 0
     }, 100)
   }
@@ -50,6 +50,10 @@ class Adsorb {
     const THAT = this
 
     THAT._setMap(container)
+
+    Tool.observer(container, function (mutation) {
+      THAT._setMap(container)
+    })
 
     $('#canvas').on('click', attr, function (e) {
       if (THAT.domMap.has(this)) return
@@ -75,7 +79,7 @@ class Adsorb {
       THAT._setMap(item)
     })
   }
-
+  
   _move(p, dom) { //元素移动判断吸附逻辑
     this._clearRect()
     const THAT = this
@@ -87,7 +91,7 @@ class Adsorb {
     } = p
 
     this.flag++
-    if(this.flag > 100) return
+    if (this.flag > 100) return
 
     const mapArr = []
     this.ctx.beginPath()

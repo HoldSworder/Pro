@@ -75,6 +75,7 @@ class Element {
       this._proxy()
       this._observer()
       // this._timeBlur()
+      this._beforeDraw()
   }
 
   _observer() {
@@ -345,7 +346,6 @@ class Element {
           img = this.dImg
       value = parseInt(value)
       if (value < 0) value = 0
-
       switch (key) {
           case 'width':
               if (value > $option.width) value = $option.width
@@ -598,5 +598,12 @@ class Element {
       })
 
       checkEle.attr('data-p', JSON.stringify(dataJ))
+  }
+
+  _beforeDraw() {
+    if (this.dImg.width > $option.width) this.dImg.css('width', $option.width)
+    if (this.dImg.height > $option.height) this.dImg.css('height', $option.height)
+
+      console.log(this.dImg)
   }
 }

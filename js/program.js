@@ -239,9 +239,6 @@ class Canvas {
             let clone = $(this).clone()
             $(this).after(clone)
 
-            //隐藏克隆图片
-            // clone.hide()
-
             cloner = clone
 
             top = $(this).offset().top
@@ -259,7 +256,7 @@ class Canvas {
 
             let upE = function (e) {
                 e.preventDefault()
-                let nameId = new Date().getTime().toString()
+                const nameId = new Date().getTime().toString()
                 // const nameId = Symbol()
 
                 if (flag) {
@@ -303,6 +300,7 @@ class Canvas {
                         for (const item of $('.trackBox').children()) {
                             if ($(item).hasClass('track')) {
                                 if (thats.checkHover(e, $(item))) {
+                                    //TODO
                                     let filename
                                     let trName //轨道名称
                                     let path = that[0].src
@@ -344,25 +342,30 @@ class Canvas {
                                             </div>
                                         `
 
-                                    if (
-                                        trackContent.children().length == 0
-                                    ) {
-                                        //轨道为空 绘制图片
-                                        thats.drawImg(
-                                            that.attr('src'),
-                                            nameId,
-                                            0,
-                                            0,
-                                            that
-                                        )
-                                        $(item)
-                                            .find('.trackController')
-                                            .attr(
-                                                'data-t',
-                                                $('#itemIndex').val()
-                                            )
-                                    }
                                     trackContent.append(html)
+                                    //绘制图片
+                                    thats.drawImg(
+                                        that.attr('src'),
+                                        nameId,
+                                        0,
+                                        0,
+                                        that
+                                    )
+                                    $(item)
+                                        .find('.trackController')
+                                        .attr(
+                                            'data-t',
+                                            $('#itemIndex').val()
+                                        )
+
+                                    const elementObj = new Element(that.attr('data-J'), nameId)
+                                    thats.mapElement.set(nameId, elementObj)
+                                    elementObj.dImg.click()
+                                    elementObj.dDiv.addClass('hidden')
+                                    if (trackContent.children().length == 0) {
+                                        //轨道为空 绘制图片
+                                        elementObj.dDiv.removeClass('hidden')
+                                    }
                                 }
                             }
                         }
@@ -531,33 +534,7 @@ class Canvas {
             })
     }
 
-    //超出边界修正位置
-    fixPosition(that, oparent) {
-        let left = $(oparent).offset().left
-        let top = $(oparent).offset().top
-        let width = $(oparent).width()
-        let height = $(oparent).height()
-        if (left + width > that.width) {
-            $(oparent)
-                .parent()
-                .css('left', that.width - width)
-        }
-        if (top + height > that.height) {
-            $(oparent)
-                .parent()
-                .css('top', that.height - height)
-        }
-        if ($(oparent).offset().top < 0) {
-            $(oparent)
-                .parent()
-                .css('top', 0)
-        }
-        if ($(oparent).offset().left < 0) {
-            $(oparent)
-                .parent()
-                .css('left', 0)
-        }
-    }
+
 
     //点击图片 显示缩放按钮并绑定缩放属性
     showControl() {
@@ -947,7 +924,7 @@ class Canvas {
                     trackX = trackRect.left, //轨道距离左边界距离
                     thisX = thatRect.left //元素距离左边界距离
 
-                    console.log(!nowEle)
+                console.log(!nowEle)
                 if (nowEle) {
                     if (nowEle.attr('id') == oldEle.attr('id')) { //轨道内移动
                         let flag = true
@@ -1409,7 +1386,7 @@ class Canvas {
         el.attr('data-end', that.formatSeconds(endT))
     }
 
-    //监听轨道类型变化
+    //监听轨道类型变化(discard)
     trackTypeObserver(el) {
         // debugger
         let that = this
@@ -1475,12 +1452,26 @@ class Canvas {
 
     //点击图片或轨道读取信息填充到素材仓库中
     setInput() {
-        let that = this
-        let flag = false
-        let data
+        const id = $('.checkEle').attr('data-i'),
+            THAT = this
+        let checkImg = $('#canvas').find(`[data-i=${id}]`).find('img'),
+            flag = false,
+            data
         if (!($('.checkEle').attr('data-p') == undefined)) {
             flag = true
             data = JSON.parse($('.checkEle').attr('data-p'))
+            data.trans = (data.width / checkImg[0].naturalWidth).toFixed(2) * 100
+        } else {
+            let element = this.mapElement.get(id)
+            let proxyObj = element._proxyObj
+            checkImg = $('.itemBox').find(`[data-i=${$('.checkEle').attr('data-i')}]`).find('img')
+            data = {
+                location_x: proxyObj.x,
+                location_y: proxyObj.y,
+                width: proxyObj.width,
+                height: proxyObj.height,
+                trans: (proxyObj.width / element.dImg[0].naturalWidth).toFixed(2) * 100
+            }
         }
 
         let index = $('.checkEle').attr('data-t')
@@ -1492,7 +1483,7 @@ class Canvas {
             }
         }
 
-        const checkImg = $('#canvas').find(`[data-i=${$('.checkEle').attr('data-i')}]`).find('img')
+
 
         //点击获取x、y数据并填充
         nowEdi.find('input[name="location_x"]').val(data.location_x)
@@ -1501,7 +1492,7 @@ class Canvas {
         let trans
         //点击获取缩放并填充设置
         if (nowEdi.find('input[name="zoomInput"]').length !== 0) {
-            trans = (data.width / checkImg[0].naturalWidth).toFixed(2) * 100
+            trans = data.trans
             nowEdi.find('input[name="zoomInput"]').val(trans)
 
             // TODO: 更改缩放比
@@ -1517,12 +1508,47 @@ class Canvas {
         nowEdi.find('input[name="height"]').val(data.height)
 
         if (flag) {
-            if (index == 1) {
+            switch (index) {
+                case 1:
+                    SetInput.index1()
+                    break;
+                case 2:
+                    SetInput.index2()
+                    break;
+                case 3:
+                    SetInput.index3()
+                    break;
+                case 4:
+                    SetInput.index4()
+                    break;
+                case 5:
+                    SetInput.index5()
+                    break;
+                case 6:
+                    SetInput.index6()
+                    break;
+                case 7:
+                    SetInput.index7()
+                    break;
+                case 8:
+                    SetInput.index8()
+                    break;
+                case 9:
+                    SetInput.index9()
+                    break;
+
+            }
+        }
+
+        class SetInput {
+            static index1() {
                 nowEdi
                     .find('select[name="transition"]')
                     .val(data.transition)
                 nowEdi.find('select[name="animation"]').val(data.animation)
-            } else if (index == 2) {
+            }
+
+            static index2() {
                 $('#video-video-check').bootstrapSwitch('state', data.video)
                 $('#video-audio-check').bootstrapSwitch('state', data.audio)
 
@@ -1538,7 +1564,9 @@ class Canvas {
 
                 nowEdi.find('input[name="startPlay"]').blur()
                 nowEdi.find('input[name="endPlay"]').blur()
-            } else if (index == 3) {
+            }
+
+            static index3() {
                 nowEdi
                     .find('#audio-vol-slider .ui-slider-handle')
                     .css('left', `${data.volume}%`)
@@ -1551,7 +1579,9 @@ class Canvas {
 
                 nowEdi.find('input[name="startPlay"]').blur()
                 nowEdi.find('input[name="endPlay"]').blur()
-            } else if (index == 4) {
+            }
+
+            static index4() {
                 nowEdi.find('textarea').val(data.text)
                 nowEdi.find('select[name="alignment"]').val(data.alignment)
                 nowEdi
@@ -1586,10 +1616,14 @@ class Canvas {
                     .find('select[name="transition"]')
                     .val(data.transition)
                 nowEdi.find('select[name="animation"]').val(data.animation)
-            } else if (index == 5) {
+            }
+
+            static index5() {
                 nowEdi.find('input[name="address"]').val(data.adress)
                 nowEdi.find('select[name="protocol"]').val(data.protocol)
-            } else if (index == 6) {
+            }
+
+            static index6() {
                 nowEdi.find('input[name="mqAddress"]').val(data.mqAddress)
                 nowEdi.find('input[name="queueName"]').val(data.queueName)
                 nowEdi.find('input[name="styleId"]').val(data.styleId)
@@ -1612,11 +1646,17 @@ class Canvas {
                 }
 
                 nowEdi.find('#rowDataTable tbody').html(html)
-            } else if (index == 7) {
+            }
+
+            static index7() {
                 nowEdi.find('select[name="styleId"]').val(data.styleId)
-            } else if (index == 8) {
+            }
+
+            static index8() {
                 nowEdi.find('select[name="styleId"]').val(data.styleId)
-            } else if (index == 9) {
+            }
+
+            static index9() {
                 nowEdi.find('select[name="overflow"]').val(data.overflow)
                 nowEdi.find('input[name="url"]').val(data.url)
 
@@ -1998,7 +2038,7 @@ class Canvas {
         // this.ediInit()
     }
 
-    //各种属性关联
+    //各种属性关联(discard)
     ediInit() {
         let that = this
             //通用初始化
@@ -3520,6 +3560,7 @@ class Canvas {
         }
     }
 
+    //判断元素跟目标在X轴靠左重叠还是靠右重叠
     checkHoverAround(target, div) { //target需要判断的元素 div参照系
         target = $(target)
         div = $(div)
@@ -3545,6 +3586,34 @@ class Canvas {
             return 'left'
         } else {
             return 'right'
+        }
+    }
+
+    //超出边界修正位置
+    fixPosition(that, oparent) {
+        let left = $(oparent).offset().left
+        let top = $(oparent).offset().top
+        let width = $(oparent).width()
+        let height = $(oparent).height()
+        if (left + width > that.width) {
+            $(oparent)
+                .parent()
+                .css('left', that.width - width)
+        }
+        if (top + height > that.height) {
+            $(oparent)
+                .parent()
+                .css('top', that.height - height)
+        }
+        if ($(oparent).offset().top < 0) {
+            $(oparent)
+                .parent()
+                .css('top', 0)
+        }
+        if ($(oparent).offset().left < 0) {
+            $(oparent)
+                .parent()
+                .css('left', 0)
         }
     }
 
@@ -3595,7 +3664,6 @@ class Canvas {
 
 function initCanvas() {
     let getObj = JSON.parse(window.localStorage.getProgram)
-    // console.log(getObj)
 
     let canvas_node = $('#canvas')
     canvas_node.css({

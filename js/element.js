@@ -601,8 +601,8 @@ class Element {
   }
 
   _beforeDraw() {
-    if (this.dImg.width > $option.width) this.dImg.css('width', $option.width)
-    if (this.dImg.height > $option.height) this.dImg.css('height', $option.height)
+    if (this.dImg.width() > $option.width) this.dImg.css('width', $option.width)
+    if (this.dImg.height() > $option.height) this.dImg.css('height', $option.height)
 
       console.log(this.dImg)
   }

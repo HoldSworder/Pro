@@ -156,14 +156,19 @@ class Canvas {
 
         this.canvas.append(html)
 
-        if ($('#itemIndex').val() == 7) { //时钟计时处理
-            let interval = setInterval(function () {
-                if (!document.querySelector(`#div${index} div`)) clearInterval(interval)
-                const n = Tool.getTime(new Date())
-                document.querySelector(`#div${index} div`).innerHTML = `${n.year}年${n.month}月${n.day} ${n.hours}:${n.min}:${n.sec}`
-            }, 1000)
+        // if ($('#itemIndex').val() == 7) { //时钟计时处理
+        //     let interval = setInterval(function () {
+        //         if (!document.querySelector(`#div${index} div`)) clearInterval(interval)
+        //         setClock()
+        //     }, 1000)
 
+        // }
+
+        function setClock() {
+            const n = Tool.getTime(new Date())
+                document.querySelector(`#div${index} div`).innerHTML = `${n.year}年${n.month}月${n.day} ${n.hours}:${n.min}:${n.sec}`
         }
+        setClock()
 
 
         this.fixPosition(this, $(`#div${index}`).children()[0])
@@ -212,7 +217,7 @@ class Canvas {
 
         ;
         (function (dom, THAT) { //绘制大图片处理
-            const img = dom.find('img')
+            const img = dom.find('img, div')
             const w = img[0].naturalWidth
             const h = img[0].naturalHeight
             const cW = THAT.proObj.width
@@ -1454,7 +1459,7 @@ class Canvas {
     setInput() {
         const id = $('.checkEle').attr('data-i'),
             THAT = this
-        let checkImg = $('#canvas').find(`[data-i=${id}]`).find('img'),
+        let checkImg = $('#canvas').find(`[data-i=${id}]`).find('img, div'),
             flag = false,
             data
         if (!($('.checkEle').attr('data-p') == undefined)) {
@@ -1876,6 +1881,32 @@ class Canvas {
                 const form = $('#clockEdi form')
 
                 RepertoryTool.setEdi(form)
+
+                form.find('select[name="format-style"]').on('change', function() {
+                    const name = $(this).val()
+                    const box = $('#clock_format_box')
+                    box.find('select').addClass('hidden')
+                    switch (name) {
+                        case '日期':
+                            box.find('select[name="format-date"]').removeClass('hidden')
+                            break
+                        case '星期':
+                            box.find('select[name="format-week"]').removeClass('hidden')
+                            break
+                        case '时间':
+                            box.find('select[name="format-time"]').removeClass('hidden')
+                            break
+                    }
+                })
+
+                form.find('select[name="formatTime"]').on('change', function() {
+                    const index = $(this).val()
+                    switch(index) {
+                        case '0': 
+                            
+                            break
+                    }
+                })
             }
 
             static setEdi(form) {
@@ -3445,6 +3476,7 @@ class Canvas {
     }
 
     //通用方法
+
     //监听属性变化观察者
     observer(el, func, filter) {
         var observer = new MutationObserver(function (mutations, observer) {

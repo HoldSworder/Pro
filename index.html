@@ -72,7 +72,7 @@
                                 <div class="col-sm-2 sliderBox">
                                     <!-- <button id="addTrack">添加轨道</button> -->
                                     <!-- <button id="addTrack" type="button" class="btn btn-default btn-xs"> -->
-                                        <!-- <span class="iconfont icon-jia" aria-hidden="true"></span> -->
+                                    <!-- <span class="iconfont icon-jia" aria-hidden="true"></span> -->
                                     <!-- </button> -->
                                     <img id="addTrack" class="btn" src="./img/add/add.svg" alt="">
                                     <span>
@@ -1067,9 +1067,70 @@
                                         </div>
 
                                         <div class="form-group col-sm-10">
+                                            <div>时间样式</div>
+                                            <select class="form-control" name="format-style">
+                                                <option value="日期">日期</option>
+                                                <option value="时间">时间</option>
+                                                <option value="星期">星期</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group col-sm-10" id="clock_format_box">
                                             <div>时间格式</div>
-                                            <select class="form-control" name="format">
+                                            <select class="form-control" name="format-time">
+                                                <option value="0" selected="true">hh:mm:ss</option>
+                                                <option value="1">中文时间</option>
+                                                <option value="2">hh:mm</option>
+                                                <option value="3">hh:mm pm</option>
+                                                <option value="4">hh:mm:ss pm</option>
+                                                <option value="5">hh:mm p</option>
+                                                <option value="6">hh:mm:ss p</option>
+                                                <option value="7">上午下午</option>
+                                                <option value="8">ms</option>
+                                                <option value="9">hh</option>
+                                                <option value="10">mm</option>
+                                                <option value="11">ss</option>
+                                            </select>
+                                            <select class="form-control hidden" name="format-date">
+                                                <option value="0" selected="true">日期时间</option>
+                                                <option value="1">yyyy-mm-dd</option>
+                                                <option value="2">yyyy/mm/dd</option>
+                                                <option value="3">yy-mm-dd</option>
+                                                <option value="4">yy/mm/dd</option>
+                                                <option value="5">mm-dd-yyyy</option>
+                                                <option value="6">mm/dd/yyyy</option>
+                                                <option value="7">mm-dd-yy</option>
+                                                <option value="8">mm/dd/yy</option>
+                                                <option value="9">中文日期</option>
+                                                <option value="10">dd-mm-yyy</option>
+                                                <option value="11">dd/mm/yyy</option>
+                                                <option value="12">dd-mm-yy</option>
+                                                <option value="13">dd/mm/yy</option>
+                                                <option value="14">yyyy</option>
+                                                <option value="15">yy</option>
+                                                <option value="16">mm</option>
+                                                <option value="17">mc</option>
+                                                <option value="18">m</option>
+                                                <option value="19">dd</option>
+                                                <option value="20">dc</option>
+                                                <option value="21">d</option>
+                                                <option value="22">MON</option>
+                                                <option value="23">mcdc</option>
+                                                <option value="24">m-d</option>
+                                                <option value="25">m/d</option>
+                                                <option value="26">fmcc</option>
+                                                <option value="27">smcc</option>
+                                                <option value="28">Month</option>
+                                            </select>
+                                            <select class="form-control hidden" name="format-week">
                                                 <option value="1">HH:mm:ss</option>
+                                                <option value="0" selected="true">英文</option>
+                                                <option value="1">英文简写</option>
+                                                <option value="2">周几</option>
+                                                <option value="3">中文简写</option>
+                                                <option value="4">数字</option>
+                                                <option value="5">星期几</option>
+                                                <option value="6">英文大写</option>
                                             </select>
                                         </div>
 

@@ -42,12 +42,12 @@ class Observer {
 
 class Element {
   constructor(data, id) {
-      this.$data = JSON.parse(data)
+      this.$data = data ? JSON.parse(data) : {}
       this.$id = id
       this.$type = this.$data.materialType
 
       this.dDiv = $('#canvas').find(`div[data-i=${this.$id}]`)
-      this.dImg = this.dDiv.find('img')
+      this.dImg = this.dDiv.find('img, div')
       this.dCheckEle = $('.trackBox').find(`div[data-i=${this.$id}]`)
       this.dForm = $('#ediBox').children().eq(this.$type - 1)
       this.dZoom = this.dForm.find('.zoom')
@@ -76,6 +76,7 @@ class Element {
       this._observer()
       // this._timeBlur()
       this._beforeDraw()
+      
   }
 
   _observer() {

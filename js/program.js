@@ -166,7 +166,7 @@ class Canvas {
 
         function setClock() {
             const n = Tool.getTime(new Date())
-                document.querySelector(`#div${index} div`).innerHTML = `${n.year}年${n.month}月${n.day} ${n.hours}:${n.min}:${n.sec}`
+            document.querySelector(`#div${index} div`).innerHTML = `${n.year}年${n.month}月${n.day} ${n.hours}:${n.min}:${n.sec}`
         }
         setClock()
 
@@ -1755,6 +1755,7 @@ class Canvas {
     //素材仓库初始化
     repertory() {
         let bodyH = document.body.clientHeight
+        const THAT = this
         // let height = bodyH - $('#myTab').height()
         let top =
             $('#myTab').height() +
@@ -1882,7 +1883,7 @@ class Canvas {
 
                 RepertoryTool.setEdi(form)
 
-                form.find('select[name="format-style"]').on('change', function() {
+                form.find('select[name="format-style"]').on('change', function () {
                     const name = $(this).val()
                     const box = $('#clock_format_box')
                     box.find('select').addClass('hidden')
@@ -1899,13 +1900,189 @@ class Canvas {
                     }
                 })
 
-                form.find('select[name="formatTime"]').on('change', function() {
-                    const index = $(this).val()
-                    switch(index) {
-                        case '0': 
-                            
+                form.find('select[name="format-time"]').on('change', function () {
+                    const index = $(this).val(),
+                        element = THAT.mapElement.get($('.checkCanvas').attr('data-i')),
+                        dImg = element.dImg,
+                        date = Tool.getTime(new Date())
+
+                    let imgText
+                    switch (index) {
+                        case '0':
+                            imgText = `${date.hours}:${date.min}:${date.sec}`
+                            break
+                        case '1':
+                            imgText = `${date.hours}时${date.min}分`
+                            break
+                        case '2':
+                            imgText = `${date.hours}:${date.min}`
+                            break
+                        case '3':
+                            imgText = `${date.hours}:${date.min} ${date.hours < 12 ? 'AM':'PM'}`
+                            break
+                        case '4':
+                            imgText = `${date.hours}:${date.min}:${date.sec} ${date.hours < 12 ? 'AM':'PM'}`
+                            break
+                        case '5':
+                            imgText = `${date.hours}:${date.min} ${date.hours < 12 ? 'A':'P'}`
+                            break
+                        case '6':
+                            imgText = `${date.hours}:${date.min}:${date.sec} ${date.hours < 12 ? 'A':'P'}`
+                            break
+                        case '7':
+                            imgText = `${date.hours < 12 ? '上午':'下午'}`
+                            break
+                        case '8':
+                            imgText = `${date.ms}`
+                            break
+                        case '9':
+                            imgText = `${date.hours}`
+                            break
+                        case '10':
+                            imgText = `${date.min}`
+                            break
+                        case '11':
+                            imgText = `${date.sec}`
                             break
                     }
+                    dImg.text(imgText)
+                })
+
+                form.find('select[name="format-date"]').on('change', function () {
+                    const index = $(this).val(),
+                        element = THAT.mapElement.get($('.checkCanvas').attr('data-i')),
+                        dImg = element.dImg,
+                        n = Tool.getTime(new Date()),
+                        monthStr = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "十一", "十二"],
+                        monthStrE = ["", "January ", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+
+                    let imgText
+                    switch (index) {
+                        case '0':
+                            imgText = `${n.year}-${n.month}-${n.day} ${n.hours}:${n.min}:${n.sec}`
+                            break
+                        case '1':
+                            imgText = `${n.year}-${n.month}-${n.day}`
+                            break
+                        case '2':
+                            imgText = `${n.year}/${n.month}/${n.day}`
+                            break
+                        case '3':
+                            imgText = `${String(n.year).slice(2)}-${n.month}-${n.day}`
+                            break
+                        case '4':
+                            imgText = `${String(n.year).slice(2)}/${n.month}/${n.day}`
+                            break
+                        case '5':
+                            imgText = `${n.month}-${n.day}-${n.year}`
+                            break
+                        case '6':
+                            imgText = `${n.month}/${n.day}/${n.year}`
+                            break
+                        case '7':
+                            imgText = `${n.month}-${n.day}-${String(n.year).slice(2)}`
+                            break
+                        case '8':
+                            imgText = `${n.month}/${n.day}/${String(n.year).slice(2)}`
+                            break
+                        case '9':
+                            imgText = `${n.year}年${n.month}月${n.day}`
+                            break
+                        case '10':
+                            imgText = `${n.day}-${n.month}-${n.year}`
+                            break
+                        case '11':
+                            imgText = `${n.day}/${n.month}/${n.year}`
+                            break
+                        case '12':
+                            imgText = `${n.day}-${n.month}-${String(n.year).slice(2)}`
+                            break
+                        case '13':
+                            imgText = `${n.day}/${n.month}/${String(n.year).slice(2)}`
+                            break
+                        case '14':
+                            imgText = `${n.year}`
+                            break
+                        case '15':
+                            imgText = `${String(n.year).slice(2)}`
+                            break
+                        case '16':
+                            imgText = `${n.month}`
+                            break
+                        case '17':
+                            imgText = `${n.month}月`
+                            break
+                        case '18':
+                            imgText = `${new Date().getMonth() + 1}`
+                            break
+                        case '19':
+                            imgText = `${n.day}`
+                            break
+                        case '20':
+                            imgText = `${n.day}号`
+                            break
+                        case '21':
+                            imgText = `${new Date().getDate()}`
+                            break
+                        case '22':
+                            imgText = `${new Date().toDateString().slice(4, 7).toLocaleUpperCase()}`
+                            break
+                        case '23':
+                            imgText = `${n.month}月${n.day}日`
+                            break
+                        case '24':
+                            imgText = `${n.month}-${n.day}`
+                            break
+                        case '25':
+                            imgText = `${n.month}/${n.day}`
+                            break
+                        case '26':
+                            imgText = `${monthStr[n.month]}月`
+                            break
+                        case '27':
+                            imgText = `${monthStr[n.month]}`
+                            break
+                        case '28':
+                            imgText = `${monthStrE[parseInt(n.month)]}`
+                            break
+                    }
+                    dImg.text(imgText)
+                })
+
+                form.find('select[name="format-week"]').on('change', function () {
+                    const index = $(this).val(),
+                        element = THAT.mapElement.get($('.checkCanvas').attr('data-i')),
+                        dImg = element.dImg,
+                        n = Tool.getTime(new Date()),
+                        weekArr = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+                        weekStr = ["一", "二", "三", "四", "五", "六", "七"]
+
+                    let imgText
+                    switch (index) {
+                        case '0':
+                            imgText = `${weekArr[n.week - 1]}`
+                            break
+                        case '1':
+                            imgText = `${new Date().toDateString().slice(0, 3)}`
+                            break
+                        case '2':
+                            imgText = `周${weekStr[n.week - 1]}`
+                            break
+                        case '3':
+                            imgText = `${weekStr[n.week - 1]}`
+                            break
+                        case '4':
+                            imgText = `${n.week}`
+                            break
+                        case '5':
+                            imgText = `星期${weekStr[n.week - 1]}`
+                            break
+                        case '6':
+                            imgText = `${new Date().toDateString().slice(0, 3).toLocaleUpperCase()}`
+                            break
+                    }
+
+                    dImg.text(imgText)
                 })
             }
 

@@ -73,7 +73,8 @@ class Tool {
           min: n.getMinutes(),
           sec: n.getSeconds(),
           mil: n.getMilliseconds(),
-          stamp: n.getTime()
+          stamp: n.getTime(),
+          ms: n.getMilliseconds()
       }
 
       let addZero = ['month', 'day', 'hours', 'min', 'sec']

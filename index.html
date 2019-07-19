@@ -1036,7 +1036,7 @@
 
                                         <div class="form-group col-sm-10">
                                             <div>字体颜色</div>
-                                            <input type="color" name="color" class="form-control">
+                                            <input type="text" name="color" class="form-control text-color">
                                         </div>
 
                                         <div class="form-group col-sm-10">
@@ -1065,12 +1065,18 @@
                                             <input type="checkbox" id="clock-italic-check" class="checkInit" checked
                                                 data-on-text="YES" data-off-text="NO" />
                                         </div>
+                                        
+                                        <div class="form-group col-sm-10">
+                                            <div>时差</div>
+                                            <select class="form-control" id="clock_time_difference">
+                                            </select>
+                                        </div>
 
                                         <div class="form-group col-sm-10">
                                             <div>时间样式</div>
                                             <select class="form-control" name="format-style">
-                                                <option value="时间">时间</option>
                                                 <option value="日期">日期</option>
+                                                <option value="时间">时间</option>
                                                 <option value="星期">星期</option>
                                             </select>
                                         </div>
@@ -1602,6 +1608,7 @@
 <script src="/plugins/jQueryUI/jquery-ui.min.js"></script>
 <script src="/plugins/placeholder/index.js"></script> -->
 
+<script src="plugins/colorPicker/index.js"></script>
 <script src="https://cdn.bootcss.com/lodash.js/4.17.12-pre/lodash.js"></script>
 <script src="plugins/jqSlider/jquery-ui-slider-pips.js"></script>
 <script src="plugins/jqueryui-ruler/js/jquery.ui.ruler.js"></script>

@@ -156,19 +156,19 @@ class Canvas {
 
         this.canvas.append(html)
 
-        // if ($('#itemIndex').val() == 7) { //时钟计时处理
-        //     let interval = setInterval(function () {
-        //         if (!document.querySelector(`#div${index} div`)) clearInterval(interval)
-        //         setClock()
-        //     }, 1000)
+        if ($('#itemIndex').val() == 7) { //时钟计时处理
+            // let interval = setInterval(function () {
+            //     if (!document.querySelector(`#div${index} div`)) clearInterval(interval)
+            //     setClock()
+            // }, 1000)
 
-        // }
+            setClock()
+        }
 
         function setClock() {
             const n = Tool.getTime(new Date())
-            document.querySelector(`#div${index} div`).innerHTML = `${n.year}年${n.month}月${n.day} ${n.hours}:${n.min}:${n.sec}`
+            document.querySelector(`#div${index} div`).innerHTML = `${n.year}-${n.month}-${n.day} ${n.hours}:${n.min}:${n.sec}`
         }
-        setClock()
 
 
         this.fixPosition(this, $(`#div${index}`).children()[0])
@@ -1881,21 +1881,30 @@ class Canvas {
             static clockEdiInit() {
                 const form = $('#clockEdi form')
 
+                for (let i = 0; i < 24; i++) {
+                    $('#clock_time_difference').append(`<option value="${i}">${i}</option>`)
+                }
+
                 RepertoryTool.setEdi(form)
 
                 form.find('select[name="format-style"]').on('change', function () {
                     const name = $(this).val()
                     const box = $('#clock_format_box')
                     box.find('select').addClass('hidden')
+                    $('#clock_time_difference').addClass('hidden')
                     switch (name) {
                         case '日期':
                             box.find('select[name="format-date"]').removeClass('hidden')
+                            box.find('select[name="format-date"]').change()
                             break
                         case '星期':
                             box.find('select[name="format-week"]').removeClass('hidden')
+                            box.find('select[name="format-week"]').change()
                             break
                         case '时间':
+                            $('#clock_time_difference').removeClass('hidden')
                             box.find('select[name="format-time"]').removeClass('hidden')
+                            box.find('select[name="format-time"]').change()
                             break
                     }
                 })
@@ -1909,25 +1918,25 @@ class Canvas {
                     let imgText
                     switch (index) {
                         case '0':
-                            imgText = `${date.hours}:${date.min}:${date.sec}`
+                            imgText = `<span class="clock-text-hours">${date.hours}</span>:${date.min}:${date.sec}`
                             break
                         case '1':
-                            imgText = `${date.hours}时${date.min}分`
+                            imgText = `<span class="clock-text-hours">${date.hours}</span>时${date.min}分`
                             break
                         case '2':
-                            imgText = `${date.hours}:${date.min}`
+                            imgText = `<span class="clock-text-hours">${date.hours}</span>:${date.min}`
                             break
                         case '3':
-                            imgText = `${date.hours}:${date.min} ${date.hours < 12 ? 'AM':'PM'}`
+                            imgText = `<span class="clock-text-hours">${date.hours}</span>:${date.min} ${date.hours < 12 ? 'AM':'PM'}`
                             break
                         case '4':
-                            imgText = `${date.hours}:${date.min}:${date.sec} ${date.hours < 12 ? 'AM':'PM'}`
+                            imgText = `<span class="clock-text-hours">${date.hours}</span>:${date.min}:${date.sec} ${date.hours < 12 ? 'AM':'PM'}`
                             break
                         case '5':
-                            imgText = `${date.hours}:${date.min} ${date.hours < 12 ? 'A':'P'}`
+                            imgText = `<span class="clock-text-hours">${date.hours}</span>:${date.min} ${date.hours < 12 ? 'A':'P'}`
                             break
                         case '6':
-                            imgText = `${date.hours}:${date.min}:${date.sec} ${date.hours < 12 ? 'A':'P'}`
+                            imgText = `<span class="clock-text-hours">${date.hours}</span>:${date.min}:${date.sec} ${date.hours < 12 ? 'A':'P'}`
                             break
                         case '7':
                             imgText = `${date.hours < 12 ? '上午':'下午'}`
@@ -1936,7 +1945,7 @@ class Canvas {
                             imgText = `${date.ms}`
                             break
                         case '9':
-                            imgText = `${date.hours}`
+                            imgText = `<span class="clock-text-hours">${date.hours}<span>`
                             break
                         case '10':
                             imgText = `${date.min}`
@@ -1945,7 +1954,7 @@ class Canvas {
                             imgText = `${date.sec}`
                             break
                     }
-                    dImg.text(imgText)
+                    dImg.html(imgText)
                 })
 
                 form.find('select[name="format-date"]').on('change', function () {
@@ -2083,6 +2092,23 @@ class Canvas {
                     }
 
                     dImg.text(imgText)
+                })
+
+                $('#clock_time_difference').on('change', function () {
+                    const diff = $(this).val(),
+                        date = Tool.getTime(new Date())
+                    $('.clock-text-hours').each(function () {
+                        let hours = parseInt(date.hours) + parseInt(diff)
+                        if (hours > 24) hours = hours % 24
+                        $(this).text(hours)
+                    })
+
+                })
+
+                $('.text-color').colorpicker({
+
+                    fillcolor:true
+                
                 })
             }
 

@@ -591,6 +591,31 @@
                                         </div>
 
                                         <div class="form-group col-sm-10">
+                                            <div>效果</div>
+                                            <select class="ids_dsn_prop_input">
+                                                <option value="0">无</option>
+                                                <option value="1">怀旧</option>
+                                                <option value="2">发光</option>
+                                                <option value="3">霓虹</option>
+                                                <option value="4" selected="true">小阴影</option>
+                                                <option value="5">大阴影</option>
+                                                <option value="6">迷彩</option>
+                                                <option value="7">火焰</option>
+                                                <option value="8">描边</option>
+                                                <option value="9">边框阴影</option>
+                                                <option value="10">浮雕</option>
+                                                <option value="11">HSL</option>
+                                                <option value="12">OutlineA</option>
+                                                <option value="13">OutlineB</option>
+                                                <option value="14">立体</option>
+                                                <option value="15">3D</option>
+                                                <option value="16">空心</option>
+                                                <option value="17">内阴影</option>
+                                            </select>
+
+                                        </div>
+
+                                        <div class="form-group col-sm-10">
                                             <div>字号</div>
                                             <!-- <select class="form-control" name="size">
                                                 <option value="1">111</option>
@@ -603,7 +628,7 @@
 
                                         <div class="form-group col-sm-10">
                                             <div>字体颜色</div>
-                                            <input type="color" name="color" class="form-control">
+                                            <input type="text" name="color" class="form-control text-color">
                                         </div>
 
                                         <div class="form-group col-sm-10">
@@ -612,8 +637,8 @@
                                                     <input type="checkbox"> 背景颜色
                                                 </label>
                                             </div>
-                                            <input type="color" value="#ffffff" name="backgroundcolor"
-                                                class="form-control">
+                                            <input type="text" value="#ffffff" name="backgroundcolor"
+                                                class="form-control back-color">
                                         </div>
 
                                         <div class="form-group col-sm-12">
@@ -1045,7 +1070,7 @@
                                                     <input type="checkbox"> 背景颜色
                                                 </label>
                                             </div>
-                                            <input type="color" name="backgroundcolor" class="form-control">
+                                            <input type="text" name="backgroundcolor" class="form-control back-color">
                                         </div>
 
                                         <div class="form-group col-sm-12">
@@ -1065,10 +1090,10 @@
                                             <input type="checkbox" id="clock-italic-check" class="checkInit" checked
                                                 data-on-text="YES" data-off-text="NO" />
                                         </div>
-                                        
-                                        <div class="form-group col-sm-10">
+
+                                        <div class="form-group col-sm-10 ">
                                             <div>时差</div>
-                                            <select class="form-control" id="clock_time_difference">
+                                            <select class="form-control hidden" id="clock_time_difference">
                                             </select>
                                         </div>
 
@@ -1266,7 +1291,7 @@
 
                                         <div class="form-group col-sm-10">
                                             <div>字体颜色</div>
-                                            <input type="color" name="color" class="form-control">
+                                            <input type="text" name="color" class="form-control text-color">
                                         </div>
 
                                         <div class="form-group col-sm-10">

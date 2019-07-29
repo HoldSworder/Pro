@@ -78,6 +78,11 @@ class Canvas {
 
         this.getGroup() //获取素材组
 
+        this.pluginsInit() //插件初始化
+    }
+
+    //初始化插件
+    pluginsInit() {
         new Adsorb({
             container: $('#canvas')[0],
             attr: '.canvasDiv',
@@ -85,12 +90,26 @@ class Canvas {
                 container: $('#hiddenBox')[0]
             }
         })
+
+        $('.text-color').colorpicker({
+            fillcolor: true,
+            success: function (o, color) {
+                $('.checkCanvas .canvasChild').css("color", color);
+            }
+        })
+
+        $('.back-color').colorpicker({
+            fillcolor: true,
+            success: function (o, color) {
+                $('.checkCanvas .canvasChild').css("background", color);
+            }
+        })
     }
 
     //在画布上绘制元素
     //绑定拖曳属性
     //绑定x、y轴
-    drawImg(imgPath, id, x, y, img, wid, hei) {
+    async drawImg(imgPath, id, x, y, img, wid, hei) {
         let that = this
         let width = wid || this.imgWidth
         let height = hei || this.imgHeight
@@ -154,7 +173,9 @@ class Canvas {
             }
         }
 
-        this.canvas.append(html)
+        await Tool.appendAsync(function() {
+            that.canvas.append(html)
+        }, id)
 
         if ($('#itemIndex').val() == 7) { //时钟计时处理
             // let interval = setInterval(function () {
@@ -227,8 +248,6 @@ class Canvas {
                 console.log('out')
             }
         }($(`#div${index}`), this))
-
-
     }
 
     //拖动绘制属性
@@ -293,10 +312,10 @@ class Canvas {
 
                         thats.sliderEle(that, nameId)
 
-                        const elementObj = new Element(that.attr('data-J'), nameId)
-                        elementObj.dImg.click()
-                        thats.mapElement.set(nameId, elementObj)
+                        // debugger
 
+                        const elementObj = new Element(that.attr('data-J'), nameId)
+                        thats.mapElement.set(nameId, elementObj)
 
                         $(document).off('mouseup', upE)
                         $(document).off('mousemove', moveE)
@@ -363,10 +382,11 @@ class Canvas {
                                             $('#itemIndex').val()
                                         )
 
+                                        
                                     const elementObj = new Element(that.attr('data-J'), nameId)
                                     thats.mapElement.set(nameId, elementObj)
-                                    elementObj.dImg.click()
                                     elementObj.dDiv.addClass('hidden')
+
                                     if (trackContent.children().length == 0) {
                                         //轨道为空 绘制图片
                                         elementObj.dDiv.removeClass('hidden')
@@ -543,7 +563,7 @@ class Canvas {
 
     //点击图片 显示缩放按钮并绑定缩放属性
     showControl() {
-        // debugger
+        
         let that = this
         this.canvas.on('click', '.canvasDiv', function (e) {
             let thats = this
@@ -1595,9 +1615,9 @@ class Canvas {
                 nowEdi.find('select[name="rolling"]').val(data.rolling)
                 nowEdi.find('select[name="font"]').val(data.font)
                 nowEdi.find('select[name="size"]').val(data.size)
-                nowEdi.find('input[name="color"]').val(data.color)
+                nowEdi.find('.text-color').val(data.color)
                 nowEdi
-                    .find('input[name="backgroundcolor"]')
+                    .find('.back-color')
                     .val(data.backgroundcolor)
                 nowEdi
                     .find('#text-transparency-slider .ui-slider-handle')
@@ -2105,11 +2125,7 @@ class Canvas {
 
                 })
 
-                $('.text-color').colorpicker({
 
-                    fillcolor:true
-                
-                })
             }
 
             static setEdi(form) {
@@ -2149,10 +2165,6 @@ class Canvas {
                     $('.checkCanvas .canvasChild').css('color', $(this).val())
                 })
 
-                //设置背景颜色
-                form.find('input[name="backgroundcolor"]').on('change', function () {
-                    $('.checkCanvas .canvasChild').css('background', $(this).val())
-                })
 
                 //设置粗体
                 form.find('[name="bold"]').bootstrapSwitch({
@@ -2721,9 +2733,9 @@ class Canvas {
                 data.rolling = edi.find('select[name="rolling"]').val()
                 data.font = edi.find('select[name="font"]').val()
                 data.size = edi.find('select[name="size"]').val()
-                data.color = edi.find('input[name="color"]').val()
+                data.color = edi.find('.text-color').val()
                 data.backgroundcolor = edi
-                    .find('input[name="backgroundcolor"]')
+                    .find('.back-color')
                     .val()
                 data.transparency = edi
                     .find('#text-transparency-slider .ui-slider-tip')
@@ -2798,9 +2810,9 @@ class Canvas {
                 data.styleId = edi.find('select[name="styleId"]').val()
                 data.font = edi.find('select[name="font"]').val()
                 data.size = edi.find('select[name="size"]').val()
-                data.color = edi.find('input[name="color"]').val()
+                data.color = edi.find('.text-color').val()
                 data.backgroundcolor = edi
-                    .find('input[name="backgroundcolor"]')
+                    .find('.back-color')
                     .val()
                 data.transparency = edi
                     .find('#clock-transparency-slider .ui-slider-tip')

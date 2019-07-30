@@ -1,3 +1,6 @@
+/**
+ * 元素吸附相关代码
+ */
 class Adsorb {
   constructor(opt) {
     this.default = {

@@ -1,3 +1,6 @@
+/**
+ * 工具类
+ */
 class Tool {
     static observer(el, func, filter = ['style']) {
         var observer = new MutationObserver(function (mutations, observer) {

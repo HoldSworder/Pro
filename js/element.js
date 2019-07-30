@@ -1,3 +1,8 @@
+/**
+ * proxy绑定对象相关代码
+ * observe观察者相关代码
+ */
+
 class Observer {
   constructor(key, option, func, element) {
       this.$key = key

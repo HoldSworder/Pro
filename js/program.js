@@ -278,7 +278,7 @@ class Canvas {
             that = $(this)
             flag = true
 
-            let upE = function (e) {
+            let upE = async function (e) {
                 e.preventDefault()
                 const nameId = new Date().getTime().toString()
                 // const nameId = Symbol()
@@ -302,7 +302,7 @@ class Canvas {
 
                         //生成轨道元素
                         //绘制画布元素
-                        thats.drawImg(
+                        await thats.drawImg(
                             that.attr('src'),
                             nameId,
                             nowX - canX - imgX / 2,
@@ -312,7 +312,7 @@ class Canvas {
 
                         thats.sliderEle(that, nameId)
 
-                        // debugger
+                        
 
                         const elementObj = new Element(that.attr('data-J'), nameId)
                         thats.mapElement.set(nameId, elementObj)
@@ -368,7 +368,7 @@ class Canvas {
 
                                     trackContent.append(html)
                                     //绘制图片
-                                    thats.drawImg(
+                                    await thats.drawImg(
                                         that.attr('src'),
                                         nameId,
                                         0,
@@ -2021,20 +2021,7 @@ class Canvas {
 
     //设置保存参数
     saveEdi() {
-        function getTime(obj, id) {
-            let checkEle = $('.checkEle')
-            let checkData = JSON.parse(checkEle.attr('data-p'))
 
-            obj.width = checkData.width
-            obj.height = checkData.height
-            obj.location_x = checkData.location_x
-            obj.location_y = checkData.location_y
-
-            obj.beginTime = id.find('input[name="startTime"]').val()
-            obj.endTime = id.find('input[name="endTime"]').val()
-
-            Object.assign(obj, JSON.parse($('.checkEle').attr('data-j') == 'undefined' ? '{}' : $('.checkEle').attr('data-j')))
-        }
 
         for (const item of $('#ediBox').children()) {
             const $item = $(item)
@@ -2076,7 +2063,7 @@ class Canvas {
             })
         }
 
-       
+
     }
 
     //监听video进度设置

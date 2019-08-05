@@ -3,6 +3,7 @@ class RepertoryTool {
   constructor(THAT) {
     this.THAT = THAT
   }
+
   videoEdiInit() {
     $('#video-slider')
       .slider({
@@ -453,6 +454,27 @@ class RepertoryTool {
     //设置行间距
     form.find('[name="rowSpace"]').on('change', function () {
       $('.checkCanvas .canvasChild').css('line-height', $(this).val())
+    })
+
+    const fontEffect = new FontEffect()
+
+    //设置文字效果
+    form.find('#font_effect').on('change', function () {
+      let color = $('#text_font_effect_color').val() || 'red'
+      let effect = fontEffect[`F${$(this).val()}`](color)
+      $('.checkCanvas .canvasChild').css('textShadow', effect)
+    })
+
+    //设置文字颜色
+    $('.effect-color').colorpicker({
+      fillcolor: true,
+      success(o, color) {
+        const index = $('#font_effect').val()
+
+        if (index == 0) return
+        const effect = fontEffect[`F${index}`](color)
+        $('.checkCanvas .canvasChild').css('textShadow', effect)
+      }
     })
   }
 }

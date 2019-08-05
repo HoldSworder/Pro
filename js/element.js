@@ -188,6 +188,7 @@ class Element {
       }, function (newD) {
           newD = parseInt(newD)
           let nHeight = Math.round(newD / scale)
+          console.log(scale)
 
           form.find('input[name="width"]').val(newD)
           form.find('input[name="height"]').val(nHeight)
@@ -202,6 +203,7 @@ class Element {
       }, function (newD) {
           newD = parseInt(newD)
           let nWidth = Math.round(newD * scale)
+          console.log(scale)
 
           form.find('input[name="height"]').val(newD)
           form.find('input[name="width"]').val(nWidth)

@@ -1,11 +1,27 @@
 // 保存数据到data-p中
 class SaveTool {
+
+  static getTime(obj, id) {
+    let checkEle = $('.checkEle')
+    let checkData = JSON.parse(checkEle.attr('data-p'))
+  
+    obj.width = checkData.width
+    obj.height = checkData.height
+    obj.location_x = checkData.location_x
+    obj.location_y = checkData.location_y
+  
+    obj.beginTime = id.find('input[name="startTime"]').val()
+    obj.endTime = id.find('input[name="endTime"]').val()
+  
+    Object.assign(obj, JSON.parse($('.checkEle').attr('data-j') == 'undefined' ? '{}' : $('.checkEle').attr('data-j')))
+  }
+
   static cImg() {
     let edi = $('#imgEdi')
     let ele = $('.checkEle')
     let data = {}
 
-    getTime(data, edi)
+    SaveTool.getTime(data, edi)
     data.transition = edi.find('select[name="animation"]').val()
     data.scalingRatio = edi
       .find('input[name="zoomInput"]')
@@ -24,7 +40,7 @@ class SaveTool {
     let ele = $('.checkEle')
     let data = {}
 
-    getTime(data, edi)
+    SaveTool.getTime(data, edi)
     data.video = edi
       .find('#video-video-check')
       .bootstrapSwitch('state')
@@ -52,7 +68,7 @@ class SaveTool {
     let ele = $('.checkEle')
     let data = {}
 
-    getTime(data, edi)
+    SaveTool.getTime(data, edi)
     data.volume = edi
       .find('#audio-vol-slider .ui-slider-tip')
       .text()
@@ -69,7 +85,7 @@ class SaveTool {
     let ele = $('.checkEle')
     let data = {}
 
-    getTime(data, edi)
+    SaveTool.getTime(data, edi)
     data.text = edi.find('textarea').val()
     data.alignment = edi.find('select[name="alignment"]').val()
     data.multiline = edi
@@ -109,7 +125,7 @@ class SaveTool {
     let ele = $('.checkEle')
     let data = {}
 
-    getTime(data, edi)
+    SaveTool.getTime(data, edi)
     data.adress = edi.find('input[name="address"]').val()
     data.protocol = edi.find('select[name="protocol"]').val()
 
@@ -123,7 +139,7 @@ class SaveTool {
     let imgEle = $('.checkCanvas')
     let data = {}
 
-    getTime(data, edi)
+    SaveTool.getTime(data, edi)
     data.height = imgEle.height()
     data.width = imgEle.width()
     data.mqAddress = edi.find('input[name="mqAddress"]').val()
@@ -151,7 +167,7 @@ class SaveTool {
     let ele = $('.checkEle')
     let data = {}
 
-    getTime(data, edi)
+    SaveTool.getTime(data, edi)
     data.styleId = edi.find('select[name="styleId"]').val()
     data.font = edi.find('select[name="font"]').val()
     data.size = edi.find('select[name="size"]').val()
@@ -179,7 +195,7 @@ class SaveTool {
     let ele = $('.checkEle')
     let data = {}
 
-    getTime(data, edi)
+    SaveTool.getTime(data, edi)
     data.styleId = edi.find('select[name="styleId"]').val()
 
     data.font = edi.find('select[name="font"]').val()
@@ -214,7 +230,7 @@ class SaveTool {
     let ele = $('.checkEle')
     let data = {}
 
-    getTime(data, edi)
+    SaveTool.getTime(data, edi)
     data.overflow = edi.find('select[name="overflow"]').val()
     data.url = edi.find('input[name="url"]').val()
     data.transparency = edi
@@ -230,7 +246,7 @@ class SaveTool {
     let ele = $('.checkEle')
     let data = {}
 
-    getTime(data, edi)
+    SaveTool.getTime(data, edi)
     data.transition = edi.find('input[name="transition"]').val()
     data.scalingRatio = edi
       .find('input[name="zoomInput"]')

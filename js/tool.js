@@ -135,9 +135,12 @@ class Tool {
     static appendAsync(fun, id) {
         return new Promise((resolve) => {
             fun.call(null)
-            if ($('#canvas').find(`div[data-i=${id}]`).find('img').length == 0) {
+            if ($('#canvas').find(`div[data-i=${id}]`).find('img').length == 0) { //文字等引入div的情况
+                resolve()
+            } else if ($('#canvas').find(`div[data-i=${id}]`).find('.placeholder').length > 0) { //默认占位图片情况
                 resolve()
             }
+
             $('#canvas').find(`div[data-i=${id}]`).find('img')[0].onload = function () {
                 resolve()
             }

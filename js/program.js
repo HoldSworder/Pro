@@ -145,9 +145,10 @@ class Canvas {
                     </div>
                 </div>
             `
-        } else {
+        }else {
             //其他素材
             if (imgPath == this.addImgPath) {
+                // debugger
                 imgPath =
                     this.seize +
                     $('#itemIndex')
@@ -159,7 +160,6 @@ class Canvas {
                         </div>
                     `
             } else {
-                //TODO:更换环境处理
                 // 缩略图路径处理
                 let thumbnail = JSON.parse(img.attr('data-j')).thumbnail
                 let url = `img/${thumbnail}`
@@ -173,16 +173,11 @@ class Canvas {
             }
         }
 
-        await Tool.appendAsync(function () {
+        await Tool.appendAsync(() => {
             that.canvas.append(html)
         }, id)
 
         if ($('#itemIndex').val() == 7) { //时钟计时处理
-            // let interval = setInterval(function () {
-            //     if (!document.querySelector(`#div${index} div`)) clearInterval(interval)
-            //     setClock()
-            // }, 1000)
-
             setClock()
         }
 
@@ -312,7 +307,7 @@ class Canvas {
 
                         thats.sliderEle(that, nameId)
 
-                        
+
 
                         const elementObj = new Element(that.attr('data-J'), nameId)
                         thats.mapElement.set(nameId, elementObj)

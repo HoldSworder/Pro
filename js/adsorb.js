@@ -241,4 +241,12 @@ class Adsorb {
   _clearRect() { //清空画布
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
   }
+
+  deleteMap(dom) {
+    this.domMap.delete(dom)
+    this.lMap.delete(dom)
+    this.rMap.delete(dom)
+    this.tMap.delete(dom)
+    this.bMap.delete(dom)
+  }
 }

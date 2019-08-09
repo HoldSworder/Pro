@@ -83,7 +83,7 @@ class Canvas {
 
     //初始化插件
     pluginsInit() {
-        new Adsorb({
+        this.absorb = new Adsorb({
             container: $('#canvas')[0],
             attr: '.canvasDiv',
             canvas: {
@@ -145,7 +145,7 @@ class Canvas {
                     </div>
                 </div>
             `
-        }else {
+        } else {
             //其他素材
             if (imgPath == this.addImgPath) {
                 // debugger
@@ -163,7 +163,10 @@ class Canvas {
                 // 缩略图路径处理
                 let thumbnail = JSON.parse(img.attr('data-j')).thumbnail
                 let url = `img/${thumbnail}`
-                // let url = `/images/thumbnail/material/${thumbnail}`
+
+                // let fileName = JSON.parse(img.attr('data-j')).fileName
+                // let areaId = JSON.parse(img.attr('data-j')).areaId
+                // let url = `/files/idm/${areaId}/${fileName}`
 
                 html = `
                         <div class="canvasDiv" data-J='${dataJ}' data-i="${id}" id="div${index}" style="top: ${y}px; left: ${x}px; position: absolute; overflow: hidden; width: auto; height: auto;">
@@ -175,7 +178,9 @@ class Canvas {
 
         await Tool.appendAsync(() => {
             that.canvas.append(html)
+            $(`#div${index}`).click()
         }, id)
+
 
         if ($('#itemIndex').val() == 7) { //时钟计时处理
             setClock()
@@ -561,6 +566,7 @@ class Canvas {
 
         let that = this
         this.canvas.on('click', '.canvasDiv', function (e) {
+            // debugger
             let thats = this
             let index = $('#canvas').children().length
             e.stopPropagation()
@@ -719,16 +725,23 @@ class Canvas {
         let trName
         let that = this
         let path = img[0].src
-        if (path.indexOf('/') > 0) {
-            //如果包含有"/"号 从最后一个"/"号+1的位置开始截取字符串
-            filename = path.substring(
-                path.lastIndexOf('/') + 1,
-                path.length
-            )
-            trName = filename
-        } else {
+        // if (path.indexOf('/') > 0) {
+        //     //如果包含有"/"号 从最后一个"/"号+1的位置开始截取字符串
+        //     filename = path.substring(
+        //         path.lastIndexOf('/') + 1,
+        //         path.length
+        //     )
+        //     trName = filename
+        // } else {
+        //     filename = path
+        //     trName = JSON.parse(img.attr('data-j')).materialName
+        // }
+        if (img.attr('data-j')) {
             filename = path
             trName = JSON.parse(img.attr('data-j')).materialName
+        } else {
+            filename = path
+            trName = $('#itemIndex').find('option').eq($('#itemIndex').val() - 1).text()
         }
 
         let html = `
@@ -1228,6 +1241,7 @@ class Canvas {
         })
 
         $('.trackBox').on('click', '.silderBlock', function (e) {
+
             let parent = this
             let trackL = $(this)
                 .parent()
@@ -1666,12 +1680,7 @@ class Canvas {
 
         const repertory = new RepertoryTool(THAT)
 
-        repertory.videoEdiInit()
-        repertory.audioEdiInit()
-        repertory.textEdiInit()
-        repertory.tableEdiInit()
-        repertory.htmlEdiInit()
-        repertory.clockEdiInit()
+
 
         this.saveEdi()
         this.setPlayTime()
@@ -2213,7 +2222,7 @@ class Canvas {
                                             <img src="${url}" class="material" data-J='${JSON.stringify(
                                                 item
                                             )}'>
-                                            <p>${item.fileName}</p>
+                                            <p>${item.materialName}</p>
                                         </div>
                                         `
                                 }
@@ -2695,20 +2704,22 @@ class Canvas {
     //其他方法
     btnBind() {
         //按钮绑定事件
-        let that = this
+        const that = this
 
         $('#addTrack').on('click', function () {
             //添加轨道按钮
             that.newTrack()
         })
 
+        //监听del键盘事件
         $(document).on('keydown', function (e) {
-            //监听del键盘事件
             var code = e.keyCode
             if (46 == code) {
                 let track = $('.checkEle')
                     .parent()
                     .parent()
+
+                that.absorb.deleteMap($('.checkCanvas')[0])
 
                 $('.checkEle').remove()
                 $('#showBox').click()

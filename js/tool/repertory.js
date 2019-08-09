@@ -2,6 +2,14 @@
 class RepertoryTool {
   constructor(THAT) {
     this.THAT = THAT
+
+    this.videoEdiInit()
+    this.audioEdiInit()
+    this.textEdiInit()
+    this.tableEdiInit()
+    this.htmlEdiInit()
+    this.clockEdiInit()
+    this.weatherEdiInit()
   }
 
   videoEdiInit() {
@@ -335,6 +343,38 @@ class RepertoryTool {
     })
 
 
+  }
+
+  weatherEdiInit() {
+    const form = $('#weatherEdi form'),
+      THAT = this.THAT
+
+    form.find('select[name="styleId"]').on('change', function () {
+      const val = parseInt($(this).val())
+      console.log(val)
+      switch (val) {
+        case 0:
+          $('.checkCanvas').find('svg').remove()
+          break
+        case 1:
+        case 2:
+        case 3:
+          appendSvg(val)
+          break;
+      }
+    })
+
+    function appendSvg(index) {
+      const img = $('.checkCanvas').find('img')
+      const html = `
+      <svg class="icon" aria-hidden="true" style="width:${img.width()}px;height:${img.height()}px;">
+        <use xlink:href="#icon-qing${index-1}"></use>
+      </svg>
+      `
+      img.hide()
+      $('.checkCanvas').find('svg').remove()
+      $('.checkCanvas').prepend(html)
+    }
   }
 
   setEdi(form) {

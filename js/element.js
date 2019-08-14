@@ -138,7 +138,7 @@ class Element {
     }
 
     _divObserver() {
-        
+
         const THAT = this,
             proxyObj = THAT._proxyObj,
             div = THAT.dDiv,
@@ -308,7 +308,7 @@ class Element {
         const scale = this.dScale
         this._proxyObj = new Proxy(this._observe, {
             set: function (target, key, value, receiver) {
-                console.log(target,key,value)
+                if (target[key] === value) return Reflect.set(target, key, value, receiver)
                 switch (key) {
                     case 'data':
                         target[key] = JSON.stringify(value)

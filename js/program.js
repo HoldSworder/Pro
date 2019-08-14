@@ -570,7 +570,6 @@ class Canvas {
     }
 
     focusEle(dom) {
-        console.log(this.mapElement)
         const THAT = this
         let index = $('#canvas').children().length
 
@@ -959,7 +958,6 @@ class Canvas {
                     trackX = trackRect.left, //轨道距离左边界距离
                     thisX = thatRect.left //元素距离左边界距离
 
-                console.log(!nowEle)
                 if (nowEle) {
                     if (nowEle.attr('id') == oldEle.attr('id')) { //轨道内移动
                         let flag = true
@@ -992,11 +990,9 @@ class Canvas {
                             $(that).css('left', `${0}px`)
                             chackOther(oLeft, that, trackEle)
                             flag = false
-                            console.log('on')
                         }
 
                         if (flag) {
-                            console.log('out')
                             $(that).attr('data-l', eX - trackX - eItemX)
                             $(that).css({
                                 left: `${$(that).attr('data-l')}px`,
@@ -1135,7 +1131,6 @@ class Canvas {
                 if ($(ite).attr('data-i') == $(that).attr('data-i')) continue
 
                 if (THAT.checkHoverDiv($(that), $(ite))) {
-                    console.log(ite)
                     $(that).attr('data-l', oLeft)
                     $(that).css('left', `${oLeft}px`)
                 }
@@ -2198,7 +2193,6 @@ class Canvas {
                         }
 
                         if (res.materialList.length != 0) {
-                            console.log(res.materialList)
                             for (const item of res.materialList) {
                                 if (item.thumbnail == null) {
                                     html += `
@@ -3041,9 +3035,7 @@ class Canvas {
         let that = this
         $('#play').on('click', () => {
             let params = that.getParams('pro')
-            console.log(params)
             let data = JSON.stringify(params)
-            console.log(data)
 
             window.sessionStorage['playParams'] = data
 

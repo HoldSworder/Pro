@@ -42,7 +42,7 @@ class Adsorb {
 
     setInterval(function () {
       THAT.flag = 0
-    }, 100)
+    }, 10)
   }
 
   _bindEvent() { // 绑定点击事件 绑定观察者
@@ -79,10 +79,12 @@ class Adsorb {
 
       THAT._move(p, mutation.target)
 
+      
       THAT._setMap(item)
     })
+    // canvas.focusEle(mutation.target)
   }
-  
+
   _move(p, dom) { //元素移动判断吸附逻辑
     this._clearRect()
     const THAT = this
@@ -168,6 +170,7 @@ class Adsorb {
       }
     }
 
+
     this.ctx.closePath()
 
   }
@@ -221,21 +224,22 @@ class Adsorb {
   }
 
   _drawLine(type, coordinate) { //绘制线条
-    const width = this.canvas.clientWidth,
-      height = this.canvas.clientHeight
+    // console.log(type)
+    // const width = this.canvas.clientWidth,
+    //   height = this.canvas.clientHeight
 
-    this.canvas.style.display = 'block'
 
+    // this.canvas.style.display = 'block'
 
-    if (type == 'x') {
-      this.ctx.moveTo(0, coordinate)
-      this.ctx.lineTo(width, coordinate)
-    } else {
-      this.ctx.moveTo(coordinate, 0)
-      this.ctx.lineTo(coordinate, height)
-    }
+    // if (type == 'x') {
+    //   this.ctx.moveTo(0, coordinate)
+    //   this.ctx.lineTo(width, coordinate)
+    // } else {
+    //   this.ctx.moveTo(coordinate, 0)
+    //   this.ctx.lineTo(coordinate, height)
+    // }
 
-    this.ctx.stroke()
+    // this.ctx.stroke()
   }
 
   _clearRect() { //清空画布

@@ -138,6 +138,7 @@ class Element {
     }
 
     _divObserver() {
+        
         const THAT = this,
             proxyObj = THAT._proxyObj,
             div = THAT.dDiv,
@@ -154,6 +155,7 @@ class Element {
         const xObs = new Observer('x', {
             input: [form.find('input[name="location_x"]')]
         }, function (newD) {
+            // console.log(newD)
             form.find('input[name="location_x"]').val(newD)
             div.css('left', newD)
         }, THAT)
@@ -306,7 +308,7 @@ class Element {
         const scale = this.dScale
         this._proxyObj = new Proxy(this._observe, {
             set: function (target, key, value, receiver) {
-
+                console.log(target,key,value)
                 switch (key) {
                     case 'data':
                         target[key] = JSON.stringify(value)

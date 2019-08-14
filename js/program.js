@@ -1,4 +1,5 @@
 const $option = JSON.parse(window.localStorage.getProgram)
+var canvas
 
 class Canvas {
     constructor(canvas, proObj) {
@@ -83,13 +84,13 @@ class Canvas {
 
     //初始化插件
     pluginsInit() {
-        this.absorb = new Adsorb({
-            container: $('#canvas')[0],
-            attr: '.canvasDiv',
-            canvas: {
-                container: $('#hiddenBox')[0]
-            }
-        })
+        // this.absorb = new Adsorb({
+        //     container: $('#canvas')[0],
+        //     attr: '.canvasDiv',
+        //     canvas: {
+        //         container: $('#hiddenBox')[0]
+        //     }
+        // })
 
         $('.text-color').colorpicker({
             fillcolor: true,
@@ -559,71 +560,72 @@ class Canvas {
             })
     }
 
-
-
     //点击图片 显示缩放按钮并绑定缩放属性
     showControl() {
-
         let that = this
         this.canvas.on('click', '.canvasDiv', function (e) {
             // debugger
-            let thats = this
-            let index = $('#canvas').children().length
-            e.stopPropagation()
-
-            let dataId = $(thats).attr('data-i')
-            let trackEle = $('.trackBox').find(`div[data-i=${dataId}]`)
-            if (!trackEle.hasClass('checkEle')) {
-                // debugger
-                trackEle.click()
-            }
-
-            // 设置z-index
-            $('#canvas')
-                .children()
-                .css('zIndex', 1000)
-            $(thats).css('zIndex', 1040)
-
-            $('.flexBtn').remove()
-            if ($(this).children().length <= 2) {
-                let html = `
-                        <div class='flexBtn flexBtnLeft' id='resizeLT${index}' style=" top: 0; left: 0; "></div>
-                        <div class='flexBtn flexBtnRight' id='resizeRT${index}' style=" top: 0; right: 0; "></div>
-                        <div class='flexBtn flexBtnRight' id='resizeLB${index}' style=" bottom: 0; left: 0; "></div>
-                        <div class='flexBtn flexBtnLeft ' id='resizeRB${index}' style=" bottom: 0; right: 0; "></div>
-                    `
-                $(this).append(html)
-                // that = $(this)
-                $('.checkCanvas').removeClass('checkCanvas')
-                $(this).addClass('checkCanvas')
-
-                let resizeRB = document.querySelector(`#resizeRB${index}`)
-                let resizeRT = document.querySelector(`#resizeRT${index}`)
-                let resizeLT = document.querySelector(`#resizeLT${index}`)
-                let resizeLB = document.querySelector(`#resizeLB${index}`)
-
-                let img = $(this)
-                    .children('.canvasChild')
-                    .get(0)
-
-                //四角放大
-                if (
-                    that.constrain.indexOf(
-                        Number($('.checkEle').attr('data-t'))
-                    ) == -1
-                ) {
-                    that.resize(img, resizeRB, false, false, true, true)
-                    that.resize(img, resizeRT, false, true, true, true)
-                    that.resize(img, resizeLT, true, true, true, true)
-                    that.resize(img, resizeLB, true, false, true, true)
-                } else {
-                    that.resize(img, resizeRB, false, false, true, false)
-                    that.resize(img, resizeRT, false, true, true, false)
-                    that.resize(img, resizeLT, true, true, true, false)
-                    that.resize(img, resizeLB, true, false, true, false)
-                }
-            }
+            that.focusEle(this)
         })
+    }
+
+    focusEle(dom) {
+        console.log(this.mapElement)
+        const THAT = this
+        let index = $('#canvas').children().length
+
+        let dataId = $(dom).attr('data-i')
+        let trackEle = $('.trackBox').find(`div[data-i=${dataId}]`)
+        if (!trackEle.hasClass('checkEle')) {
+            // debugger
+            trackEle.click()
+        }
+
+        // 设置z-index
+        $('#canvas')
+            .children()
+            .css('zIndex', 1000)
+        $(dom).css('zIndex', 1040)
+
+        $('.flexBtn').remove()
+        if ($(dom).children().length <= 2) {
+            let html = `
+                    <div class='flexBtn flexBtnLeft' id='resizeLT${index}' style=" top: 0; left: 0; "></div>
+                    <div class='flexBtn flexBtnRight' id='resizeRT${index}' style=" top: 0; right: 0; "></div>
+                    <div class='flexBtn flexBtnRight' id='resizeLB${index}' style=" bottom: 0; left: 0; "></div>
+                    <div class='flexBtn flexBtnLeft ' id='resizeRB${index}' style=" bottom: 0; right: 0; "></div>
+                `
+            $(dom).append(html)
+            // that = $(dom)
+            $('.checkCanvas').removeClass('checkCanvas')
+            $(dom).addClass('checkCanvas')
+
+            let resizeRB = document.querySelector(`#resizeRB${index}`)
+            let resizeRT = document.querySelector(`#resizeRT${index}`)
+            let resizeLT = document.querySelector(`#resizeLT${index}`)
+            let resizeLB = document.querySelector(`#resizeLB${index}`)
+
+            let img = $(dom)
+                .children('.canvasChild')
+                .get(0)
+
+            //四角放大
+            if (
+                THAT.constrain.indexOf(
+                    Number($('.checkEle').attr('data-t'))
+                ) == -1
+            ) {
+                THAT.resize(img, resizeRB, false, false, true, true)
+                THAT.resize(img, resizeRT, false, true, true, true)
+                THAT.resize(img, resizeLT, true, true, true, true)
+                THAT.resize(img, resizeLB, true, false, true, true)
+            } else {
+                THAT.resize(img, resizeRB, false, false, true, false)
+                THAT.resize(img, resizeRT, false, true, true, false)
+                THAT.resize(img, resizeLT, true, true, true, false)
+                THAT.resize(img, resizeLB, true, false, true, false)
+            }
+        }
     }
 
     //时间轴属性
@@ -1241,7 +1243,6 @@ class Canvas {
         })
 
         $('.trackBox').on('click', '.silderBlock', function (e) {
-
             let parent = this
             let trackL = $(this)
                 .parent()
@@ -3089,7 +3090,7 @@ function initCanvas() {
         height: getObj.height
     })
 
-    let canvas = new Canvas(canvas_node, getObj)
+    canvas = new Canvas(canvas_node, getObj)
 
     canvas.init()
 }

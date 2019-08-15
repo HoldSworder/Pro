@@ -59,14 +59,27 @@ class Adsorb {
     })
 
     $('#canvas').on('click', attr, function (e) {
+      const SELF = this
+      console.log(SELF)
       if (THAT.domMap.has(this)) return
 
       THAT._event(this)
 
-      THAT.canvas.addEventListener('mouseup', function () {
+      $(THAT.canvas).on('mouseup', function (e) {
+        if(canvas.checkHover(e, $(SELF))) {
+          canvas.focusEle(SELF)
+        }
         THAT.canvas.style.display = 'none'
       })
+
+
+      // $(THAT.canvas).on('mouseup', '.canvasDiv', function () {
+      //   console.log('up')
+      //   THAT.canvas.style.display = 'none'
+      // })
+
     })
+
   }
 
   _event(item) { //元素移动观察者
@@ -79,7 +92,7 @@ class Adsorb {
 
       THAT._move(p, mutation.target)
 
-      
+
       THAT._setMap(item)
     })
     // canvas.focusEle(mutation.target)
@@ -224,22 +237,21 @@ class Adsorb {
   }
 
   _drawLine(type, coordinate) { //绘制线条
-    // console.log(type)
-    // const width = this.canvas.clientWidth,
-    //   height = this.canvas.clientHeight
+    const width = this.canvas.clientWidth,
+      height = this.canvas.clientHeight
 
 
-    // this.canvas.style.display = 'block'
+    this.canvas.style.display = 'block'
 
-    // if (type == 'x') {
-    //   this.ctx.moveTo(0, coordinate)
-    //   this.ctx.lineTo(width, coordinate)
-    // } else {
-    //   this.ctx.moveTo(coordinate, 0)
-    //   this.ctx.lineTo(coordinate, height)
-    // }
+    if (type == 'x') {
+      this.ctx.moveTo(0, coordinate)
+      this.ctx.lineTo(width, coordinate)
+    } else {
+      this.ctx.moveTo(coordinate, 0)
+      this.ctx.lineTo(coordinate, height)
+    }
 
-    // this.ctx.stroke()
+    this.ctx.stroke()
   }
 
   _clearRect() { //清空画布

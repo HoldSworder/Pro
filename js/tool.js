@@ -2,6 +2,7 @@
  * 工具类
  */
 class Tool {
+    //MutationObserver
     static observer(el, func, filter = ['style']) {
         var observer = new MutationObserver(function (mutations, observer) {
             mutations.forEach(function (mutation) {
@@ -65,6 +66,7 @@ class Tool {
         }
     }
 
+    //获取时间戳的完整时间
     static getTime(date) {
         let n = date
         let result = {
@@ -104,6 +106,7 @@ class Tool {
         }
     }
 
+    //函数防抖
     static debounce(func, wait = 50) {
         let timeout
         return function (...args) {
@@ -120,6 +123,7 @@ class Tool {
         }
     }
 
+    //函数节流
     static throttle(func, wait = 50) {
         let previous = 0
         return function (...args) {
@@ -132,6 +136,7 @@ class Tool {
         }
     }
 
+    //异步加载图片
     static appendAsync(fun, id) {
         return new Promise((resolve) => {
             fun.call(null)
@@ -139,14 +144,16 @@ class Tool {
                 resolve()
             } else if ($('#canvas').find(`div[data-i=${id}]`).find('.placeholder').length > 0) { //默认占位图片情况
                 resolve()
+            } else {
+                $('#canvas').find(`div[data-i=${id}]`).find('img')[0].onload = function () {
+                    resolve()
+                }
             }
 
-            $('#canvas').find(`div[data-i=${id}]`).find('img')[0].onload = function () {
-                resolve()
-            }
         })
     }
 
+    //颜色16进制转RBG
     static colorRgb(str) {
         // 16进制颜色值的正则
         var reg = /^#([0-9a-fA-f]{3}|[0-9a-fA-f]{6})$/;
@@ -170,6 +177,6 @@ class Tool {
         } else {
             return color;
         }
-    };
+    }
 
 }

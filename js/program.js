@@ -84,13 +84,13 @@ class Canvas {
 
     //初始化插件
     pluginsInit() {
-        // this.absorb = new Adsorb({
-        //     container: $('#canvas')[0],
-        //     attr: '.canvasDiv',
-        //     canvas: {
-        //         container: $('#hiddenBox')[0]
-        //     }
-        // })
+        this.absorb = new Adsorb({
+            container: $('#canvas')[0],
+            attr: '.canvasDiv',
+            canvas: {
+                container: $('#hiddenBox')[0]
+            }
+        })
 
         $('.text-color').colorpicker({
             fillcolor: true,

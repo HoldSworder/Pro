@@ -60,7 +60,6 @@ class Adsorb {
 
     $('#canvas').on('click', attr, function (e) {
       const SELF = this
-      console.log(SELF)
       if (THAT.domMap.has(this)) return
 
       THAT._event(this)
@@ -68,15 +67,10 @@ class Adsorb {
       $(THAT.canvas).on('mouseup', function (e) {
         if(canvas.checkHover(e, $(SELF))) {
           canvas.focusEle(SELF)
+          
         }
         THAT.canvas.style.display = 'none'
       })
-
-
-      // $(THAT.canvas).on('mouseup', '.canvasDiv', function () {
-      //   console.log('up')
-      //   THAT.canvas.style.display = 'none'
-      // })
 
     })
 
@@ -88,6 +82,7 @@ class Adsorb {
     this.domMap.set(item, item.getBoundingClientRect())
 
     Tool.observer(item, function (mutation) {
+      console.log(mutation)
       const p = item.getBoundingClientRect()
 
       THAT._move(p, mutation.target)
@@ -182,7 +177,6 @@ class Adsorb {
         }
       }
     }
-
 
     this.ctx.closePath()
 

@@ -580,11 +580,11 @@ class Canvas {
             trackEle.click()
         }
 
-        // 设置z-index
-        $('#canvas')
-            .children()
-            .css('zIndex', 1000)
-        $(dom).css('zIndex', 1040)
+        // // 设置z-index
+        // $('#canvas')
+        //     .children()
+        //     .css('zIndex', 1000)
+        // $(dom).css('zIndex', 1040)
 
         $('.flexBtn').remove()
         if ($(dom).children().length <= 2) {

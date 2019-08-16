@@ -82,7 +82,6 @@ class Adsorb {
     this.domMap.set(item, item.getBoundingClientRect())
 
     Tool.observer(item, function (mutation) {
-      console.log(mutation)
       const p = item.getBoundingClientRect()
 
       THAT._move(p, mutation.target)

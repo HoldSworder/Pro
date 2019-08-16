@@ -1,6 +1,10 @@
 const $option = JSON.parse(window.localStorage.getProgram)
 var canvas
 
+/**
+ * @class 画布类
+ * @param {string} NODE_ENV - ('development', 'production') 配置环境参数
+ */
 class Canvas {
     constructor(canvas, proObj) {
         this.canvas = canvas
@@ -28,15 +32,12 @@ class Canvas {
         this.proObj = proObj
         this.constrain = [1, 2] //等比例缩放
         this.baseUrl = 'https://www.easy-mock.com/mock/5cdb7945f2f8913ca63714d2/test'
+        this.NODE_ENV = 'development'
         this.api = {
             //素材
-            material: this.baseUrl + '/idm/template/getmaterial.do',
-            // material: './json/material.json',
-            // material: '/idm/template/getmaterial.do', //idm/template/getmaterial.do   //./json/material.json
+            material: this.NODE_ENV == 'development' ? this.baseUrl + '/idm/template/getmaterial.do' : '/idm/template/getmaterial.do',
             //模版
-            template: this.baseUrl + '/idm/template/gettemplates.do',
-            // template: './json/template.json',
-            // template: '/idm/template/gettemplates.do', //idm/template/gettemplate.do  //./json/template.json
+            template: this.NODE_ENV == 'development' ? this.baseUrl + '/idm/template/gettemplates.do' : '/idm/template/gettemplates.do',
             //保存
             save: '/idm/program/saveprogram.do',
             //保存为模版
@@ -163,11 +164,15 @@ class Canvas {
             } else {
                 // 缩略图路径处理
                 let thumbnail = JSON.parse(img.attr('data-j')).thumbnail
-                let url = `img/${thumbnail}`
+                let url
+                if (that.NODE_ENV == 'development') {
+                    url = `img/${thumbnail}`
+                } else {
+                    let fileName = JSON.parse(img.attr('data-j')).fileName
+                    let areaId = JSON.parse(img.attr('data-j')).areaId
+                    url = `/files/idm/${areaId}/${fileName}`
+                }
 
-                // let fileName = JSON.parse(img.attr('data-j')).fileName
-                // let areaId = JSON.parse(img.attr('data-j')).areaId
-                // let url = `/files/idm/${areaId}/${fileName}`
 
                 html = `
                         <div class="canvasDiv" data-J='${dataJ}' data-i="${id}" id="div${index}" style="top: ${y}px; left: ${x}px; position: absolute; overflow: hidden; width: auto; height: auto;">
@@ -2205,12 +2210,16 @@ class Canvas {
                                 } else {
                                     //TODO:更换环境处理
                                     // 缩略图路径处理
-                                    let url = `img/${
+                                    let url
+                                    if (that.NODE_ENV == 'development') {
+                                        url = `img/${
                                             item.thumbnail
                                         }`
-                                    // let url = `/images/thumbnail/material/${
-                                    //     item.thumbnail
-                                    // }`
+                                    } else {
+                                        url = `/images/thumbnail/material/${
+                                            item.thumbnail
+                                        }`
+                                    }
 
                                     html += `
                                         <div class='item-container'>

@@ -6,7 +6,7 @@ class Adsorb {
     this.default = {
       container: document,
       attr: '.absorb', //添加class标记
-      length: 10, //吸附阈值
+      length: 5, //吸附阈值
       vertical: true, //开启垂直吸附
       horizontal: true, //开启水平吸附
       canvas: {

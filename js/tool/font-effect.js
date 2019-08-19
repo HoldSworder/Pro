@@ -2,6 +2,9 @@ class FontEffect {
   constructor() {
     this.colorArr = ['#fff']
   }
+  F0() {
+    return ''
+  }
 
   F1(color) {
     return `${color} 1px 1px 0px, ${color} 2px 2px 0px`

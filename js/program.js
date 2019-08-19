@@ -183,8 +183,11 @@ class Canvas {
         }
 
         await Tool.appendAsync(() => {
+            debugger
+            //TODO:冲突
             that.canvas.append(html)
             $(`#div${index}`).click()
+            // that.focusEle($(`#div${index}`)[0])
         }, id)
 
 
@@ -326,6 +329,7 @@ class Canvas {
                         $(document).off('mouseup', upE)
                         $(document).off('mousemove', moveE)
                     } else if (thats.checkHover(e, $('.trackBox'))) {
+
                         //移动到轨道上新增元素并绘制
                         for (const item of $('.trackBox').children()) {
                             if ($(item).hasClass('track')) {
@@ -373,6 +377,7 @@ class Canvas {
                                         `
 
                                     trackContent.append(html)
+
                                     //绘制图片
                                     await thats.drawImg(
                                         that.attr('src'),
@@ -381,6 +386,7 @@ class Canvas {
                                         0,
                                         that
                                     )
+
                                     $(item)
                                         .find('.trackController')
                                         .attr(
@@ -393,17 +399,23 @@ class Canvas {
                                     thats.mapElement.set(nameId, elementObj)
                                     elementObj.dDiv.addClass('hidden')
 
-                                    if (trackContent.children().length == 0) {
+                                    if (trackContent.children().length == 1) {
                                         //轨道为空 绘制图片
                                         elementObj.dDiv.removeClass('hidden')
                                     }
                                 }
                             }
                         }
+                        $(document).off('mouseup', upE)
+                        $(document).off('mousemove', moveE)
                     }
 
+                    $(document).off('mouseup', upE)
+                    $(document).off('mousemove', moveE)
                     flag = false
                 }
+                $(document).off('mouseup', upE)
+                $(document).off('mousemove', moveE)
             }
 
             let moveE = function (e) {
@@ -1488,6 +1500,7 @@ class Canvas {
     //点击图片或轨道读取信息填充到素材仓库中
     setInput() {
         const id = $('.checkEle').attr('data-i'),
+            checkChild = $('.checkCanvas .canvasChild'),
             THAT = this
         let checkImg = $('#canvas').find(`[data-i=${id}]`).find('img, div'),
             flag = false,
@@ -1539,8 +1552,8 @@ class Canvas {
         }
 
         //点击获取宽、高数据并填充
-        nowEdi.find('input[name="width"]').val(data.width)
-        nowEdi.find('input[name="height"]').val(data.height)
+        nowEdi.find('input[name="width"]').val(data.width || checkChild.width())
+        nowEdi.find('input[name="height"]').val(data.height || checkChild.height())
 
         const setInputTool = new SetInput(data)
 

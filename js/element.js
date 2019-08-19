@@ -49,7 +49,7 @@ class Element {
     constructor(data, id) {
         this.$data = data ? JSON.parse(data) : {}
         this.$id = id
-        this.$type = this.$data.materialType
+        this.$type = this.$data.materialType || $('#itemIndex').val()
 
         this.dDiv = $('#canvas').find(`div[data-i=${this.$id}]`)
         this.dImg = this.dDiv.find('.canvasChild')
@@ -111,6 +111,9 @@ class Element {
             const nWidth = THAT.dImg[0].naturalWidth * newD / 100,
                 nHeight = THAT.dImg[0].naturalHeight * newD / 100
 
+            // console.log(nWidth)
+            // console.log(nHeight)
+
             proxyObj.width = nWidth
             proxyObj.height = nHeight
 
@@ -121,7 +124,6 @@ class Element {
         for (const item of $('.scaleBox').find('.ui-slider-handle')) {
             function obs(mutation) {
                 const e = mutation.target
-                console.log(e)
                 if (THAT.constrain.indexOf(THAT.dCheckEle.attr('data-t')) != -1) {
                     return
                 }
@@ -155,7 +157,6 @@ class Element {
         const xObs = new Observer('x', {
             input: [form.find('input[name="location_x"]')]
         }, function (newD) {
-            // console.log(newD)
             form.find('input[name="location_x"]').val(newD)
             div.css('left', newD)
         }, THAT)
@@ -173,13 +174,14 @@ class Element {
     _imgObserver() {
         const THAT = this,
             proxyObj = this._proxyObj,
-            img = this.dImg,
             form = this.dForm,
             scale = this.dScale
 
+        let img = this.dImg
         Tool.observer(THAT.dImg[0], mutation => {
             let cWidth = parseInt(mutation.target.style.width)
             let cHeight = parseInt(mutation.target.style.height)
+
 
             proxyObj.width = cWidth
             proxyObj.height = cHeight
@@ -189,11 +191,11 @@ class Element {
             input: [form.find('input[name="width"]')]
         }, function (newD) {
             newD = parseInt(newD)
-            let nHeight = Math.round(newD / scale)
-            // console.log(scale)
+            let nHeight = Math.round(newD / (scale))
+            img = THAT.dDiv.find('svg').length == 0 ? img : THAT.dDiv.find('svg')
 
             form.find('input[name="width"]').val(newD)
-            form.find('input[name="height"]').val(nHeight)
+            if (scale) form.find('input[name="height"]').val(nHeight)
 
             img.css('width', newD)
             img.css('height', nHeight)
@@ -204,11 +206,11 @@ class Element {
             input: [form.find('input[name="height"]')]
         }, function (newD) {
             newD = parseInt(newD)
-            let nWidth = Math.round(newD * scale)
-            // console.log(scale)
+            let nWidth = Math.round(newD * (scale))
+            img = THAT.dDiv.find('svg').length == 0 ? img : THAT.dDiv.find('svg')
 
             form.find('input[name="height"]').val(newD)
-            form.find('input[name="width"]').val(nWidth)
+            if (scale) form.find('input[name="width"]').val(nWidth)
 
             img.css('height', newD)
             img.css('width', nWidth)
@@ -481,7 +483,6 @@ class Element {
                     el = item
 
                     function obs(mutation) {
-
                         el = mutation.target
                         let canvasCheck = $(
                             `.canvasDiv[data-i='${$('.checkCanvas').attr(

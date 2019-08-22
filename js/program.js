@@ -48,8 +48,6 @@ class Canvas {
             getGroup: this.baseUrl + '/idm/material/groupname'
         }
         this.mapElement = new Map()
-
-
     }
 
     init() {
@@ -183,13 +181,11 @@ class Canvas {
         }
 
         await Tool.appendAsync(() => {
-            debugger
-            //TODO:冲突
             that.canvas.append(html)
             $(`#div${index}`).click()
             // that.focusEle($(`#div${index}`)[0])
         }, id)
-
+        
 
         if ($('#itemIndex').val() == 7) { //时钟计时处理
             setClock()
@@ -329,7 +325,7 @@ class Canvas {
                         $(document).off('mouseup', upE)
                         $(document).off('mousemove', moveE)
                     } else if (thats.checkHover(e, $('.trackBox'))) {
-
+                        
                         //移动到轨道上新增元素并绘制
                         for (const item of $('.trackBox').children()) {
                             if ($(item).hasClass('track')) {
@@ -1510,6 +1506,7 @@ class Canvas {
             data = JSON.parse($('.checkEle').attr('data-p'))
             data.trans = (data.width / checkImg[0].naturalWidth).toFixed(2) * 100
         } else {
+            
             let element = this.mapElement.get(id)
             let proxyObj = element._proxyObj
             checkImg = $('.itemBox').find(`[data-i=${$('.checkEle').attr('data-i')}]`).find('img')
@@ -1537,19 +1534,7 @@ class Canvas {
         nowEdi.find('input[name="location_x"]').val(data.location_x)
         nowEdi.find('input[name="location_y"]').val(data.location_y)
 
-        let trans
-        //点击获取缩放并填充设置
-        if (nowEdi.find('input[name="zoomInput"]').length !== 0) {
-            trans = data.trans
-            nowEdi.find('input[name="zoomInput"]').val(trans)
-
-            // TODO: 更改缩放比
-            $('.activeEdi .zoom .ui-slider-tip').text(trans)
-            $('.activeEdi .zoom .ui-slider-handle').css(
-                'left',
-                `${(100 / 500) * trans}%`
-            )
-        }
+        
 
         //点击获取宽、高数据并填充
         nowEdi.find('input[name="width"]').val(data.width || checkChild.width())
@@ -1588,6 +1573,20 @@ class Canvas {
                     break;
 
             }
+        }
+
+        let trans
+        //点击获取缩放并填充设置
+        if (nowEdi.find('input[name="zoomInput"]').length !== 0) {
+            trans = data.trans
+            nowEdi.find('input[name="zoomInput"]').val(trans)
+
+            // TODO: 更改缩放比
+            $('.activeEdi .zoom .ui-slider-tip').text(trans)
+            $('.activeEdi .zoom .ui-slider-handle').css(
+                'left',
+                `${(100 / 500) * trans}%`
+            )
         }
 
     }
@@ -2221,7 +2220,6 @@ class Canvas {
                                         )}'>
                                         `
                                 } else {
-                                    //TODO:更换环境处理
                                     // 缩略图路径处理
                                     let url
                                     if (that.NODE_ENV == 'development') {
@@ -2658,6 +2656,7 @@ class Canvas {
                 parObj.elementList.push(layerObj)
             }
 
+            //TODO：修改轨道名称
             parObj.trackName = `轨道${i}`
             parObj.index = i
 

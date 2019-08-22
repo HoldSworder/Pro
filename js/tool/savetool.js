@@ -116,6 +116,9 @@ class SaveTool {
     data.wordSpace = edi.find('input[name="wordSpace"]').val()
     data.rowSpace = edi.find('input[name="rowSpace"]').val()
 
+    data.effectColor = edi.find('#text_font_effect_color').val()
+    data.effectFont = edi.find('#font_effect').val()
+
     let str = JSON.stringify(data)
     ele.attr('data-p', str)
   }
@@ -185,6 +188,10 @@ class SaveTool {
       .find('#clock-italic-check')
       .bootstrapSwitch('state')
     data.alignment = edi.find('select[name="alignment"]').val()
+
+    data.timeDiff = edi.find('#clock_time_difference').val()
+    data.timeStyle = edi.find('select[name="format-style"]').val()
+    data.Format = $('#clock_format_box select:not(.hidden)').find('option').eq($('#clock_format_box select:not(.hidden)').val()).text()
 
     let str = JSON.stringify(data)
     ele.attr('data-p', str)

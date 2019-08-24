@@ -79,6 +79,8 @@ class Canvas {
         this.getGroup() //获取素材组
 
         this.pluginsInit() //插件初始化
+
+        this.setTrackName() //修改轨道名称
     }
 
     //初始化插件
@@ -2034,8 +2036,6 @@ class Canvas {
         checkEle.attr('data-p', JSON.stringify(dataJ))
     }
 
-
-
     //设置保存参数
     saveEdi() {
 
@@ -3089,6 +3089,23 @@ class Canvas {
 
                 THAT.getMaterial()
             }
+        })
+    }
+
+    //点击修改轨道名
+    setTrackName() {
+        $('.trackBox').on('click', '.trackController span', function() {
+            let html = `
+                <input class='form-control change-track-name' style="position: relative;
+                z-index: 9999;
+                top: -30px;
+                height: 30px;" value=${$(this).text()} track=${this}>
+            `
+            $(this).append(html)
+        })
+
+        $('.trackBox').on('click', '.change-track-name', function() {
+            
         })
     }
 

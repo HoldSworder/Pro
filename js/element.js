@@ -59,7 +59,7 @@ class Element {
         this.dScale = this.dDiv.find('img').length == 0 ? NaN : this.dImg[0].naturalWidth / this.dImg[0].naturalHeight //宽高比
         //   this.dScale = NaN
 
-        this.constrain = [1, 2] //等比例缩放类型
+        this.constrain = [] //等比例缩放类型
         this.width = this.dImg.width()
         this.height = this.dImg.height()
 
@@ -84,8 +84,8 @@ class Element {
     }
 
     _observer() {
-        // this._zoomObserver()
-        this.zoom()
+        this._zoomObserver()
+        // this.zoom()
         this._divObserver()
         this._imgObserver()
         this._eleObserver()
@@ -139,7 +139,7 @@ class Element {
         }
     }
 
-    _divObserver() {
+    _divObserver() { //x y坐标观察者
 
         const THAT = this,
             proxyObj = THAT._proxyObj,
@@ -171,7 +171,7 @@ class Element {
         this.mObs.set('y', yObs)
     }
 
-    _imgObserver() {
+    _imgObserver() { //图片宽高观察者
         const THAT = this,
             proxyObj = this._proxyObj,
             form = this.dForm,
@@ -195,10 +195,10 @@ class Element {
             img = THAT.dDiv.find('svg').length == 0 ? img : THAT.dDiv.find('svg')
 
             form.find('input[name="width"]').val(newD)
-            if (scale) form.find('input[name="height"]').val(nHeight)
+            // if (scale) form.find('input[name="height"]').val(nHeight)
 
             img.css('width', newD)
-            img.css('height', nHeight)
+            // img.css('height', nHeight)
         }, THAT)
         this.mObs.set('width', wObs)
 
@@ -210,15 +210,15 @@ class Element {
             img = THAT.dDiv.find('svg').length == 0 ? img : THAT.dDiv.find('svg')
 
             form.find('input[name="height"]').val(newD)
-            if (scale) form.find('input[name="width"]').val(nWidth)
+            // if (scale) form.find('input[name="width"]').val(nWidth)
 
             img.css('height', newD)
-            img.css('width', nWidth)
+            // img.css('width', nWidth)
         }, THAT)
         this.mObs.set('height', hObs)
     }
 
-    _eleObserver() {
+    _eleObserver() { //开始结束时间观察者
         const THAT = this,
             proxyObj = THAT._proxyObj,
             form = THAT.dForm,
@@ -317,12 +317,12 @@ class Element {
                         break;
                     case 'width':
                         value = THAT._test(target, key, value)
-                        target['height'] = Math.round(value / scale)
+                        // target['height'] = Math.round(value / scale)
                         THAT.mObs.get('width').update(Math.round(value))
                         break;
                     case 'height':
                         value = THAT._test(target, key, value)
-                        target['width'] = Math.round(value * scale)
+                        // target['width'] = Math.round(value * scale)
                         THAT.mObs.get('height').update(Math.round(value))
                         break;
                     case 'x':

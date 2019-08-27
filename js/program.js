@@ -22,7 +22,8 @@ class Canvas {
             '时钟',
             '天气',
             '网页',
-            '文档'
+            '文档',
+            '图片盒子'
         ]
         this.SceneDto = []
         this.addImgPath = 'img/add/add.png'
@@ -30,7 +31,7 @@ class Canvas {
         this.ImgPath = './img/'
         this.areaId = proObj.areaId
         this.proObj = proObj
-        this.constrain = [1, 2] //等比例缩放
+        this.constrain = [] //等比例缩放
         this.baseUrl = 'https://www.easy-mock.com/mock/5cdb7945f2f8913ca63714d2/test'
         this.NODE_ENV = 'development'
         this.api = {
@@ -187,7 +188,7 @@ class Canvas {
             $(`#div${index}`).click()
             // that.focusEle($(`#div${index}`)[0])
         }, id)
-        
+
 
         if ($('#itemIndex').val() == 7) { //时钟计时处理
             setClock()
@@ -327,7 +328,7 @@ class Canvas {
                         $(document).off('mouseup', upE)
                         $(document).off('mousemove', moveE)
                     } else if (thats.checkHover(e, $('.trackBox'))) {
-                        
+
                         //移动到轨道上新增元素并绘制
                         for (const item of $('.trackBox').children()) {
                             if ($(item).hasClass('track')) {
@@ -511,17 +512,19 @@ class Canvas {
 
                     let form = $('.activeEdi form')
 
-                    let transN = Math.floor((iw / nWidth).toFixed(2) * 100)
+                    // 8-27解除缩放绑定缩放条
 
-                    form.find('input[name="zoomInput"]').val(
-                        transN > 500 ? 500 : transN
-                    )
+                    // let transN = Math.floor((iw / nWidth).toFixed(2) * 100)
 
-                    $('.activeEdi .zoom .ui-slider-tip').text(transN)
-                    $('.activeEdi .zoom .ui-slider-handle').css(
-                        'left',
-                        `${(100 / 500) * transN}%`
-                    )
+                    // form.find('input[name="zoomInput"]').val(
+                    //     transN > 500 ? 500 : transN
+                    // )
+
+                    // $('.activeEdi .zoom .ui-slider-tip').text(transN)
+                    // $('.activeEdi .zoom .ui-slider-handle').css(
+                    //     'left',
+                    //     `${(100 / 500) * transN}%`
+                    // )
                 }
 
 
@@ -1508,7 +1511,7 @@ class Canvas {
             data = JSON.parse($('.checkEle').attr('data-p'))
             data.trans = (data.width / checkImg[0].naturalWidth).toFixed(2) * 100
         } else {
-            
+
             let element = this.mapElement.get(id)
             let proxyObj = element._proxyObj
             checkImg = $('.itemBox').find(`[data-i=${$('.checkEle').attr('data-i')}]`).find('img')
@@ -1536,7 +1539,7 @@ class Canvas {
         nowEdi.find('input[name="location_x"]').val(data.location_x)
         nowEdi.find('input[name="location_y"]').val(data.location_y)
 
-        
+
 
         //点击获取宽、高数据并填充
         nowEdi.find('input[name="width"]').val(data.width || checkChild.width())
@@ -2202,7 +2205,8 @@ class Canvas {
                             thisVal == 6 ||
                             thisVal == 7 ||
                             thisVal == 8 ||
-                            thisVal == 9
+                            thisVal == 9 ||
+                            thisVal == 11
                         ) {
                             html += `
                                     <img class="material defaultAdd " src="img/add/add.png">
@@ -2657,10 +2661,11 @@ class Canvas {
             }
 
             //TODO：修改轨道名称
-            parObj.trackName = `轨道${i}`
+            parObj.trackName = $(e).find('.trackController span').eq(0).text()
             parObj.index = i
 
             data.params.push(parObj)
+            console.log(data)
         }
 
         // for (let i = 0; i < $('.track').length; i++) {
@@ -3094,18 +3099,23 @@ class Canvas {
 
     //点击修改轨道名
     setTrackName() {
-        $('.trackBox').on('click', '.trackController span', function() {
+        $('.trackBox').on('click', '.trackController span', function () {
             let html = `
                 <input class='form-control change-track-name' style="position: relative;
                 z-index: 9999;
                 top: -30px;
-                height: 30px;" value=${$(this).text()} track=${this}>
+                height: 30px;" value=${$(this).text()}>
             `
+            if ($(this).find('.change-track-name').length >= 1) return
+
             $(this).append(html)
+
+            $(this).find('.change-track-name').select()
         })
 
-        $('.trackBox').on('click', '.change-track-name', function() {
-            
+        $('.trackBox').on('blur', '.change-track-name', function () {
+            $(this).parent().text($(this).val())
+            $(this).remove()
         })
     }
 

@@ -3118,7 +3118,6 @@ class Canvas {
             $(this).remove()
         })
     }
-
 }
 
 function initCanvas() {

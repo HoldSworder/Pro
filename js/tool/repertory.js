@@ -10,6 +10,7 @@ class RepertoryTool {
     this.htmlEdiInit()
     this.clockEdiInit()
     this.weatherEdiInit()
+    this.imgBoxInit()
   }
 
   videoEdiInit() {
@@ -375,6 +376,14 @@ class RepertoryTool {
       $('.checkCanvas').find('svg').remove()
       $('.checkCanvas').prepend(html)
     }
+  }
+
+  imgBoxInit() {
+    $('#add_imgbox').on('click', function(e) {
+      e.stopPropagation()
+      e.preventDefault()
+      $('#add_imgbox_modal').modal('show')
+    })
   }
 
   setEdi(form) {

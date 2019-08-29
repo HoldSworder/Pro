@@ -179,4 +179,11 @@ class Tool {
         }
     }
 
+    //添加data-p数据
+    static addDataP(key, val) {
+        let dataP = JSON.parse($('.checkEle').attr('data-p'))
+        dataP[key] = val
+        let obj = JSON.stringify(dataP)
+        $('.checkEle').attr('data-p', obj)
+    }
 }

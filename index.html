@@ -1602,7 +1602,7 @@
                                         <div class="form-group col-sm-10">
                                             <button id="add_imgbox" class="form-control" style="display: inline-block; width: 50%">添加图片</button>
                                             <span class="form-control-static col-sm-6">
-                                                <span>0</span>个文件
+                                                <span id='imgbox-checked'>0</span>个文件
                                             </span>
                                         </div>
 
@@ -1709,12 +1709,16 @@
                     <form class="form-horizontal" id="saveForm" role="form">
 
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">名称</label>
+                            <label class="col-sm-3 control-label">区域</label>
                             <div class="col-sm-8">
 
-                                <input class="form-control required" name="programName" type="text" placeholder="" />
+                                <select id="add_imgbox_area" class="form-control"></select>
 
                             </div>
+
+                        </div>
+
+                        <div id="imgbox_container" class="imgbox-container">
 
                         </div>
 
@@ -1746,7 +1750,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                    <button type="button" id="saveBtnPro" class="btn btn-primary">确定</button>
+                    <button type="button" id="save-imgbox-add" class="btn btn-primary">确定</button>
                 </div>
             </div>
         </div>

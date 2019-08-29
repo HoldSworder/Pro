@@ -1,94 +1,95 @@
 //点击元素读取data-p并填充到数据仓库中
 class SetInput {
-  constructor(data) {
+  constructor(data, nowEdi) {
     this.data = data
+    this.nowEdi = nowEdi
   }
   index1() {
-    nowEdi
+    this.nowEdi
       .find('select[name="transition"]')
       .val(this.data.transition)
-    nowEdi.find('select[name="animation"]').val(this.data.animation)
+    this.nowEdi.find('select[name="animation"]').val(this.data.animation)
   }
 
   index2() {
     $('#video-video-check').bootstrapSwitch('state', this.data.video)
     $('#video-audio-check').bootstrapSwitch('state', this.data.audio)
 
-    nowEdi
+    this.nowEdi
       .find('#video-vol-slider .ui-slider-handle')
       .css('left', `${this.data.volume}%`)
-    nowEdi
+    this.nowEdi
       .find('#video-vol-slider .ui-slider-tip')
       .text(this.data.volume)
 
-    nowEdi.find('input[name="startPlay"]').val(this.data.inTime)
-    nowEdi.find('input[name="endPlay"]').val(this.data.outTime)
+    this.nowEdi.find('input[name="startPlay"]').val(this.data.inTime)
+    this.nowEdi.find('input[name="endPlay"]').val(this.data.outTime)
 
-    nowEdi.find('input[name="startPlay"]').blur()
-    nowEdi.find('input[name="endPlay"]').blur()
+    this.nowEdi.find('input[name="startPlay"]').blur()
+    this.nowEdi.find('input[name="endPlay"]').blur()
   }
 
   index3() {
-    nowEdi
+    this.nowEdi
       .find('#audio-vol-slider .ui-slider-handle')
       .css('left', `${this.data.volume}%`)
-    nowEdi
+    this.nowEdi
       .find('#audio-vol-slider .ui-slider-tip')
       .text(this.data.volume)
 
-    nowEdi.find('input[name="startPlay"]').val(this.data.inTime)
-    nowEdi.find('input[name="endPlay"]').val(this.data.outTime)
+    this.nowEdi.find('input[name="startPlay"]').val(this.data.inTime)
+    this.nowEdi.find('input[name="endPlay"]').val(this.data.outTime)
 
-    nowEdi.find('input[name="startPlay"]').blur()
-    nowEdi.find('input[name="endPlay"]').blur()
+    this.nowEdi.find('input[name="startPlay"]').blur()
+    this.nowEdi.find('input[name="endPlay"]').blur()
   }
 
   index4() {
-    nowEdi.find('textarea').val(this.data.text)
-    nowEdi.find('select[name="alignment"]').val(this.data.alignment)
-    nowEdi
+    this.nowEdi.find('textarea').val(this.data.text)
+    this.nowEdi.find('select[name="alignment"]').val(this.data.alignment)
+    this.nowEdi
       .find('#text-multiline-check')
       .bootstrapSwitch('state', this.data.multiline)
-    nowEdi.find('select[name="rolling"]').val(this.data.rolling)
-    nowEdi.find('select[name="font"]').val(this.data.font)
-    nowEdi.find('select[name="size"]').val(this.data.size)
-    nowEdi.find('.text-color').val(this.data.color)
-    nowEdi
+    this.nowEdi.find('select[name="rolling"]').val(this.data.rolling)
+    this.nowEdi.find('select[name="font"]').val(this.data.font)
+    this.nowEdi.find('select[name="size"]').val(this.data.size)
+    this.nowEdi.find('.text-color').val(this.data.color)
+    this.nowEdi
       .find('.back-color')
       .val(this.data.backgroundcolor)
-    nowEdi
+    this.nowEdi
       .find('#text-transparency-slider .ui-slider-handle')
       .css('left', `${this.data.transparency}%`)
-    nowEdi
+    this.nowEdi
       .find('#text-transparency-slider .ui-slider-tip')
       .text(this.data.transparency)
-    nowEdi
+    this.nowEdi
       .find('#text-border-check')
       .bootstrapSwitch('state', this.data.bold)
-    nowEdi
+    this.nowEdi
       .find('#text-italic-check')
       .bootstrapSwitch('state', this.data.italic)
-    nowEdi
+    this.nowEdi
       .find('select[name="playbackspeed"]')
       .val(this.data.playbackspeed)
-    nowEdi
+    this.nowEdi
       .find('input[name="residencetime"]')
       .val(this.data.residencetime)
-    nowEdi
+    this.nowEdi
       .find('select[name="transition"]')
       .val(this.data.transition)
-    nowEdi.find('select[name="animation"]').val(this.data.animation)
+    this.nowEdi.find('select[name="animation"]').val(this.data.animation)
   }
 
   index5() {
-    nowEdi.find('input[name="address"]').val(this.data.adress)
-    nowEdi.find('select[name="protocol"]').val(this.data.protocol)
+    this.nowEdi.find('input[name="address"]').val(this.data.adress)
+    this.nowEdi.find('select[name="protocol"]').val(this.data.protocol)
   }
 
   index6() {
-    nowEdi.find('input[name="mqAddress"]').val(this.data.mqAddress)
-    nowEdi.find('input[name="queueName"]').val(this.data.queueName)
-    nowEdi.find('input[name="styleId"]').val(this.data.styleId)
+    this.nowEdi.find('input[name="mqAddress"]').val(this.data.mqAddress)
+    this.nowEdi.find('input[name="queueName"]').val(this.data.queueName)
+    this.nowEdi.find('input[name="styleId"]').val(this.data.styleId)
 
     let html = ''
     for (let i = 0; i < this.data.rowList.length; i++) {
@@ -107,26 +108,32 @@ class SetInput {
               `
     }
 
-    nowEdi.find('#rowDataTable tbody').html(html)
+    this.nowEdi.find('#rowDataTable tbody').html(html)
   }
 
   index7() {
-    nowEdi.find('select[name="styleId"]').val(this.data.styleId)
+    this.nowEdi.find('select[name="styleId"]').val(this.data.styleId)
   }
 
   index8() {
-    nowEdi.find('select[name="styleId"]').val(this.data.styleId)
+    this.nowEdi.find('select[name="styleId"]').val(this.data.styleId)
   }
 
   index9() {
-    nowEdi.find('select[name="overflow"]').val(this.data.overflow)
-    nowEdi.find('input[name="url"]').val(this.data.url)
+    this.nowEdi.find('select[name="overflow"]').val(this.data.overflow)
+    this.nowEdi.find('input[name="url"]').val(this.data.url)
 
-    nowEdi
+    this.nowEdi
       .find('#transparent-range .ui-slider-handle')
       .css('left', `${this.data.transparency}%`)
-    nowEdi
+    this.nowEdi
       .find('#transparent-range .ui-slider-tip')
       .text(this.data.transparency)
+  }
+
+  index11() {
+    
+    let checked = JSON.parse($('.checkEle').attr('data-p')).fileNameList || []
+    $('#imgbox-checked').text(checked.length)
   }
 }

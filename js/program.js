@@ -1500,6 +1500,7 @@ class Canvas {
 
     //点击图片或轨道读取信息填充到素材仓库中
     setInput() {
+        
         const id = $('.checkEle').attr('data-i'),
             checkChild = $('.checkCanvas .canvasChild'),
             THAT = this
@@ -1524,7 +1525,7 @@ class Canvas {
             }
         }
 
-        let index = $('.checkEle').attr('data-t')
+        let index = parseInt($('.checkEle').attr('data-t'))
         let allEdi = $('#ediBox').children()
         let nowEdi
         for (const item of allEdi) {
@@ -1545,8 +1546,9 @@ class Canvas {
         nowEdi.find('input[name="width"]').val(data.width || checkChild.width())
         nowEdi.find('input[name="height"]').val(data.height || checkChild.height())
 
-        const setInputTool = new SetInput(data)
+        const setInputTool = new SetInput(data, nowEdi)
 
+        
         if (flag) {
             switch (index) {
                 case 1:
@@ -1575,6 +1577,9 @@ class Canvas {
                     break;
                 case 9:
                     setInputTool.index9()
+                    break;
+                case 11:
+                    setInputTool.index11()
                     break;
 
             }
@@ -3091,6 +3096,7 @@ class Canvas {
                     html += `<option value=${item}>${item}</option>`
                 }
                 $('#groupIndex').html(html)
+                $('#add_imgbox_area').html(html)
 
                 THAT.getMaterial()
             }

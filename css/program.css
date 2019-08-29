@@ -345,3 +345,18 @@ body {
     background: #B0BED9;
     z-index: 9;
 }
+
+.imgbox-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.imgbox-container .item-container {
+    padding: 0 5px;
+    border: 2px solid #fff;
+}
+
+.check-item-imgbox {
+    border: 2px solid #E91E63 !important;
+}

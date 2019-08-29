@@ -379,11 +379,105 @@ class RepertoryTool {
   }
 
   imgBoxInit() {
-    $('#add_imgbox').on('click', function(e) {
+    $('#add_imgbox').on('click', function (e) {
       e.stopPropagation()
       e.preventDefault()
       $('#add_imgbox_modal').modal('show')
+      let fileNameList = JSON.parse($('.checkEle').attr('data-p')).fileNameList || []
+      $('#imgbox_container').children().removeClass('check-item-imgbox')
+      for (const item of $('#imgbox_container').children()) {
+        let dataJ = JSON.parse($(item).find('img').attr('data-j'))
+        if(fileNameList.includes(dataJ.fileName)) {
+          $(item).addClass('check-item-imgbox')
+        }
+      }
     })
+
+    $('#add_imgbox_area').on('change', function () {
+      getImg()
+    })
+
+    $('#imgbox_container').on('click', '.item-container', function () {
+      if ($(this).hasClass('check-item-imgbox')) {
+        $(this).removeClass('check-item-imgbox')
+      } else {
+        $(this).addClass('check-item-imgbox')
+      }
+    })
+
+    $('#save-imgbox-add').on('click', function() {
+      let fileNameList = []
+      for (const item of $('#imgbox_container').children()) {
+        if($(item).hasClass('check-item-imgbox')) {
+          let fileName = JSON.parse($(item).find('img').attr('data-j')).fileName
+          fileNameList.push(fileName)
+        }
+      }
+      Tool.addDataP('fileNameList', fileNameList)
+      $('#add_imgbox_modal').modal('hide')
+      
+    })
+
+    getImg()
+
+    function getImg() {
+      $.ajax({
+        type: 'post',
+        dataType: 'json',
+        url: canvas.api.material,
+        data: {
+          areaId: canvas.areaId,
+          materialType: 1,
+          searchValue: '',
+          groupName: $('#groupIndex').val()
+        },
+        success(res) {
+          if (res.success) {
+            let html = ''
+
+            if (res.materialList.length != 0) {
+              for (const item of res.materialList) {
+                if (item.thumbnail == null) {
+                  html += `
+                            <img options='text=${
+                                item.materialName
+                            }' class='material placeholder'  data-J='${JSON.stringify(
+                                item
+                            )}'>
+                            `
+                } else {
+                  // 缩略图路径处理
+                  let url
+                  if (canvas.NODE_ENV == 'development') {
+                    url = `img/${
+                                item.thumbnail
+                            }`
+                  } else {
+                    url = `/images/thumbnail/material/${
+                                item.thumbnail
+                            }`
+                  }
+
+                  html += `
+                            <div class='item-container'>
+                                <img src="${url}" class="material" data-J='${JSON.stringify(
+                                    item
+                                )}'>
+                                <p>${item.materialName}</p>
+                            </div>
+                            `
+                }
+              }
+            }
+
+            $('#imgbox_container').append(html)
+          } else {
+            alert(res.msg)
+          }
+        }
+      })
+    }
+
   }
 
   setEdi(form) {

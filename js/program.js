@@ -2508,7 +2508,7 @@ class Canvas {
                 width: $('#canvas').outerWidth() + 20,
                 onrendered: function (canvas) {
                     data.photo = canvas.toDataURL()
-
+                    console.log(data)
                     $.ajax({
                         url: that.api.save,
                         type: 'POST',

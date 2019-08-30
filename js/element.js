@@ -84,8 +84,8 @@ class Element {
     }
 
     _observer() {
-        this._zoomObserver()
-        // this.zoom()
+        // this._zoomObserver()
+        this.zoom()
         this._divObserver()
         this._imgObserver()
         this._eleObserver()

@@ -132,7 +132,6 @@ class SetInput {
   }
 
   index11() {
-    
     let checked = JSON.parse($('.checkEle').attr('data-p')).fileNameList || []
     $('#imgbox-checked').text(checked.length)
   }

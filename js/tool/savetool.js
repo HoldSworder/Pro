@@ -249,7 +249,7 @@ class SaveTool {
   }
 
   static cDocument() {
-    let edi = $('#htmlEdi')
+    let edi = $('#documentEdi')
     let ele = $('.checkEle')
     let data = {}
 
@@ -262,6 +262,25 @@ class SaveTool {
     data.residencetime = edi
       .find('input[name="residencetime"]')
       .val()
+
+    let str = JSON.stringify(data)
+    ele.attr('data-p', str)
+  }
+
+  static cImgbox() {
+    let edi = $('#imgBoxEdi')
+    let ele = $('.checkEle')
+    let data = {}
+
+    SaveTool.getTime(data, edi)
+
+    data.fileNameList = JSON.parse(ele.attr('data-p')).fileNameList
+
+    data.transition = edi.find('input[name="transition"]').val()
+    data.scalingRatio = edi
+    .find('input[name="zoomInput"]')
+    .val()
+    data.residenceTime = parseInt(edi.find('input[name="residenceTime"]').val())
 
     let str = JSON.stringify(data)
     ele.attr('data-p', str)

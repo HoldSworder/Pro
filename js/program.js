@@ -1256,6 +1256,7 @@ class Canvas {
         })
 
         $('.trackBox').on('click', '.silderBlock', function (e) {
+            debugger
             let parent = this
             let trackL = $(this)
                 .parent()
@@ -2083,7 +2084,8 @@ class Canvas {
                     case 'documentEdi':
                         SaveTool.cDocument()
                         break;
-
+                    case 'imgBoxEdi' :
+                        SaveTool.cImgbox()
                 }
             })
         }

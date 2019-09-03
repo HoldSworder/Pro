@@ -319,6 +319,7 @@ class Element {
                         value = THAT._test(target, key, value)
                         // target['height'] = Math.round(value / scale)
                         THAT.mObs.get('width').update(Math.round(value))
+                        console.log(value)
                         break;
                     case 'height':
                         value = THAT._test(target, key, value)
@@ -336,6 +337,7 @@ class Element {
                     case 'scale':
                         value = THAT._test(target, key, value)
                         THAT.mObs.get('scale').update(value)
+                        console.log(value)
                         break;
                     case 'start':
                         THAT.mObs.get('start').update(value)
@@ -526,16 +528,22 @@ class Element {
                         } else if (nHeight * trans >= $('#canvas').height()) {
                             return
                         }
-
-                        canvasCheck.css({
-                            width: nWidth * trans,
-                            height: nHeight * trans
-                        })
-
+                        
                         that.setDataJ(
                             ['width', 'height', 'scalingRatio'],
                             [nWidth * trans, nHeight * trans, textV]
                         )
+                        
+                        // 避免点击非等比缩放元素 填充缩放到素材仓库引起的元素变形
+                        const scaleN = that.dDiv.find('img').length == 0 ? 256 / 128 : that.dImg.naturalWidth / that.dImg.naturalHeight
+
+                        if(Math.abs(scaleN - trans) < 1) {
+                            canvasCheck.css({
+                                width: nWidth * trans,
+                                height: nHeight * trans
+                            })
+                        }
+
                     }
 
 

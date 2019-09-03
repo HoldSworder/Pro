@@ -1256,7 +1256,6 @@ class Canvas {
         })
 
         $('.trackBox').on('click', '.silderBlock', function (e) {
-            debugger
             let parent = this
             let trackL = $(this)
                 .parent()
@@ -1264,8 +1263,8 @@ class Canvas {
             let trackW = $(this)
                 .parent()
                 .width()
-            let divW = $(this).width()
-            let divH = $(this).height()
+            // let divW = $(this).width()
+            // let divH = $(this).height()
             let thisT = $(this).attr('data-t')
 
             that.setTime($(this)) //获取起止时间到data属性上
@@ -1407,14 +1406,14 @@ class Canvas {
                 $(document).on('mousemove', moveE)
             })
 
-            //添加多选设置
-            if (e.ctrlKey) {
-                if ($(this).hasClass('ctrlEle')) {
-                    $(this).removeClass('ctrlEle')
-                } else {
-                    $(this).addClass('ctrlEle')
-                }
-            }
+            // //添加多选设置
+            // if (e.ctrlKey) {
+            //     if ($(this).hasClass('ctrlEle')) {
+            //         $(this).removeClass('ctrlEle')
+            //     } else {
+            //         $(this).addClass('ctrlEle')
+            //     }
+            // }
         })
 
     }
@@ -1534,7 +1533,6 @@ class Canvas {
                 nowEdi = $(item)
             }
         }
-
 
 
         //点击获取x、y数据并填充

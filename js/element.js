@@ -319,7 +319,6 @@ class Element {
                         value = THAT._test(target, key, value)
                         // target['height'] = Math.round(value / scale)
                         THAT.mObs.get('width').update(Math.round(value))
-                        console.log(value)
                         break;
                     case 'height':
                         value = THAT._test(target, key, value)
@@ -535,7 +534,7 @@ class Element {
                         )
                         
                         // 避免点击非等比缩放元素 填充缩放到素材仓库引起的元素变形
-                        const scaleN = that.dDiv.find('img').length == 0 ? 256 / 128 : that.dImg.naturalWidth / that.dImg.naturalHeight
+                        const scaleN = that.dDiv.find('img').length == 0 ? 256 / 128 : that.dImg[0].naturalWidth / that.dImg[0].naturalHeight
 
                         if(Math.abs(scaleN - trans) < 1) {
                             canvasCheck.css({

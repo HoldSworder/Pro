@@ -143,6 +143,7 @@ body {
 }
 
 .row-right {
+    top: 0;
     position: fixed;
     right: 0;
     border: 1px solid #cbcfd2;

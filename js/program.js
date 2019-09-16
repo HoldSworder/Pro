@@ -114,8 +114,10 @@ class Canvas {
     //绑定x、y轴
     async drawImg(imgPath, id, x, y, img, wid, hei) {
         let that = this
-        let width = wid || this.imgWidth
-        let height = hei || this.imgHeight
+        let width = this.imgWidth
+        let height = this.imgHeight
+        // let width = wid || this.imgWidth
+        // let height = hei || this.imgHeight
         let index = $('#canvas').children().length
 
         if ($('#itemIndex').val() == 3) {
@@ -2662,7 +2664,18 @@ class Canvas {
                     )
                 }
 
-                parObj.elementList.push(layerObj)
+                let copy = {
+                    beginTime: layerObj.beginTime,
+                    endTime: layerObj.endTime,
+                    elementType: layerObj.elementType
+                }
+
+                delete layerObj.beginTime
+                delete layerObj.endTime
+                delete layerObj.elementType
+
+                copy.elementData = layerObj
+                parObj.elementList.push(copy)
             }
 
             //TODO：修改轨道名称
@@ -2670,7 +2683,6 @@ class Canvas {
             parObj.index = i
 
             data.params.push(parObj)
-            console.log(data)
         }
 
         // for (let i = 0; i < $('.track').length; i++) {

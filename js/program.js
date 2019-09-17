@@ -86,13 +86,13 @@ class Canvas {
 
     //初始化插件
     pluginsInit() {
-        this.absorb = new Adsorb({
-            container: $('#canvas')[0],
-            attr: '.canvasDiv',
-            canvas: {
-                container: $('#hiddenBox')[0]
-            }
-        })
+        // this.absorb = new Adsorb({
+        //     container: $('#canvas')[0],
+        //     attr: '.canvasDiv',
+        //     canvas: {
+        //         container: $('#hiddenBox')[0]
+        //     }
+        // })
 
         $('.text-color').colorpicker({
             fillcolor: true,
@@ -125,8 +125,8 @@ class Canvas {
         }
 
         let html = ''
-        let cssText = ``
-        // let cssText = `width: ${width}px; height: ${height}px`
+        // let cssText = ``
+        let cssText = `width: ${width}px; height: ${height}px`
 
         let dataJ = img.attr('data-J')
         if (imgPath == this.addImgPath) {
@@ -166,13 +166,13 @@ class Canvas {
                     `
             } else {
                 // 缩略图路径处理
-                let thumbnail = JSON.parse(img.attr('data-j')).thumbnail
+                let thumbnail = JSON.parse(dataJ).thumbnail
                 let url
                 if (that.NODE_ENV == 'development') {
                     url = `img/${thumbnail}`
                 } else {
-                    let fileName = JSON.parse(img.attr('data-j')).fileName
-                    let areaId = JSON.parse(img.attr('data-j')).areaId
+                    let fileName = JSON.parse(dataJ).fileName
+                    let areaId = JSON.parse(dataJ).areaId
                     url = `/files/idm/${areaId}/${fileName}`
                 }
 
@@ -856,7 +856,7 @@ class Canvas {
     }
 
     //新建轨道
-    newTrack() {
+    newTrack(name) {
         // let indexT = $('.track').length +
         // debugger
         let indexT = 0
@@ -893,7 +893,7 @@ class Canvas {
         let html = `
                 <div class="track clearfix">
                     <div class="trackController col-sm-2">
-                        <span>轨道${indexT - 1}</span>
+                        <span>${name || '轨道'+(indexT - 1)}</span>
                         <span class="glyphicon glyphicon glyphicon-align-justify" aria-hidden="true"></span>
                     </div>
                     <div id="track${indexT}" class="trackContent col-sm-10"></div>

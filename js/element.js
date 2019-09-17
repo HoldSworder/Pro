@@ -60,14 +60,18 @@ class Element {
         //   this.dScale = NaN
 
         this.constrain = [] //等比例缩放类型
-        this.width = this.dImg.width()
-        this.height = this.dImg.height()
+        this.width = canvas.imgWidth
+        this.height = canvas.imgHeight
+        // this.width = this.dImg.width()
+        // this.height = this.dImg.height()
 
         this._proxyObj
         this._observe = {
             data: this.$data,
-            width: this.dImg.width(),
-            height: this.dImg.height(),
+            width: canvas.imgWidth,
+            height: canvas.imgHeight,
+            // width: this.dImg.width(),
+            // height: this.dImg.height(),
             x: parseInt(this.dDiv.css('left')),
             y: parseInt(this.dDiv.css('top')),
             start: '00:00:00',
@@ -111,8 +115,8 @@ class Element {
             const nWidth = THAT.dImg[0].naturalWidth * newD / 100,
                 nHeight = THAT.dImg[0].naturalHeight * newD / 100
 
-            // console.log(nWidth)
-            // console.log(nHeight)
+            console.log(nWidth)
+            console.log(nHeight)
 
             proxyObj.width = nWidth
             proxyObj.height = nHeight

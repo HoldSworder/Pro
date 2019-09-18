@@ -539,7 +539,9 @@ class Element {
                         
                         // 避免点击非等比缩放元素 填充缩放到素材仓库引起的元素变形
                         const scaleN = that.dDiv.find('img').length == 0 ? 256 / 128 : that.dImg[0].naturalWidth / that.dImg[0].naturalHeight
-
+                            console.log(scaleN)
+                            console.log(trans)
+                            console.log(Math.abs(scaleN - trans) < 1)
                         if(Math.abs(scaleN - trans) < 1) {
                             canvasCheck.css({
                                 width: nWidth * trans,

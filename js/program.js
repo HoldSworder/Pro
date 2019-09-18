@@ -119,8 +119,9 @@ class Canvas {
         // let width = wid || this.imgWidth
         // let height = hei || this.imgHeight
         let index = $('#canvas').children().length
+        let eleType = img.attr('data-J') ? $('#itemIndex').val() : img.elementType
 
-        if ($('#itemIndex').val() == 3) {
+        if (eleType == 3) {
             return
         }
 
@@ -128,12 +129,12 @@ class Canvas {
         // let cssText = ``
         let cssText = `width: ${width}px; height: ${height}px`
 
-        let dataJ = img.attr('data-J')
+        let dataJ = img.attr('data-J') || img 
         if (imgPath == this.addImgPath) {
             dataJ = {}
         }
 
-        if ($('#itemIndex').val() == 4) { //文字素材处理
+        if (eleType == 4) { //文字素材处理
 
             html = `
                     <div class="canvasDiv" data-J='${dataJ}' data-i="${id}" id="div${index}" style="top: ${y}px; left: ${x}px; position: absolute; overflow: hidden; width: auto; height: auto;">
@@ -142,7 +143,7 @@ class Canvas {
                         </div>
                     </div>
                 `
-        } else if ($('#itemIndex').val() == 7) { //时钟素材处理
+        } else if (eleType == 7) { //时钟素材处理
             html = `
                 <div class="canvasDiv" data-J='${dataJ}' data-i="${id}" id="div${index}" style="top: ${y}px; left: ${x}px; position: absolute; overflow: hidden; width: auto; height: auto;">
                     <div class='canvasChild placeholder' style='width: ${width}px; height: ${height}px; background: white; word-wrap: break-word;'>
@@ -192,7 +193,7 @@ class Canvas {
         }, id)
 
 
-        if ($('#itemIndex').val() == 7) { //时钟计时处理
+        if (eleType == 7) { //时钟计时处理
             setClock()
         }
 
@@ -859,6 +860,7 @@ class Canvas {
     newTrack(name) {
         // let indexT = $('.track').length +
         // debugger
+        const nameId = new Date().getTime().toString()
         let indexT = 0
         for (const item of $('.trackContent')) {
             if (
@@ -891,7 +893,7 @@ class Canvas {
         // <div class="trackController col-sm-2" data-t=${typeIndex}>
         // <span>${this.typeIndex[typeIndex - 1]}</span>
         let html = `
-                <div class="track clearfix">
+                <div class="track clearfix" trackId=${nameId}>
                     <div class="trackController col-sm-2">
                         <span>${name || '轨道'+(indexT - 1)}</span>
                         <span class="glyphicon glyphicon glyphicon-align-justify" aria-hidden="true"></span>
@@ -919,6 +921,8 @@ class Canvas {
         // this.trackTypeObserver(
         //     $(`#track${indexT}`).prev('.trackController')[0]
         // )
+
+        return $('.trackBox').find(`[trackId=${nameId}]`)
     }
 
     //在轨道上移动元素

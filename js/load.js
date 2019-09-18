@@ -1,18 +1,33 @@
 async function load() {
   for (const item of $option.data.params) {
-    canvas.newTrack(item.trackName)
+
+    $('.trackBox').children().remove()
+    const TRACK = canvas.newTrack(item.trackName)
+
     for (const it of item.elementList) {
-      const DATA = it.elementData
+      const DATA = {
+        ...it.elementData,
+        ...it
+      }
       const nameId = new Date().getTime().toString()
       await canvas.drawImg(
         DATA.fileName,
         nameId,
-        nowX - canX - imgX / 2,
-        nowY - canY - imgY / 2,
-        that
+        DATA.location_x,
+        DATA.location_y,
+        DATA
       )
 
-      const elementObj = new Element(that.attr('data-J'), nameId)
+
+      let html = `
+            <div class="silderBlock" data-s=${DATA.fileName} data-l='0' data-J='${DATA}' data-i="${nameid}" data-t=${DATA.elementType}>
+                ${DATA.fileName}
+            </div>
+        `
+
+      TRACK.append(html)
+
+      const elementObj = new Element(it.elementData, nameId)
       canvas.mapElement.set(nameId, elementObj)
     }
   }

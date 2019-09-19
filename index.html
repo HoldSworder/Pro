@@ -4,7 +4,44 @@
         width: "1600",
         height: "900",
         angle: 0,
-        data: null
+        // data: null,
+        data: {
+            programId: 1,
+            programCode: '1',
+            programName: 'aaa',
+            areaId: 1,
+            width: 1920,
+            height: 1080,
+            insertTime: '2019-09-04',
+            updateTime: '2019-09-04',
+            userName: 'qzr',
+            thumbnail: 'xxx',
+            note: 'xxx',
+            backgroundColor: '#fff',
+            scalingRatio: 100,
+            duration: '00:00:50',
+            params: [{
+                index: 0,
+                trackName: '0',
+                elementList: [{
+                    beginTime: '00:00:00',
+                    endTime: '00:00:05',
+                    elementType: 1,
+                    elementData: {
+                        index: 0,
+                        elementId: 11,
+                        elementName: '111',
+                        width: 520,
+                        height: 345,
+                        location_x: 100,
+                        location_y: 100,
+                        fileName: '1.jpg',
+                        transition: 'fade',
+                        scalingRatio: 80
+                    },
+                }, ]
+            }]
+        }
     })
 </script>
 <link href="https://cdn.bootcss.com/normalize/8.0.0/normalize.min.css" rel="stylesheet">
@@ -1601,7 +1638,8 @@
                                         </div>
 
                                         <div class="form-group col-sm-10">
-                                            <button id="add_imgbox" class="form-control" style="display: inline-block; width: 50%">添加图片</button>
+                                            <button id="add_imgbox" class="form-control"
+                                                style="display: inline-block; width: 50%">添加图片</button>
                                             <span class="form-control-static col-sm-6">
                                                 <span id='imgbox-checked'>0</span>个文件
                                             </span>
@@ -1621,10 +1659,10 @@
                                             <div class="input-group">
                                                 <input type="number" class="form-control" min="0" name="residenceTime">
                                                 <span class="input-group-addon">秒</span>
-                                              </div>
+                                            </div>
                                         </div>
 
-                                        
+
 
 
                                     </form>
@@ -1706,43 +1744,43 @@
 
 <!-- 图片盒子添加图片 -->
 <div class="modal open" id="add_imgbox_modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close closeAddHol" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                    <h4 class="modal-title">添加图片</h4>
-                </div>
-                <div class="modal-body">
-                    <form class="form-horizontal" id="saveForm" role="form">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close closeAddHol" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">添加图片</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" id="saveForm" role="form">
 
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label">区域</label>
-                            <div class="col-sm-8">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">区域</label>
+                        <div class="col-sm-8">
 
-                                <select id="add_imgbox_area" class="form-control"></select>
-
-                            </div>
+                            <select id="add_imgbox_area" class="form-control"></select>
 
                         </div>
 
-                        <div id="imgbox_container" class="imgbox-container">
+                    </div>
 
-                        </div>
+                    <div id="imgbox_container" class="imgbox-container">
+
+                    </div>
 
 
-                    </form>
+                </form>
 
 
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                    <button type="button" id="save-imgbox-add" class="btn btn-primary">确定</button>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="save-imgbox-add" class="btn btn-primary">确定</button>
             </div>
         </div>
     </div>
+</div>
 
 <!-- //批量设置播放长度 -->
 <div>

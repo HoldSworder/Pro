@@ -119,7 +119,7 @@ class Canvas {
         // let width = wid || this.imgWidth
         // let height = hei || this.imgHeight
         let index = $('#canvas').children().length
-        let eleType = img.attr('data-J') ? $('#itemIndex').val() : img.elementType
+        let eleType = img instanceof jQuery ? $('#itemIndex').val() : img.elementType
 
         if (eleType == 3) {
             return
@@ -129,7 +129,7 @@ class Canvas {
         // let cssText = ``
         let cssText = `width: ${width}px; height: ${height}px`
 
-        let dataJ = img.attr('data-J') || img 
+        let dataJ = img instanceof jQuery ? img.attr('data-J') : JSON.stringify(img) 
         if (imgPath == this.addImgPath) {
             dataJ = {}
         }
@@ -167,10 +167,11 @@ class Canvas {
                     `
             } else {
                 // 缩略图路径处理
-                let thumbnail = JSON.parse(dataJ).thumbnail
                 let url
                 if (that.NODE_ENV == 'development') {
-                    url = `img/${thumbnail}`
+                    let fileName = JSON.parse(dataJ).fileName
+                    let thumbnail = JSON.parse(dataJ).thumbnail
+                    url = `img/${fileName}`
                 } else {
                     let fileName = JSON.parse(dataJ).fileName
                     let areaId = JSON.parse(dataJ).areaId
@@ -323,8 +324,6 @@ class Canvas {
 
                         thats.sliderEle(that, nameId)
 
-
-
                         const elementObj = new Element(that.attr('data-J'), nameId)
                         thats.mapElement.set(nameId, elementObj)
 
@@ -336,7 +335,6 @@ class Canvas {
                         for (const item of $('.trackBox').children()) {
                             if ($(item).hasClass('track')) {
                                 if (thats.checkHover(e, $(item))) {
-                                    //TODO
                                     let filename
                                     let trName //轨道名称
                                     let path = that[0].src

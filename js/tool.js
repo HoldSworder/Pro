@@ -50,6 +50,16 @@ class Tool {
         return result
     }
 
+    //时分秒转化为秒
+    static formatToS(val) {
+        let value = String(val)
+        let h = Number(value.slice(0, 2))
+        let m = Number(value.slice(3, 5))
+        let s = Number(value.slice(6, 8))
+
+        return h * 60 * 60 + m * 60 + s
+    }
+
     static calcTime(el) { //计算起止时间
         let track = el.parent()
         let timeS = $('#nowTime').attr('data-t') * 60 //时间轴总时间换算s

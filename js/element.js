@@ -531,18 +531,19 @@ class Element {
                         } else if (nHeight * trans >= $('#canvas').height()) {
                             return
                         }
-                        
+
                         that.setDataJ(
                             ['width', 'height', 'scalingRatio'],
                             [nWidth * trans, nHeight * trans, textV]
                         )
-                        
+
                         // 避免点击非等比缩放元素 填充缩放到素材仓库引起的元素变形
                         const scaleN = that.dDiv.find('img').length == 0 ? 256 / 128 : that.dImg[0].naturalWidth / that.dImg[0].naturalHeight
-                            console.log(scaleN)
-                            console.log(trans)
-                            console.log(Math.abs(scaleN - trans) < 1)
-                        if(Math.abs(scaleN - trans) < 1) {
+                        const scale = that.dDiv.find('img').length == 0 ? 256 / 128 : that.dImg.width() / that.dImg.height()
+                        console.log(scaleN)
+                        console.log(trans)
+                        console.log(Math.abs(scaleN - trans) < 1)
+                        if (Math.abs(scaleN - scale) < 0.1 && Math.abs(scaleN - trans) < 1) {
                             canvasCheck.css({
                                 width: nWidth * trans,
                                 height: nHeight * trans

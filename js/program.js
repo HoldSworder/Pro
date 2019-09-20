@@ -114,10 +114,10 @@ class Canvas {
     //绑定x、y轴
     async drawImg(imgPath, id, x, y, img, wid, hei) {
         let that = this
-        let width = this.imgWidth
-        let height = this.imgHeight
-        // let width = wid || this.imgWidth
-        // let height = hei || this.imgHeight
+        // let width = this.imgWidth
+        // let height = this.imgHeight
+        let width = wid || this.imgWidth
+        let height = hei || this.imgHeight
         let index = $('#canvas').children().length
         let eleType = img instanceof jQuery ? $('#itemIndex').val() : img.elementType
 
@@ -129,7 +129,7 @@ class Canvas {
         // let cssText = ``
         let cssText = `width: ${width}px; height: ${height}px`
 
-        let dataJ = img instanceof jQuery ? img.attr('data-J') : JSON.stringify(img) 
+        let dataJ = img instanceof jQuery ? img.attr('data-J') : JSON.stringify(img)
         if (imgPath == this.addImgPath) {
             dataJ = {}
         }
@@ -1504,10 +1504,11 @@ class Canvas {
 
     //点击图片或轨道读取信息填充到素材仓库中
     setInput() {
-        
+
         const id = $('.checkEle').attr('data-i'),
             checkChild = $('.checkCanvas .canvasChild'),
             THAT = this
+        let element = this.mapElement.get(id)
         let checkImg = $('#canvas').find(`[data-i=${id}]`).find('img, div'),
             flag = false,
             data
@@ -1517,7 +1518,6 @@ class Canvas {
             data.trans = (data.width / checkImg[0].naturalWidth).toFixed(2) * 100
         } else {
 
-            let element = this.mapElement.get(id)
             let proxyObj = element._proxyObj
             checkImg = $('.itemBox').find(`[data-i=${$('.checkEle').attr('data-i')}]`).find('img')
             data = {
@@ -1549,9 +1549,10 @@ class Canvas {
         nowEdi.find('input[name="width"]').val(data.width || checkChild.width())
         nowEdi.find('input[name="height"]').val(data.height || checkChild.height())
 
+        console.log(data)
         const setInputTool = new SetInput(data, nowEdi)
 
-        
+
         if (flag) {
             switch (index) {
                 case 1:
@@ -1588,9 +1589,13 @@ class Canvas {
             }
         }
 
+        //原始缩放比
+        const scaleN = element.dDiv.find('img').length == 0 ? 256 / 128 : element.dImg[0].naturalWidth / element.dImg[0].naturalHeight
+        //当前缩放比
+        const scale = element.dDiv.find('img').length == 0 ? 256 / 128 : element.dImg.width() / element.dImg.height()
         let trans
         //点击获取缩放并填充设置
-        if (nowEdi.find('input[name="zoomInput"]').length !== 0) {
+        if (nowEdi.find('input[name="zoomInput"]').length !== 0 && Math.abs(scaleN - scale) < 0.1) {
             trans = data.trans
             nowEdi.find('input[name="zoomInput"]').val(trans)
 
@@ -2086,7 +2091,7 @@ class Canvas {
                     case 'documentEdi':
                         SaveTool.cDocument()
                         break;
-                    case 'imgBoxEdi' :
+                    case 'imgBoxEdi':
                         SaveTool.cImgbox()
                 }
             })

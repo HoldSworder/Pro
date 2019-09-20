@@ -3,7 +3,7 @@ async function load() {
 
     $('.trackBox').children().remove()
     const TRACK = canvas.newTrack(item.trackName)
-    const duration = $('#nowTime').attr('data-t') * 3600
+    const duration = $('#nowTime').attr('data-t') * 60
     const trackWidth = TRACK.find('.trackContent').width()
 
     for (const it of item.elementList) {
@@ -17,14 +17,17 @@ async function load() {
         nameId,
         DATA.location_x,
         DATA.location_y,
-        DATA
+        DATA,
+        DATA.width,
+        DATA.height
       )
 
-      let left = (Tool.formatToS(DATA.beginTime) / duration) * trackWidth
+      const width = ((Tool.formatToS(DATA.endTime) - Tool.formatToS(DATA.beginTime)) / duration * 100).toFixed(2)
+      const left = (Tool.formatToS(DATA.beginTime) / duration * 100).toFixed(2)
 
-      let html = `
-            <div class="silderBlock" data-s=${DATA.fileName} data-l='0' data-J='${JSON.stringify(DATA)}' data-i="${nameId}" data-t=${DATA.elementType}
-            style='left: ${left}px'>
+      const html = `
+            <div class="silderBlock" data-s=${DATA.fileName} data-l='0' data-J='${JSON.stringify(DATA)}' data-p='${JSON.stringify(DATA)}' data-i="${nameId}" data-t=${DATA.elementType}
+            style='left: ${left}%; width: ${width}%'>
                 ${DATA.fileName}
             </div>
         `

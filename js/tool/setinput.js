@@ -5,10 +5,11 @@ class SetInput {
     this.nowEdi = nowEdi
   }
   index1() {
-    this.nowEdi
-      .find('select[name="transition"]')
-      .val(this.data.transition)
-    this.nowEdi.find('select[name="animation"]').val(this.data.animation)
+    // this.nowEdi
+    //   .find('select[name="transition"]')
+    //   .val(this.data.transition)
+    console.log(this.data.transition)
+    this.nowEdi.find('select[name="animation"]').val(this.data.transition)
   }
 
   index2() {

@@ -1,6 +1,16 @@
 const $option = JSON.parse(window.localStorage.getProgram)
 var canvas
 
+$.extend({
+    ajaxJson: function (opt) {
+        opt.dataType = "json";
+        opt.type = "post";
+        opt.contentType = "application/json;charset=utf-8";
+        opt.data = JSON.stringify(opt.data);
+        $.ajax(opt);
+    }
+});
+
 /**
  * @class 画布类
  * @param {string} NODE_ENV - ('development', 'production') 配置环境参数
@@ -46,7 +56,7 @@ class Canvas {
             //获取素材组
             // getGroup: '/idm/material/groupname'
             // getGroup: './json/group.json'
-            getGroup: this.baseUrl + '/idm/material/groupname'
+            getGroup: this.NODE_ENV == 'development' ? this.baseUrl + '/idm/material/groupname' : '/idm/material/groupname'
         }
         this.mapElement = new Map()
     }
@@ -168,14 +178,17 @@ class Canvas {
             } else {
                 // 缩略图路径处理
                 let url
+                let thumbnail = JSON.parse(dataJ).thumbnail
+                let fileName = JSON.parse(dataJ).fileName
                 if (that.NODE_ENV == 'development') {
-                    let fileName = JSON.parse(dataJ).fileName
-                    let thumbnail = JSON.parse(dataJ).thumbnail
                     url = `img/${fileName}`
                 } else {
-                    let fileName = JSON.parse(dataJ).fileName
                     let areaId = JSON.parse(dataJ).areaId
-                    url = `/files/idm/${areaId}/${fileName}`
+                    if (eleType == 1) {
+                        url = `/files/idm/${areaId}/${fileName}`
+                    } else {
+                        url = `/images/thumbnail/material/${thumbnail}`
+                    }
                 }
 
 
@@ -840,13 +853,21 @@ class Canvas {
         let canvasEle = $(`#canvas div[data-i="${id}"`)
         let sliderEle = $(`.trackBox .trackContent div[data-i="${id}"]`)
 
+        //原始数据
+        let dataJ = canvasEle.attr('data-j') == 'undefined' ? {} : JSON.parse(canvasEle.attr('data-j'))
+
+        let data = {
+            width: canvasEle.find('img').width(),
+            height: canvasEle.find('img').height(),
+            location_x: parseInt(canvasEle.css('left')),
+            location_y: parseInt(canvasEle.css('top'))
+        }
+
         sliderEle.attr(
             'data-p',
             JSON.stringify({
-                width: canvasEle.find('img').width(),
-                height: canvasEle.find('img').height(),
-                location_x: parseInt(canvasEle.css('left')),
-                location_y: parseInt(canvasEle.css('top'))
+                ...dataJ,
+                ...data
             })
         )
 
@@ -1517,7 +1538,6 @@ class Canvas {
             data = JSON.parse($('.checkEle').attr('data-p'))
             data.trans = (data.width / checkImg[0].naturalWidth).toFixed(2) * 100
         } else {
-
             let proxyObj = element._proxyObj
             checkImg = $('.itemBox').find(`[data-i=${$('.checkEle').attr('data-i')}]`).find('img')
             data = {
@@ -1538,20 +1558,15 @@ class Canvas {
             }
         }
 
-
         //点击获取x、y数据并填充
         nowEdi.find('input[name="location_x"]').val(data.location_x)
         nowEdi.find('input[name="location_y"]').val(data.location_y)
-
-
 
         //点击获取宽、高数据并填充
         nowEdi.find('input[name="width"]').val(data.width || checkChild.width())
         nowEdi.find('input[name="height"]').val(data.height || checkChild.height())
 
-        console.log(data)
         const setInputTool = new SetInput(data, nowEdi)
-
 
         if (flag) {
             switch (index) {
@@ -1595,7 +1610,7 @@ class Canvas {
         const scale = element.dDiv.find('img').length == 0 ? 256 / 128 : element.dImg.width() / element.dImg.height()
         let trans
         //点击获取缩放并填充设置
-        if (nowEdi.find('input[name="zoomInput"]').length !== 0 && Math.abs(scaleN - scale) < 0.1) {
+        if (nowEdi.find('input[name="zoomInput"]').length !== 0 && Math.abs(scaleN - scale) < 0.01) {
             trans = data.trans
             nowEdi.find('input[name="zoomInput"]').val(trans)
 
@@ -2518,7 +2533,7 @@ class Canvas {
                 onrendered: function (canvas) {
                     data.photo = canvas.toDataURL()
                     console.log(data)
-                    $.ajax({
+                    $.ajaxJson({
                         url: that.api.save,
                         type: 'POST',
                         dataType: 'json',
@@ -2671,6 +2686,8 @@ class Canvas {
                     )
                 }
 
+                data.scalingRatio = parseInt($('#transformCanvas').val())
+
                 let copy = {
                     beginTime: layerObj.beginTime,
                     endTime: layerObj.endTime,
@@ -2764,7 +2781,8 @@ class Canvas {
                     .parent()
                     .parent()
 
-                that.absorb.deleteMap($('.checkCanvas')[0])
+                //TODO:修改完成后恢复
+                // that.absorb.deleteMap($('.checkCanvas')[0])
 
                 $('.checkEle').remove()
                 $('#showBox').click()

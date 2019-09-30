@@ -34,7 +34,6 @@ async function load() {
 
       TRACK.find('.trackContent').append(html)
 
-
       const elementObj = new Element(JSON.stringify(it.elementData), nameId)
       canvas.mapElement.set(nameId, elementObj)
 

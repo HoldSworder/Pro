@@ -13,7 +13,7 @@ class SaveTool {
     obj.beginTime = id.find('input[name="startTime"]').val()
     obj.endTime = id.find('input[name="endTime"]').val()
   
-    Object.assign(obj, JSON.parse($('.checkEle').attr('data-j') == 'undefined' ? '{}' : $('.checkEle').attr('data-j')))
+    Object.assign(obj, $('.checkEle').attr('data-j') == 'undefined' ? {} : JSON.parse($('.checkEle').attr('data-j')))
   }
 
   static cImg() {

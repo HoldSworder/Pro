@@ -483,7 +483,8 @@ class RepertoryTool {
   setEdi(form) {
     //设置文字内容
     form.find('textarea').on('input', function () {
-      $('.checkCanvas .canvasChild').text($(this).val())
+      let text = JSON.parse(JSON.stringify($(this).val()).replace(/\\n/g, '<br/>').replace(/ /g, '&nbsp;'))
+      $('.checkCanvas .canvasChild').html(text)
     })
 
     //设置文字对齐

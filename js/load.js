@@ -1,12 +1,17 @@
 async function load() {
+  $('.trackBox').children().remove()
   for (const item of $option.data.params) {
 
-    $('.trackBox').children().remove()
     const TRACK = canvas.newTrack(item.trackName)
     const duration = $('#nowTime').attr('data-t') * 60
     const trackWidth = TRACK.find('.trackContent').width()
 
-    for (const it of item.elementList) {
+    console.log(item)
+    for (let i = 0; i < item.elementList.length; i++) {
+      const it = item.elementList[i];
+
+
+      // for (const it of item.elementList) {
       const DATA = {
         ...it.elementData,
         ...it
@@ -26,22 +31,24 @@ async function load() {
       const left = (Tool.formatToS(DATA.beginTime) / duration * 100).toFixed(2)
 
       const html = `
-            <div class="silderBlock" data-s=${DATA.fileName} data-l='0' data-J='${JSON.stringify(DATA)}' data-p='${JSON.stringify(DATA)}' data-i="${nameId}" data-t=${DATA.elementType}
+      <div class="silderBlock" data-s=${DATA.fileName} data-l='0' data-J='${JSON.stringify(DATA)}' data-p='${JSON.stringify(DATA)}' data-i="${nameId}" data-t=${DATA.elementType}
             style='left: ${left}%; width: ${width}%'>
-                ${DATA.fileName}
+            ${DATA.fileName}
             </div>
-        `
+            `
 
       TRACK.find('.trackContent').append(html)
 
       const elementObj = new Element(JSON.stringify(it.elementData), nameId)
       canvas.mapElement.set(nameId, elementObj)
 
+      if (i !== 0) {elementObj.dDiv.addClass('hidden')}
     }
   }
   suppTrack()
 }
 
+//补足不到4条轨道
 function suppTrack() {
   let length = $('.trackBox').find('.clearfix').length
   if (length < 4) {
@@ -53,11 +60,17 @@ function suppTrack() {
         </div>
         <div id="track0" class="trackContent col-sm-10"></div>
       </div>`
-    
+
     for (let index = 0; index < 4 - length; index++) {
       $('.trackBox').append(html)
     }
   }
+}
+
+function saveParams(data) {
+  $('#saveForm').find('input[name="programName"]').val(data.data.programName)
+  $('#saveForm').find('input[name="note"]').val(data.data.note)
+  $('#saveForm').find('input[name="code"]').val(data.data.programCode).attr('readonly', true)
 }
 
 if ($option.data) load()

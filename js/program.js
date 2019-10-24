@@ -46,17 +46,20 @@ class Canvas {
         this.NODE_ENV = 'development'
         this.api = {
             //素材
-            material: this.NODE_ENV == 'development' ? this.baseUrl + '/idm/template/getmaterial.do' : '/idm/template/getmaterial.do',
+            material: '../Pro/json/material.json',
+            // material: this.NODE_ENV == 'development' ? this.baseUrl + '/idm/template/getmaterial.do' : '/idm/template/getmaterial.do',
             //模版
             template: this.NODE_ENV == 'development' ? this.baseUrl + '/idm/template/gettemplates.do' : '/idm/template/gettemplates.do',
             //保存
             save: '/idm/program/saveprogram.do',
+            saveEdi: '/idm/program/updateprogram.do',
             //保存为模版
             savetemplate: '/idm/template/savetemplate.do',
             //获取素材组
             // getGroup: '/idm/material/groupname'
             // getGroup: './json/group.json'
-            getGroup: this.NODE_ENV == 'development' ? this.baseUrl + '/idm/material/groupname' : '/idm/material/groupname'
+            getGroup: '../Pro/json/group.json'
+            // getGroup: this.NODE_ENV == 'development' ? this.baseUrl + '/idm/material/groupname' : '/idm/material/groupname'
         }
         this.mapElement = new Map()
     }
@@ -141,7 +144,7 @@ class Canvas {
 
         let dataJ = img instanceof jQuery ? img.attr('data-J') : JSON.stringify(img)
         if (imgPath == this.addImgPath) {
-            dataJ = {}
+            dataJ = JSON.stringify({})
         }
 
         if (eleType == 4) { //文字素材处理
@@ -745,6 +748,16 @@ class Canvas {
                     let nameId = $(item).attr('data-i')
                     let showEle = $(`.canvasDiv[data-i='${nameId}'`)
                     showEle.removeClass('hidden')
+                }
+            }
+
+            if (change == 0) {
+                for (const item of $('.silderBlock')) {
+                    if ($(item).css('left') == '0px') {
+                        let nameId = $(item).attr('data-i')
+                        let showEle = $(`.canvasDiv[data-i='${nameId}'`)
+                        showEle.removeClass('hidden')
+                    }
                 }
             }
         }
@@ -2126,7 +2139,7 @@ class Canvas {
 
             function obs(mutation) {
                 let timeL = parseFloat(
-                    JSON.parse($('.checkEle').attr('data-J')).note.timeLine
+                    JSON.parse($('.checkEle').attr('data-J')).duration
                 )
                 let style = mutation.target.style
                 let left = parseInt(style.left)
@@ -2180,7 +2193,7 @@ class Canvas {
                     let timeS = h * 60 + m * 60 + s
 
                     let timeA = JSON.parse($('.checkEle').attr('data-J'))
-                        .note.timeLine
+                        .duration
                     if ($(this).attr('name') == 'startPlay') {
                         let timeSe = timeS / timeA
 
@@ -2504,6 +2517,16 @@ class Canvas {
     // 保存初始化
     save() {
         let that = this
+
+        console.log($option)
+        if ($option.data) {
+            $('#saveBtnPro').hide()
+            $('#saveEdiBtnPro').show()
+        }else {
+            $('#saveBtnPro').show()
+            $('#saveEdiBtnPro').hide()
+        }
+
         $('#save').on('click', function () {
             $('#savePro').modal('show')
         })
@@ -2535,6 +2558,49 @@ class Canvas {
                     console.log(data)
                     $.ajaxJson({
                         url: that.api.save,
+                        type: 'POST',
+                        dataType: 'json',
+                        data,
+                        success(res) {
+                            if (res.success) {
+                                alert('成功')
+                            } else {
+                                alert(res.msg)
+                            }
+                        }
+                    })
+                }
+            })
+        })
+
+        $('#saveEdiBtnPro').on('click', function () {
+            //编辑节目
+            if (
+                $('#saveForm')
+                .find('.required')
+                .val() == ''
+            ) {
+                alert('请填写名称')
+                return
+            }
+
+            let data = that.getParams('pro')
+            data.programName = $('#saveForm')
+                .find('input[name="programName"]')
+                .val()
+            data.note = $('#saveForm')
+                .find('input[name="note"]')
+                .val()
+            data.programId = $option.data.programId
+
+            html2canvas($('#canvas'), {
+                height: $('#canvas').outerHeight() + 20,
+                width: $('#canvas').outerWidth() + 20,
+                onrendered: function (canvas) {
+                    data.photo = canvas.toDataURL()
+                    console.log(data)
+                    $.ajaxJson({
+                        url: that.api.saveEdi,
                         type: 'POST',
                         dataType: 'json',
                         data,
@@ -2884,7 +2950,7 @@ class Canvas {
         let that = this
 
         $(document).keyup(function (event) {
-            if (event.keyCode == 13) {
+            if (event.keyCode == 9) {
                 $('#addTime').val('')
                 let ctrlEle = $('.ctrlEle')
                 $('#setPlayLength').modal('show')

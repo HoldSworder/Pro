@@ -86,7 +86,7 @@ class SaveTool {
     let data = {}
 
     SaveTool.getTime(data, edi)
-    data.text = edi.find('textarea').val()
+    data.text = JSON.parse(JSON.stringify(edi.find('textarea').val()).replace(/\\n/g, '<br/>').replace(/ /g, '&nbsp;'))
     data.alignment = edi.find('select[name="alignment"]').val()
     data.multiline = edi
       .find('#text-multiline-check')

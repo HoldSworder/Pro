@@ -23,8 +23,17 @@ class SetInput {
       .find('#video-vol-slider .ui-slider-tip')
       .text(this.data.volume)
 
-    this.nowEdi.find('input[name="startPlay"]').val(this.data.inTime)
-    this.nowEdi.find('input[name="endPlay"]').val(this.data.outTime)
+    if(this.data.inTime) {
+      this.nowEdi.find('input[name="startPlay"]').val(this.data.inTime)
+    }else {
+      this.nowEdi.find('input[name="startPlay"]').val("00:00:00")
+    }
+
+    if(this.data.outTime) {
+      this.nowEdi.find('input[name="endPlay"]').val(this.data.outTime)
+    }else {
+      this.nowEdi.find('input[name="endPlay"]').val(Tool.formatSeconds(this.data.duration))
+    }
 
     this.nowEdi.find('input[name="startPlay"]').blur()
     this.nowEdi.find('input[name="endPlay"]').blur()

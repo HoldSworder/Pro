@@ -151,7 +151,7 @@ class Canvas {
 
             html = `
                     <div class="canvasDiv" data-J='${dataJ}' data-i="${id}" id="div${index}" style="top: ${y}px; left: ${x}px; position: absolute; overflow: hidden; width: auto; height: auto;">
-                        <div class='canvasChild placeholder' style='width: ${width}px; height: ${height}px; background: white; word-wrap: break-word;'>
+                        <div class='canvasChild placeholder' style='width: ${width}px; height: ${height}px; background: white; word-wrap: break-word; display: flex; align-items: center'>
                             
                         </div>
                     </div>
@@ -503,7 +503,7 @@ class Canvas {
                     oparent.parentElement.style.top = iparenttop + iT + 'px'
                 }
 
-                //TODO: 锁定最大缩放
+                // 锁定最大缩放
                 if (iw < dragMinWidth) {
                     iw = dragMinWidth
                 } else if (iw > maxw) {
@@ -517,7 +517,7 @@ class Canvas {
                     return
                 }
 
-                //TODO 缩放关联缩放条
+                //缩放关联缩放条
                 if (lookx) {
                     //等比缩放
                     oparent.style.width = iw + 'px'
@@ -1627,7 +1627,7 @@ class Canvas {
             trans = data.trans
             nowEdi.find('input[name="zoomInput"]').val(trans)
 
-            // TODO: 更改缩放比
+            //  更改缩放比
             $('.activeEdi .zoom .ui-slider-tip').text(trans)
             $('.activeEdi .zoom .ui-slider-handle').css(
                 'left',
@@ -1828,7 +1828,7 @@ class Canvas {
                         let nWidth = canvasCheck[0].naturalWidth
                         let nHeight = canvasCheck[0].naturalHeight
 
-                        //TODO：锁定缩放最大值
+                        //锁定缩放最大值
                         if (nWidth * trans >= that.width) {
                             return
                         } else if (nHeight * trans >= that.height) {
@@ -2522,7 +2522,7 @@ class Canvas {
         if ($option.data) {
             $('#saveBtnPro').hide()
             $('#saveEdiBtnPro').show()
-        }else {
+        } else {
             $('#saveBtnPro').show()
             $('#saveEdiBtnPro').hide()
         }
@@ -2607,6 +2607,8 @@ class Canvas {
                         success(res) {
                             if (res.success) {
                                 alert('成功')
+                                localStorage.setItem('save', new Date().getTime())
+                                window.open("about:blank","_self").close()  
                             } else {
                                 alert(res.msg)
                             }
@@ -2768,10 +2770,10 @@ class Canvas {
                 parObj.elementList.push(copy)
             }
 
-            //TODO：修改轨道名称
             parObj.trackName = $(e).find('.trackController span').eq(0).text()
             parObj.index = i
-
+            
+            //TODO：params过滤无效信息
             data.params.push(parObj)
         }
 
@@ -2847,7 +2849,7 @@ class Canvas {
                     .parent()
                     .parent()
 
-                //TODO:修改完成后恢复
+                //修改完成后恢复
                 // that.absorb.deleteMap($('.checkCanvas')[0])
 
                 $('.checkEle').remove()
